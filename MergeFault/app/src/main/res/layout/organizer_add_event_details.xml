@@ -1,0 +1,103 @@
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#EEECDE">
+
+
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="100sp"
+        android:src="@drawable/logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ImageView
+        android:id="@+id/eventPosterImageView"
+        android:layout_width="310dp"
+        android:layout_height="241dp"
+        android:src="@drawable/posterupload"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
+
+    <Button
+        android:id="@+id/cancelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#00FFFFFF"
+        android:text="Cancel"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <EditText
+        android:id="@+id/locationText"
+        android:layout_width="300sp"
+        android:layout_height="wrap_content"
+        android:text="*Location"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold|italic"
+        android:backgroundTint="@color/black"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/eventPosterImageView" />
+
+    <EditText
+        android:id="@+id/dayText"
+        android:layout_width="300sp"
+        android:layout_height="wrap_content"
+        android:text="*Day"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold|italic"
+        android:backgroundTint="@color/black"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/locationText" />
+
+
+    <EditText
+        android:id="@+id/timeText"
+        android:layout_width="300sp"
+        android:layout_height="wrap_content"
+        android:text="*Time"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold|italic"
+        android:backgroundTint="@color/black"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dayText" />
+
+    <EditText
+        android:id="@+id/attendeeLimitText"
+        android:layout_width="300sp"
+        android:layout_height="wrap_content"
+        android:text="Attendee Limit"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold|italic"
+        android:backgroundTint="@color/black"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/timeText" />
+
+    <Button
+        android:id="@+id/createEventButton"
+        android:layout_width="250sp"
+        android:layout_height="70sp"
+        android:backgroundTint="#9A8FBF"
+        android:text="Create Event"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/attendeeLimitText" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
