@@ -4,15 +4,84 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#EEECDE"
     tools:context=".MainActivity">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:id="@+id/continueAsFollowing"
+        android:layout_width="325sp"
+        android:layout_height="125sp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="104dp"
+        android:background="@drawable/rounded_corner_view"
+        android:backgroundTint="#F7B2C8A6"
+        android:fontFamily="sans-serif-black"
+        android:paddingStart="20sp"
+        android:paddingEnd="20sp"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="@string/please_continue_as_one_of_the_following"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/attendeeButton"
+        android:layout_width="250sp"
+        android:layout_height="75sp"
+        android:backgroundTint="#9A8FBF"
+        android:text="ATTENDEE"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toTopOf="@+id/adminButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/continueAsFollowing" />
+
+    <Button
+        android:id="@+id/adminButton"
+        android:layout_width="250sp"
+        android:layout_height="75sp"
+        android:backgroundTint="#9A8FBF"
+        android:text="ADMINISTRATOR"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/continueAsFollowing" />
+
+    <Button
+        android:id="@+id/organizerButton"
+        android:layout_width="250sp"
+        android:layout_height="75sp"
+        android:backgroundTint="#9A8FBF"
+        android:text="ORGANIZER"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/adminButton" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="100sp"
+        android:src="@drawable/logo"
+        app:layout_constraintBottom_toTopOf="@+id/continueAsFollowing"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
