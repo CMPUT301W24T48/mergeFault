@@ -42,6 +42,18 @@
             android:name=".AttendeeEditProfileActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".OrganizerHomeActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".OrganizerNewOrReuseQR"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".OrganizerGeneratedQR"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>
