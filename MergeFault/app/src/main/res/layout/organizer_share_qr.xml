@@ -7,7 +7,7 @@
     android:background="#EEECDE">
 
     <ImageView
-        android:id="@+id/logoImageView"
+        android:id="@+id/logoImgView"
         android:layout_width="wrap_content"
         android:layout_height="100sp"
         android:src="@drawable/logo"
@@ -15,70 +15,96 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
-    <ImageView
-        android:id="@+id/eventPosterImageView"
-        android:layout_width="199dp"
-        android:layout_height="165dp"
-        android:src="@drawable/eventposter"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
-
     <TextView
-        android:id="@+id/editPosterText"
-        android:layout_width="100sp"
+        android:id="@+id/checkInQRText"
+        android:layout_width="400sp"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Edit Poster"
+        android:text="This is your check-in QR code. Guests of your events will be able to check-in by scanning this QR"
         android:textColor="@color/black"
-        android:textSize="15sp"
+        android:textSize="17sp"
         android:textStyle="bold|italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/eventPosterImageView" />
+        app:layout_constraintTop_toBottomOf="@+id/logoImgView" />
+
+    <TextView
+        android:id="@+id/promoteQRText"
+        android:layout_width="400sp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="This is your promotional QR.This QR code links to your event details in the app"
+        android:textColor="@color/black"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/shareCheckInButton" />
+
+
+
+    <ImageView
+        android:id="@+id/checkInQRImageView"
+        android:layout_width="151dp"
+        android:layout_height="151dp"
+        android:src="@drawable/qr"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkInQRText" />
+
+    <ImageView
+        android:id="@+id/promoteQRImageView"
+        android:layout_width="161dp"
+        android:layout_height="145dp"
+        android:src="@drawable/qr"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/promoteQRText" />
+
 
     <Button
-        android:id="@+id/eventDetailsButton"
+        android:id="@+id/shareCheckInButton"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
-        android:text="Event Details"
+        android:text="Share Check-In QR"
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="@+id/sendNotifButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editPosterText" />
+        app:layout_constraintTop_toBottomOf="@+id/checkInQRImageView" />
 
     <Button
-        android:id="@+id/sendNotifButton"
+        android:id="@+id/sharePromoteButton"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
-        android:text="Send Notification"
+        android:text="Share Promotional QR"
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editPosterText" />
+        app:layout_constraintTop_toBottomOf="@+id/promoteQRImageView" />
 
     <Button
-        android:id="@+id/attendeeListButton"
+        android:id="@+id/shareBoth"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
-        android:text="Attendee List"
+        android:text="Share Both"
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
-
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editPosterText" />
+        app:layout_constraintTop_toBottomOf="@+id/sharePromoteButton">
+    </Button>
+
+
+
+
 
     <Button
         android:id="@+id/cancelButton"
@@ -90,37 +116,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/removeProfileButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="#00FFFFFF"
-        android:text="Remove Event"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/cancelButton" />
-
-    <TextView
-        android:id="@+id/checkInsText"
-        android:layout_width="400dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Currently there are %d check-ins. Total of %d check-ins so far!"
-        android:textColor="@color/black"
-        android:textSize="23sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toTopOf="@+id/removeProfileButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sendNotifButton" />
-
-    <ImageView
-        android:id="@+id/notifBellImageView"
-        android:layout_width="69dp"
-        android:layout_height="49dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/notifbell" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

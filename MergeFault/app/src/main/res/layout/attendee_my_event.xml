@@ -25,19 +25,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
 
-    <TextView
-        android:id="@+id/removeImageTextView"
-        android:layout_width="100sp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Remove Image"
-        android:textColor="@color/black"
-        android:textSize="15sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/eventPosterImageView" />
-
     <Button
         android:id="@+id/eventDetailsButton"
         android:layout_width="250sp"
@@ -47,38 +34,24 @@
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="@+id/organizerProfileButton"
+        app:layout_constraintBottom_toBottomOf="@+id/checkinButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/removeImageTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/eventPosterImageView" />
 
     <Button
-        android:id="@+id/organizerProfileButton"
+        android:id="@+id/checkinButton"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
-        android:text="Organizer Profile"
+        android:text="Check In"
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/removeImageTextView" />
-
-    <Button
-        android:id="@+id/attendeeListButton"
-        android:layout_width="250sp"
-        android:layout_height="70sp"
-        android:backgroundTint="#9A8FBF"
-        android:text="Attendee List"
-        android:textColor="@color/white"
-        android:textSize="17sp"
-        android:textStyle="bold|italic"
-
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/removeImageTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/eventPosterImageView" />
 
     <Button
         android:id="@+id/cancelButton"
@@ -89,17 +62,6 @@
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
-    <Button
-        android:id="@+id/removeProfileButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="#00FFFFFF"
-        android:text="Remove Event"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/cancelButton" />
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

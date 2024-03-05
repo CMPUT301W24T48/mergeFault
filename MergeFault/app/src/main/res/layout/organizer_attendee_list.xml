@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#EEECDE">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="100sp"
+        android:src="@drawable/logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/attendeesText"
+        android:layout_width="150sp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Attendees"
+        android:textColor="@color/black"
+        android:textSize="23sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView">
+    </TextView>
+
+    <TextView
+        android:id="@+id/checkedInText"
+        android:layout_width="100sp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Currently
+        Checked In?"
+        android:textColor="@color/black"
+        android:textSize="13sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toTopOf="@+id/myEventListView"
+        app:layout_constraintEnd_toEndOf="parent">
+    </TextView>
+
+    <TextView
+        android:id="@+id/checkedInCountText"
+        android:layout_width="102dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Check-in
+         Count"
+        android:textColor="@color/black"
+        android:textSize="13sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toTopOf="@+id/myEventListView"
+        app:layout_constraintEnd_toStartOf="@+id/checkedInText">
+    </TextView>
+
+    <ListView
+        android:id="@+id/myEventListView"
+        android:layout_width="409dp"
+        android:layout_height="450dp"
+        android:layout_marginBottom="100dp"
+        android:orientation="horizontal"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+    </ListView>
+
+
+    <Button
+        android:id="@+id/cancelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#00FFFFFF"
+        android:text="Cancel"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/checkInCountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#00FFFFFF"
+        android:text="Check-In Count: %d"
+        android:textSize="20sp"
+        android:textColor="@color/black"
+        android:textStyle="bold|italic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/myEventListView" />
+
+    <TextView
+        android:id="@+id/signUpCountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#00FFFFFF"
+        android:text="Sign-Up Count: %d"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkInCountText" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
