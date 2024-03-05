@@ -14,8 +14,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,6 +34,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private TextView textEditImage;
     private EditText editTextName;
     private EditText editTextEmail;
+    private EditText editTextPhoneNumber;
     private Button cancelButton;
     private ImageButton deleteImageButton;
 
@@ -51,6 +50,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         textEditImage = findViewById(R.id.editEventPosterText);
         editTextName = findViewById(R.id.attendeeListButton);
         editTextEmail = findViewById(R.id.manageProfilesButton);
+        editTextPhoneNumber = findViewById(R.id.eventDetailsButton);
         cancelButton = findViewById(R.id.cancelButton);
         deleteImageButton = findViewById(R.id.deleteImageButton);
 
@@ -128,9 +128,11 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private void loadProfileData() {
         String name = sharedPreferences.getString("name", "");
         String email = sharedPreferences.getString("email", "");
+        String phonenumber = sharedPreferences.getString("phonenumber", ""); // Changed to "phonenumber"
         imageUri = sharedPreferences.getString("imageUri", "");
         editTextName.setText(name);
         editTextEmail.setText(email);
+        editTextPhoneNumber.setText(phonenumber); // Changed to "phonenumber"
         if (!imageUri.isEmpty()) {
             Picasso.get().load(imageUri).into(imageViewProfile);
         }
@@ -141,11 +143,12 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         String url = "https://api.dicebear.com/5.x/pixel-art/png?seed=";
         String name = editTextName.getText().toString().trim();
         String email = editTextEmail.getText().toString().trim();
+        String phonenum = editTextPhoneNumber.getText().toString().trim();
         if (imageUri == null || imageUri.isEmpty()) {
             Picasso.get().load(url + name).into(imageViewProfile);
             imageUri = url + name;
         }
-        saveProfileData(getApplicationContext(), name, email, imageUri);
+        saveProfileData(getApplicationContext(), name, email, imageUri, phonenum);
         Intent intent = new Intent();
         if (!imageUri.isEmpty()) {
             intent.putExtra("updatedImageUri", imageUri);
@@ -155,12 +158,13 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     }
 
     // this saves all the profile data locally on the phone
-    private void saveProfileData(Context context, String name, String email, String imageUri) {
+    private void saveProfileData(Context context, String name, String email, String imageUri, String phonenum) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("UserProfile", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("name", name);
         editor.putString("email", email);
         editor.putString("imageUri", imageUri);
+        editor.putString("phonenumber", phonenum); // Changed to "phonenumber"
         editor.apply();
         Toast.makeText(context, "Profile created and saved successfully", Toast.LENGTH_SHORT).show();
     }
