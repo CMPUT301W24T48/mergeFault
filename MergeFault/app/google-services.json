@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "157304682224",
+    "project_id": "eventlisttest-5190e",
+    "storage_bucket": "eventlisttest-5190e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:157304682224:android:e4041f52316a015f65f435",
+        "android_client_info": {
+          "package_name": "com.example.mergefault"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDibaLaxAlbANL4yuFvqbWjHVCbAaTdfvg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
