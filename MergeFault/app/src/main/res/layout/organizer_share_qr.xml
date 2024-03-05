@@ -7,7 +7,7 @@
     android:background="#EEECDE">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/logoImgView"
         android:layout_width="wrap_content"
         android:layout_height="100sp"
         android:src="@drawable/logo"
@@ -15,35 +15,55 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/qrImageView"
-        android:layout_width="138dp"
-        android:layout_height="117dp"
-        android:src="@drawable/qr"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.162" />
-
     <TextView
-        android:id="@+id/generatedQRText"
+        android:id="@+id/checkInQRText"
         android:layout_width="400sp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:gravity="center"
         android:text="This is your check-in QR code. Guests of your events will be able to check-in by scanning this QR"
         android:textColor="@color/black"
-        android:textSize="23sp"
+        android:textSize="17sp"
         android:textStyle="bold|italic"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.454"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/qrImageView" />
+        app:layout_constraintTop_toBottomOf="@+id/logoImgView" />
+
+    <TextView
+        android:id="@+id/promoteQRText"
+        android:layout_width="400sp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="This is your promotional QR.This QR code links to your event details in the app"
+        android:textColor="@color/black"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/shareCheckInButton" />
+
+
+
+    <ImageView
+        android:id="@+id/checkInQRImageView"
+        android:layout_width="151dp"
+        android:layout_height="151dp"
+        android:src="@drawable/qr"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkInQRText" />
+
+    <ImageView
+        android:id="@+id/promoteQRImageView"
+        android:layout_width="161dp"
+        android:layout_height="145dp"
+        android:src="@drawable/qr"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/promoteQRText" />
+
 
     <Button
-        android:id="@+id/shareCheckin"
+        android:id="@+id/shareCheckInButton"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
@@ -51,42 +71,12 @@
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/qrImageView"
-        app:layout_constraintVertical_bias="0.202" />
-
-    <ImageView
-        android:id="@+id/qrImageView3"
-        android:layout_width="138dp"
-        android:layout_height="117dp"
-        android:src="@drawable/qr"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.612" />
-
-    <TextView
-        android:id="@+id/generatedQRText3"
-        android:layout_width="400sp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="276dp"
-        android:gravity="center"
-        android:text="This is your check-in QR code. Guests of your events will be able to check-in by scanning this QR"
-        android:textColor="@color/black"
-        android:textSize="23sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.454"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/qrImageView" />
+        app:layout_constraintTop_toBottomOf="@+id/checkInQRImageView" />
 
     <Button
-        android:id="@+id/sharePromotionalQR"
+        android:id="@+id/sharePromoteButton"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
@@ -94,28 +84,24 @@
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/qrImageView"
-        app:layout_constraintVertical_bias="0.813" />
+        app:layout_constraintTop_toBottomOf="@+id/promoteQRImageView" />
 
     <Button
-        android:id="@+id/shareBothQR"
+        android:id="@+id/shareBoth"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
-        android:text="Share Both QR"
+        android:text="Share Both"
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/qrImageView"
-        app:layout_constraintVertical_bias="0.964" />
+        app:layout_constraintTop_toBottomOf="@+id/sharePromoteButton">
+    </Button>
+
 
     <Button
         android:id="@+id/cancelButton"
@@ -124,9 +110,7 @@
         android:backgroundTint="#00FFFFFF"
         android:text="Cancel"
         android:textSize="14sp"
-        android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
