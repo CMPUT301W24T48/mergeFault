@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#9A8FBF"/> <!-- This is a purple color, you can use your own color code -->
+    <corners android:radius="0dp"/> <!-- This creates a square, for rounded corners you can specify a radius -->
+</shape>
