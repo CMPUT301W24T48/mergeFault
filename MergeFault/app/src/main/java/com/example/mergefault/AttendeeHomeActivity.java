@@ -18,12 +18,13 @@ public class AttendeeHomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_home);
-
+        // start recording user information
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
         profileImageView = findViewById(R.id.profileImageView);
-
+        // loads the profile image at the top of the screen
         loadProfileImage();
 
+        // makes it so that when the image icon is clicked we go to the edit/view profile screen
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -33,9 +34,11 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         });
     }
 
+    // loads the profile image from the saved user profile.
+    // imageuri references the link or source of where the image originates from such as it could originate from the device or the api call. However it is treated as empty if there is the generic pfp image there.
+    // picasso is an external api that helps cache in images and load them to the imageview works on urls as well as internal images
     private void loadProfileImage() {
         String imageUri = sharedPreferences.getString("imageUri", "");
-        Log.d("ImageUriLoadedInHome:" , imageUri);
         if (!imageUri.isEmpty()) {
             Picasso.get().load(imageUri).into(profileImageView);
         } else {
@@ -43,6 +46,8 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         }
     }
 
+
+    // this is when we return to the activity from another one, essentially the cancel button. When we return to this activity, load the profile image depending upon any changes made to the Uri in the AttendeeEditProfileActivity.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

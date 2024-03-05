@@ -56,6 +56,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
+        // if someone clicks the edit profile picture it will go to the checkandOpenGallery func
         textEditImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -63,23 +64,25 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             }
         });
 
+        // if someone clicks cancel button we will initiate the saveProfile() process.
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 saveProfile();
             }
         });
-
+        // if someone clicks the delete image button it will go the deleteProfilePicture() process
         deleteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 deleteProfilePicture();
             }
         });
-
+        // we load in the profile data on create so that if the user had already filled info before they can see it already present
         loadProfileData();
     }
 
+    // once the delete button is clicked, it will call the imageUri that has been stored in the userProfile, make it empty so it doesnt call anything, changes the uri locally so that any and all changes will apply to it and then gives a small toast that the pic has been deleted.
     private void deleteProfilePicture() {
         imageViewProfile.setImageResource(R.drawable.pfp);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -89,6 +92,9 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         Toast.makeText(this, "Profile picture deleted", Toast.LENGTH_SHORT).show();
     }
 
+
+    // Opens the gallery checks what build is being used for the android and then makes sure to check if it has permission from the user to be able to gain access to the storage
+    // if successful it will open the gallery
     private void checkAndOpenGallery() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -98,7 +104,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             }
         }
     }
-
+    // it will open the gallery and then make it so that you can select an image type object
     private void openGallery() {
         Intent galleryIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         galleryIntent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -106,6 +112,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST);
     }
 
+    // whenever it requests permission this function checks if the request is valid or not and if it is valid it will open the gallery otherwise on error it will provide a toast that the permission has been denied.
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -117,7 +124,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             }
         }
     }
-
+    // we load the profile data from the saved profile in the phone using shared preferences and set the changes if there are any and also make sure to load the image.
     private void loadProfileData() {
         String name = sharedPreferences.getString("name", "");
         String email = sharedPreferences.getString("email", "");
@@ -129,6 +136,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         }
     }
 
+    // this saves the profile and makes the api call to cache in the new image if the image profile is empty.
     private void saveProfile() {
         String url = "https://api.dicebear.com/5.x/pixel-art/png?seed=";
         String name = editTextName.getText().toString().trim();
@@ -142,10 +150,11 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         if (!imageUri.isEmpty()) {
             intent.putExtra("updatedImageUri", imageUri);
         }
-        setResult(RESULT_OK, intent);
+        setResult(RESULT_OK, intent); // this is what is sent back to the activity request in the home page
         finish();
     }
 
+    // this saves all the profile data locally on the phone
     private void saveProfileData(Context context, String name, String email, String imageUri) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("UserProfile", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -156,6 +165,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         Toast.makeText(context, "Profile created and saved successfully", Toast.LENGTH_SHORT).show();
     }
 
+    // When this activity is requested it loads the data and the bitmap to help load the image
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
