@@ -111,6 +111,12 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             @Override
             public void onClick(View v) {
                 addEvent(new Event(location,dateTime,attendeeLimit, selectedImage));
+
+                // TEMPORARILY REMOVED DUE TO BUG
+
+                // Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerShareQR.class);
+                // startActivity(intent);
+
             }
         });
     }
