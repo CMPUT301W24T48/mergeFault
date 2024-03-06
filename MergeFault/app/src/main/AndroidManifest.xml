@@ -43,8 +43,13 @@
             android:exported="false">
         </activity>
         <activity
+            android:name=".AttendeeSignedUpEventsActivity"
+            android:exported="false">
+        </activity>
+        <activity
             android:name=".OrganizerHomeActivity"
             android:exported="false">
+
         </activity>
         <activity
             android:name=".OrganizerNewOrReuseQR"
@@ -72,6 +77,7 @@
             </intent-filter>
         </activity>
 
+>>>>>>> 94dd6a2de0f1843612c48042ae18d4e6439b64c4
     </application>
 
 </manifest>
