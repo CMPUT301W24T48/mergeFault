@@ -25,6 +25,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
 
+    <ImageView
+        android:id="@+id/notifBellImageView"
+        android:layout_width="69dp"
+        android:layout_height="49dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/notifbell" />
+
+    <ImageView
+        android:id="@+id/ProfilePicture"
+        android:layout_width="89dp"
+        android:layout_height="66dp"
+        android:src="@drawable/pfp"
+        app:layout_constraintBottom_toBottomOf="@+id/logoImageView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/notifBellImageView"
+        app:layout_constraintTop_toTopOf="@+id/logoImageView" />
+
     <Button
         android:id="@+id/eventDetailsButton"
         android:layout_width="250sp"
@@ -44,7 +65,7 @@
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
-        android:text="Check In"
+        android:text="Sign Up"
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
@@ -59,6 +80,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#00FFFFFF"
         android:text="Cancel"
+        android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
