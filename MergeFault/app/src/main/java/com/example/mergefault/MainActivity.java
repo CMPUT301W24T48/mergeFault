@@ -10,6 +10,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Button attendeeButton;
     private Button organizerButton;
+    private Button adminButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
         attendeeButton = findViewById(R.id.attendeeButton);
 
         organizerButton = findViewById(R.id.organizerButton);
+
+        adminButton = findViewById(R.id.adminButton);
 
         // Set OnClickListener for attendeeButton
         attendeeButton.setOnClickListener(new View.OnClickListener() {
@@ -35,6 +38,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, OrganizerHomeActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        adminButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, AdminHomeActivity.class);
                 startActivity(intent);
             }
         });
