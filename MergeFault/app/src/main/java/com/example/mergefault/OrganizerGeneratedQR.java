@@ -32,13 +32,8 @@ public class OrganizerGeneratedQR extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                // TEMPORARY REMOVAL OF THE SWITCH IN ACTIVITY DUE TO THE BUG
-
-               // Intent intent = new Intent(OrganizerGeneratedQR.this, OrganizerAddEventActivity.class);
-               // startActivity(intent);
-
-                Intent intent = new Intent(OrganizerGeneratedQR.this, OrganizerShareQR.class);
-                startActivity(intent);
+               Intent intent = new Intent(OrganizerGeneratedQR.this, OrganizerAddEventActivity.class);
+               startActivity(intent);
             }
         });
 
