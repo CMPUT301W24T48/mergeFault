@@ -112,7 +112,17 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         createEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+<<<<<<< HEAD
                 addEvent(new Event(eventName, orgName, location,dateTime,attendeeLimit, selectedImage));
+=======
+                addEvent(new Event(location,dateTime,attendeeLimit, selectedImage));
+
+                // TEMPORARILY REMOVED DUE TO BUG
+
+                // Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerShareQR.class);
+                // startActivity(intent);
+
+>>>>>>> 94dd6a2de0f1843612c48042ae18d4e6439b64c4
             }
         });
     }
