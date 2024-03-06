@@ -12,7 +12,6 @@ public class AdminHomeActivity extends AppCompatActivity{
     private Button manageEvents;
     private Button manageProfiles;
     private Button manageImages;
-    //private Switch geoTracking;
 
 
     @Override
@@ -23,18 +22,6 @@ public class AdminHomeActivity extends AppCompatActivity{
         manageEvents = findViewById(R.id.manageEventsButton);
         manageProfiles = findViewById(R.id.manageProfilesButton);
         manageImages = findViewById(R.id.manageImagesButton);
-
-        /*geoTracking = findViewById(R.id.switch1);
-        geoTracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
-                    //enable geotracking
-                } else {
-                    //disable geotracking
-                }
-            }
-        });*/
 
         manageEvents.setOnClickListener(new View.OnClickListener() {
             @Override
