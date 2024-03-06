@@ -1,4 +1,3 @@
-
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -20,10 +19,10 @@
 
     <ImageView
         android:id="@+id/eventPosterImageView"
-        android:layout_width="310dp"
-        android:layout_height="241dp"
-        android:src="@drawable/posterupload"
+        android:layout_width="284dp"
+        android:layout_height="173dp"
         android:clickable="true"
+        android:src="@drawable/posterupload"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
@@ -38,6 +37,21 @@
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <EditText
+        android:id="@+id/eventNameEditText"
+        android:layout_width="300sp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="564dp"
+        android:backgroundTint="@color/black"
+        android:hint="*Event Name"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/locationText"
@@ -179,7 +193,6 @@
         android:textColor="@color/black"
         android:textSize="23sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toTopOf="@+id/createEventButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/descriptionText" />
 
