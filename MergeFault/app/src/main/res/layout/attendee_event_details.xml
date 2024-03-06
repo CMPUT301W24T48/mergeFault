@@ -52,7 +52,7 @@
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/notifSwitch"
         android:layout_width="312dp"
-        android:layout_height="47dp"
+        android:layout_height="48dp"
         android:text="Notify Me About This Event "
         android:textColor="@color/black"
         android:textSize="20sp"

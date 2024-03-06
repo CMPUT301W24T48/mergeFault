@@ -60,7 +60,7 @@
         app:layout_constraintVertical_bias="0.037" />
 
     <Button
-        android:id="@+id/manageImages"
+        android:id="@+id/manageImagesButton"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:layout_marginTop="16dp"
@@ -82,6 +82,7 @@
         android:textColor="@color/black"
         android:textSize="17sp"
         android:textStyle="bold|italic"
+        android:checked="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
