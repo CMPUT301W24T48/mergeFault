@@ -17,6 +17,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
 
 
     private Button viewMyEvents;
+    private Button browseAllEvents;
     private SharedPreferences sharedPreferences;
 
     @Override
@@ -25,6 +26,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         setContentView(R.layout.attendee_home);
 
         viewMyEvents = findViewById(R.id.viewMyEventsButton);
+        browseAllEvents = findViewById(R.id.browseEventsButton);
         // start recording user information
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
         profileImageView = findViewById(R.id.profileImageView);
@@ -41,6 +43,13 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         });
 
         viewMyEvents.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeSignedUpEventsActivity.class);
+                startActivityForResult(intent, 1);
+            }
+        });
+        browseAllEvents.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeSignedUpEventsActivity.class);

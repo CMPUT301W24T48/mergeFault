@@ -27,7 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 
-public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
+public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private SharedPreferences sharedPreferences;
     private ListView signedUpEventsList;
@@ -51,7 +51,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.attendee_signed_up_events);
+        setContentView(R.layout.attendee_browse_posted_events);
 
         profileImageView = findViewById(R.id.pfpImageView);
         signedUpEventsList = findViewById(R.id.myEventListView);
@@ -89,7 +89,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                         orgName = doc.getString("OrganizerID");
                         location = doc.getString("Location");
                         dateTime = doc.getDate("DateTime");
-                        attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
+                        attendeeLimit = 0; TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
                         imageURL = Uri.parse(doc.getString("EventPoster"));
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, orgName));
 
@@ -106,7 +106,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeEditProfileActivity.class);
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeEditProfileActivity.class);
                 startActivityForResult(intent, 1);
             }
         });
@@ -133,3 +133,4 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         }
     }
 }
+
