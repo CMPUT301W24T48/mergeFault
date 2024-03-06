@@ -64,6 +64,22 @@
             android:exported="false">
         </activity>
         <activity
+            android:name=".AdminHomeActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".AdminManageEvents"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".AdminManageProfiles"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".OrganizerAttendeeList"
+            android:exported="false">
+        </activity>
+        <activity
             android:name=".AttendeeSignUpPage"
             android:exported="true">
             <intent-filter>

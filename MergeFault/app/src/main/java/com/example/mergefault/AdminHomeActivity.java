@@ -6,8 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.Switch;
+//import android.widget.Switch;
 import androidx.annotation.Nullable;
 public class AdminHomeActivity extends AppCompatActivity{
     private Button manageEvents;
@@ -20,6 +19,7 @@ public class AdminHomeActivity extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_home);
+
         manageEvents = findViewById(R.id.manageEventsButton);
         manageProfiles = findViewById(R.id.manageProfilesButton);
         manageImages = findViewById(R.id.manageImagesButton);
