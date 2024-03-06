@@ -76,8 +76,10 @@
                     android:scheme="myapp"/>
             </intent-filter>
         </activity>
-
->>>>>>> 94dd6a2de0f1843612c48042ae18d4e6439b64c4
+        <activity
+            android:name="OrganizerViewEvents"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>
