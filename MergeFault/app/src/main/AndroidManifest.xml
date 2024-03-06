@@ -43,13 +43,13 @@
             android:exported="false">
         </activity>
         <activity
-<<<<<<< HEAD
             android:name=".AttendeeSignedUpEventsActivity"
             android:exported="false">
         </activity>
-=======
+        <activity
             android:name=".OrganizerHomeActivity"
             android:exported="false">
+
         </activity>
         <activity
             android:name=".OrganizerNewOrReuseQR"
