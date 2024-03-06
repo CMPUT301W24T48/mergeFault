@@ -36,6 +36,8 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     private TextView timeText;
     private TextView dayText;
     private ImageView eventPosterImageView;
+    private String eventName;
+    private String orgName;
     private String location;
     private Calendar dateTime = Calendar.getInstance();
     private Integer attendeeLimit;
@@ -110,7 +112,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         createEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addEvent(new Event(location,dateTime,attendeeLimit, selectedImage));
+                addEvent(new Event(eventName, orgName, location,dateTime,attendeeLimit, selectedImage));
             }
         });
     }
@@ -147,7 +149,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         HashMap<String, Object> data = new HashMap<>();
         data.put("EventPoster", event.getEventPoster());
         data.put("Location", event.getLocation());
-        data.put("DateTime", event.getDateTime());
+        data.put("DateTime", event.getDateTime().getTime());
         data.put("AttendeeLimit", event.getAttendeeLimit());
         eventRef.add(data);
     }
