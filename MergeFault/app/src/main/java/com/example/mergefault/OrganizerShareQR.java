@@ -1,6 +1,5 @@
 package com.example.mergefault;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
@@ -14,47 +13,46 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 
-public class OrganizerGeneratedQR extends AppCompatActivity {
+public class OrganizerShareQR extends AppCompatActivity {
 
-    private ImageView QR;
-    private Integer EventId;
-    private Button continueToCreation;
+    private ImageView checkInQRImageView, promoteQRImageView;
+    private Button cancelButton;
+
+    private Integer eventId;
+
+    private String PromotionalActivityRedirect= "www.lotuseventspromotions.com";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.organizer_generated_qr);
+        setContentView(R.layout.organizer_share_qr);
 
-        QR = findViewById(R.id.qrImageView);
-        continueToCreation = findViewById(R.id.continueButton);
+        checkInQRImageView = findViewById(R.id.checkInQRImageView);
+        promoteQRImageView = findViewById(R.id.promoteQRImageView);
+        cancelButton = findViewById(R.id.cancelButton);
 
-        continueToCreation.setOnClickListener(new View.OnClickListener() {
+        cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                // TEMPORARY REMOVAL OF THE SWITCH IN ACTIVITY DUE TO THE BUG
-
-               // Intent intent = new Intent(OrganizerGeneratedQR.this, OrganizerAddEventActivity.class);
-               // startActivity(intent);
-
-                Intent intent = new Intent(OrganizerGeneratedQR.this, OrganizerShareQR.class);
-                startActivity(intent);
+                finish(); // Close the activity when cancel button is clicked
             }
         });
 
-        EventId = 123;
+        eventId = 123;
+        String myEventID = String.valueOf(eventId);
 
-        generateQRCode(EventId);
+        generateQRCode(myEventID, checkInQRImageView);
+        generateQRCode("myapp://" + PromotionalActivityRedirect, promoteQRImageView);
     }
 
-    private void generateQRCode(Integer embedData) {
+    private void generateQRCode(String content, ImageView imageView) {
         MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
-        String qrdata = String.valueOf(embedData);
         try {
-            BitMatrix bitMatrix = multiFormatWriter.encode(qrdata, BarcodeFormat.QR_CODE, 400, 400);
+            String contentString = String.valueOf(content);
+            BitMatrix bitMatrix = multiFormatWriter.encode(content, BarcodeFormat.QR_CODE, 400, 400);
             Bitmap bitmap = toBitmap(bitMatrix);
-            QR.setImageBitmap(bitmap);
-            QR.setVisibility(View.VISIBLE);
+            imageView.setImageBitmap(bitmap);
+            imageView.setVisibility(View.VISIBLE);
         } catch (Exception e) {
             e.printStackTrace();
         }
