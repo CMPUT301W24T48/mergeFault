@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="#EEECDE">
 
+
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
@@ -15,12 +16,51 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/editManagerTextView"
-        android:layout_width="150sp"
+    <Button
+        android:id="@+id/eventPostersButton"
+        android:layout_width="120sp"
+        android:layout_height="70sp"
+        android:backgroundTint="#9A8FBF"
+        android:text="Event Posters"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toTopOf="@+id/imageListView"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/pfpButton"
+        android:layout_width="120sp"
+        android:layout_height="70sp"
+        android:backgroundTint="#9A8FBF"
+        android:text="Profile Pictures"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toTopOf="@+id/imageListView"
+        app:layout_constraintEnd_toStartOf="@+id/bothButton"
+        app:layout_constraintStart_toEndOf="@+id/eventPostersButton" />
+
+    <Button
+        android:id="@+id/bothButton"
+        android:layout_width="120sp"
+        android:layout_height="70sp"
+        android:backgroundTint="#9A8FBF"
+        android:text="Both"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toTopOf="@+id/imageListView"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+
+     <TextView
+        android:id="@+id/browseImageText"
+        android:layout_width="170sp"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Event Manager"
+        android:text="Browse Images"
         android:textColor="@color/black"
         android:textSize="23sp"
         android:textStyle="bold|italic"
@@ -30,9 +70,9 @@
     </TextView>
 
     <ListView
-        android:id="@+id/myEventListView"
+        android:id="@+id/imageListView"
         android:layout_width="409dp"
-        android:layout_height="550dp"
+        android:layout_height="475dp"
         android:layout_marginBottom="39dp"
         android:orientation="horizontal"
         android:textColor="@color/black"
@@ -53,6 +93,6 @@
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/myEventListView" />
+        app:layout_constraintTop_toBottomOf="@+id/imageListView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,6 +9,7 @@ import android.widget.Button;
 public class MainActivity extends AppCompatActivity {
 
     private Button attendeeButton;
+    private Button organizerButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,12 +19,22 @@ public class MainActivity extends AppCompatActivity {
         // Initialize attendeeButton
         attendeeButton = findViewById(R.id.attendeeButton);
 
+        organizerButton = findViewById(R.id.organizerButton);
+
         // Set OnClickListener for attendeeButton
         attendeeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Start AttendeeHomeActivity when attendeeButton is clicked
                 Intent intent = new Intent(MainActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        organizerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, OrganizerHomeActivity.class);
                 startActivity(intent);
             }
         });

@@ -47,10 +47,9 @@
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="@+id/sendNotifButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editPosterText" />
+        app:layout_constraintTop_toBottomOf="@+id/attendeeListButton" />
 
     <Button
         android:id="@+id/sendNotifButton"
@@ -61,10 +60,23 @@
         android:textColor="@color/white"
         android:textSize="17sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editPosterText" />
+        app:layout_constraintTop_toBottomOf="@+id/eventDetailsButton" />
+
+    <Button
+        android:id="@+id/checkinMapButton"
+        android:layout_width="250sp"
+        android:layout_height="70sp"
+        android:backgroundTint="#9A8FBF"
+        android:text="View Check-In Map"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sendNotifButton" />
+
 
     <Button
         android:id="@+id/attendeeListButton"
@@ -86,6 +98,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#00FFFFFF"
         android:text="Cancel"
+        android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -96,6 +109,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#00FFFFFF"
         android:text="Remove Event"
+        android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/cancelButton" />
@@ -111,8 +125,7 @@
         android:textStyle="bold|italic"
         app:layout_constraintBottom_toTopOf="@+id/removeProfileButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sendNotifButton" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/notifBellImageView"

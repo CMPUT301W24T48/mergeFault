@@ -42,6 +42,42 @@
             android:name=".AttendeeEditProfileActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".AttendeeSignedUpEventsActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".OrganizerHomeActivity"
+            android:exported="false">
+
+        </activity>
+        <activity
+            android:name=".OrganizerNewOrReuseQR"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".OrganizerGeneratedQR"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".OrganizerShareQR"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".AttendeeSignUpPage"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+
+                <data
+                    android:host="www.lotuseventspromotions.com"
+                    android:scheme="myapp"/>
+            </intent-filter>
+        </activity>
+
+>>>>>>> 94dd6a2de0f1843612c48042ae18d4e6439b64c4
     </application>
 
 </manifest>

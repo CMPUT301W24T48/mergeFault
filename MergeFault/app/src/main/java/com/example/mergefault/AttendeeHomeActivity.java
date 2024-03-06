@@ -6,18 +6,25 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+
 import com.squareup.picasso.Picasso;
 
 public class AttendeeHomeActivity extends AppCompatActivity {
 
     private ImageView profileImageView;
+
+
+    private Button viewMyEvents;
     private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_home);
+
+        viewMyEvents = findViewById(R.id.viewMyEventsButton);
         // start recording user information
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
         profileImageView = findViewById(R.id.profileImageView);
@@ -29,6 +36,14 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeEditProfileActivity.class);
+                startActivityForResult(intent, 1);
+            }
+        });
+
+        viewMyEvents.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeSignedUpEventsActivity.class);
                 startActivityForResult(intent, 1);
             }
         });
