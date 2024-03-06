@@ -21,7 +21,7 @@ public class AdminHomeActivity extends AppCompatActivity{
 
         manageEvents = findViewById(R.id.manageEventsButton);
         manageProfiles = findViewById(R.id.manageProfilesButton);
-        manageImages = findViewById(R.id.manageImagesButton);
+        manageImages = findViewById(R.id.manageImages);
 
         manageEvents.setOnClickListener(new View.OnClickListener() {
             @Override
