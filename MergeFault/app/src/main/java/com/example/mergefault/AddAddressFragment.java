@@ -33,8 +33,10 @@ public class AddAddressFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_add_address,null);
-        EditText editAddress = view.findViewById(R.id.editAddressText);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_add_text,null);
+        EditText editAddress = view.findViewById(R.id.editTextBox);
+        CharSequence hint = "Add Address";
+        editAddress.setHint(hint);
         AlertDialog.Builder builder = new AlertDialog.Builder((getContext()));
         return builder
                 .setView(view)

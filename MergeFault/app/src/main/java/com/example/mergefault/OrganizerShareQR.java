@@ -1,5 +1,6 @@
 package com.example.mergefault;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
@@ -17,6 +18,7 @@ public class OrganizerShareQR extends AppCompatActivity {
 
     private ImageView checkInQRImageView, promoteQRImageView;
     private Button cancelButton;
+    private Button shareBothButton;
 
     private Integer eventId;
 
@@ -29,6 +31,7 @@ public class OrganizerShareQR extends AppCompatActivity {
 
         checkInQRImageView = findViewById(R.id.checkInQRImageView);
         promoteQRImageView = findViewById(R.id.promoteQRImageView);
+        shareBothButton = findViewById(R.id.shareBoth);
         cancelButton = findViewById(R.id.cancelButton);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -37,6 +40,15 @@ public class OrganizerShareQR extends AppCompatActivity {
                 finish(); // Close the activity when cancel button is clicked
             }
         });
+
+        //temporary way to go to add events screen
+        shareBothButton.setOnClickListener((new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerShareQR.this, OrganizerAddEventActivity.class);
+                startActivity(intent);
+            }
+        }));
 
         eventId = 123;
         String myEventID = String.valueOf(eventId);

@@ -49,7 +49,6 @@
         <activity
             android:name=".OrganizerHomeActivity"
             android:exported="false">
-
         </activity>
         <activity
             android:name=".OrganizerNewOrReuseQR"
