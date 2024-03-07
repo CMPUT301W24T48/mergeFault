@@ -13,4 +13,16 @@
         android:textColor="#575656"
         android:textSize="20sp"
         android:textStyle="bold|italic" />
+
+    <TextView
+        android:id="@+id/removeImageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Remove Image"
+        android:textSize="20sp"
+        android:textStyle="bold|italic"
+        android:textColor="@color/red"
+        android:paddingTop="100dp"
+        android:paddingStart="75dp"/>
+    
 </LinearLayout>
