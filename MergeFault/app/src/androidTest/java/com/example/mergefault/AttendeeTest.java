@@ -1,16 +1,11 @@
 package com.example.mergefault;
 
-import androidx.test.espresso.Espresso;
-import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.assertion.ViewAssertions;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
-import androidx.test.platform.app.InstrumentationRegistry;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,8 +42,11 @@ public class AttendeeTest {
     }
 
     @Test
-    public void profileCreationCheck() {
-        // need to add
+    public void profileActivitySwitchCheck() {
+        onView(withId(R.id.profileImageView)).perform(click());
+        onView(withId(R.id.cancelButton)).perform(click());
+        onView(withId(R.id.viewMyEventsButton)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+
     }
 
 }
