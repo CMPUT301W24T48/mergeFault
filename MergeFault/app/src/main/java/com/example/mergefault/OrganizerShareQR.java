@@ -20,7 +20,7 @@ public class OrganizerShareQR extends AppCompatActivity {
     private Button cancelButton;
     private Button shareBothButton;
 
-    private Integer eventId;
+    private String eventId;
 
     private String PromotionalActivityRedirect= "www.lotuseventspromotions.com";
 
@@ -40,7 +40,7 @@ public class OrganizerShareQR extends AppCompatActivity {
                 finish(); // Close the activity when cancel button is clicked
             }
         });
-
+        /*
         //temporary way to go to add events screen
         shareBothButton.setOnClickListener((new View.OnClickListener() {
             @Override
@@ -50,10 +50,12 @@ public class OrganizerShareQR extends AppCompatActivity {
             }
         }));
 
-        eventId = 123;
-        String myEventID = String.valueOf(eventId);
+         */
+        Intent intent = getIntent();
+        eventId = intent.getStringExtra("EventId");
+        //String myEventID = String.valueOf(eventId);
 
-        generateQRCode(myEventID, checkInQRImageView);
+        generateQRCode(eventId, checkInQRImageView);
         generateQRCode("myapp://" + PromotionalActivityRedirect, promoteQRImageView);
     }
 

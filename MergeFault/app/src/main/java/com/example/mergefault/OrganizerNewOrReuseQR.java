@@ -28,7 +28,7 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerGeneratedQR.class);
+                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerShareQR.class);
                 intent.putExtra("EventId", eventId);
                 startActivity(intent);
             }
