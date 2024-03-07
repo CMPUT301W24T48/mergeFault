@@ -139,8 +139,10 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         createEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+              
                 eventName = eventNameEditText.getText().toString();
                 addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked()));
+              
             }
         });
     }
