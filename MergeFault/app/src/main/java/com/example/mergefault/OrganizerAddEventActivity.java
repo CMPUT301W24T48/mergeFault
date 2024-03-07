@@ -7,42 +7,51 @@ import android.icu.text.DateFormat;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 
-public class OrganizerAddEventActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener, AddAddressFragment.AddAddressDialogListener, AddLimitFragment.AddLimitDialogListener {
+public class OrganizerAddEventActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener, AddAddressFragment.AddAddressDialogListener, AddLimitFragment.AddLimitDialogListener , AddDescriptionFragment.AddDescriptionDialogListener {
     private Button editAddressButton;
     private Button editTimeButton;
     private Button editDateButton;
     private Button editLimitButton;
     private Button createEventButton;
+    private Button descriptionButton;
+    private SwitchCompat geoLocSwitch;
     private TextView addressText;
     private TextView limitText;
     private TextView timeText;
     private TextView dayText;
     private ImageView eventPosterImageView;
+    private TextView descriptionText;
+    private EditText eventNameEditText;
     private String eventName;
-    private String orgName;
+    private String organizerId;
     private String location;
+    private String description;
+    private String eventId;
     private Calendar dateTime = Calendar.getInstance();
     private Integer attendeeLimit;
     private Uri selectedImage;
-    private List<Event> eventList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
 
@@ -53,11 +62,16 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     }
 
     @Override
-    public void addLimit(Integer Limit) {
-        limitText.setText("Limit: " + Limit.toString());
-        attendeeLimit = Limit;
+    public void addLimit(Integer limit) {
+        limitText.setText("Limit: " + limit.toString());
+        attendeeLimit = limit;
     }
 
+    @Override
+    public void addDescription(String Description) {
+        descriptionText.setText("Description: " + Description);
+        description = Description;
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -68,10 +82,17 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         editTimeButton = findViewById(R.id.timeSetButton);
         editDateButton = findViewById(R.id.datSetButton);
         editLimitButton = findViewById(R.id.attendeeLimitSetButton);
+        descriptionButton = findViewById(R.id.descriptionSetButton);
+        geoLocSwitch = findViewById(R.id.switch1);
         addressText = findViewById(R.id.locationText);
         limitText = findViewById(R.id.attendeeLimitText);
+        descriptionText = findViewById(R.id.descriptionText);
+        eventNameEditText = findViewById(R.id.eventNameEditText);
         eventPosterImageView = findViewById(R.id.eventPosterImageView);
         createEventButton = findViewById(R.id.createEventButton);
+
+        Intent recieverIntent = getIntent();
+        organizerId = recieverIntent.getStringExtra("OrganizerID");
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
@@ -109,20 +130,26 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                 startActivityForResult(intent, 3);
             }
         });
+        descriptionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AddDescriptionFragment().show(getSupportFragmentManager(), "Add Description");
+            }
+        });
         createEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addEvent(new Event(eventName, orgName, location,dateTime,attendeeLimit, selectedImage));
-
-
-                // TEMPORARILY REMOVED DUE TO BUG
-
-                // Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerShareQR.class);
-                // startActivity(intent);
-
-
+              
+                eventName = eventNameEditText.getText().toString();
+                addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked()));
+              
             }
         });
+    }
+    public void switchActivities(String eventId){
+        Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class);
+        intent.putExtra("EventId", eventId);
+        startActivity(intent);
     }
 
     @Override
@@ -158,7 +185,19 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         data.put("EventPoster", event.getEventPoster());
         data.put("Location", event.getLocation());
         data.put("DateTime", event.getDateTime().getTime());
-        data.put("AttendeeLimit", event.getAttendeeLimit());
-        eventRef.add(data);
+        data.put("AttendeeLimit", event.getAttendeeLimit().toString());
+        data.put("EventName", event.getEventName());
+        data.put("Description", event.getDescription());
+        data.put("GeoLocOn",event.getGeoLocOn());
+        data.put("OrganizerID", event.getOrganizerId());
+        String eventIdtest;
+        eventRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+            @Override
+            public void onSuccess(DocumentReference documentReference) {
+                eventId = documentReference.getId().toString();
+                Log.d("eventIdBefore", "eventid: " + eventId);
+                switchActivities(eventId);
+            }
+        });
     }
 }

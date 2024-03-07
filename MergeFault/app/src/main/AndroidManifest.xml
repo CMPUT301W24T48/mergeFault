@@ -49,7 +49,6 @@
         <activity
             android:name=".OrganizerHomeActivity"
             android:exported="false">
-
         </activity>
         <activity
             android:name=".OrganizerNewOrReuseQR"
@@ -61,6 +60,22 @@
         </activity>
         <activity
             android:name=".OrganizerShareQR"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".AdminHomeActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".AdminManageEvents"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".AdminManageProfiles"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".OrganizerAttendeeList"
             android:exported="false">
         </activity>
         <activity

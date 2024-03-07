@@ -3,6 +3,7 @@ package com.example.mergefault;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -19,11 +20,16 @@ public class OrganizerGeneratedQR extends AppCompatActivity {
     private ImageView QR;
     private Integer EventId;
     private Button continueToCreation;
+    private String eventId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_generated_qr);
+
+        Intent recieverIntent = getIntent();
+        eventId = recieverIntent.getStringExtra("EventId");
+        Log.d("eventIdAfter2", "eventid:" + eventId);
 
         QR = findViewById(R.id.qrImageView);
         continueToCreation = findViewById(R.id.continueButton);
@@ -32,13 +38,8 @@ public class OrganizerGeneratedQR extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                // TEMPORARY REMOVAL OF THE SWITCH IN ACTIVITY DUE TO THE BUG
-
-               // Intent intent = new Intent(OrganizerGeneratedQR.this, OrganizerAddEventActivity.class);
-               // startActivity(intent);
-
-                Intent intent = new Intent(OrganizerGeneratedQR.this, OrganizerShareQR.class);
-                startActivity(intent);
+               Intent intent = new Intent(OrganizerGeneratedQR.this, OrganizerAddEventActivity.class);
+               startActivity(intent);
             }
         });
 
