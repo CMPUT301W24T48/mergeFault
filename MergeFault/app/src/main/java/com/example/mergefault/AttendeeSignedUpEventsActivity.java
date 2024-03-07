@@ -1,5 +1,7 @@
 package com.example.mergefault;
 
+import static okhttp3.internal.http.HttpDate.format;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,6 +41,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private CollectionReference eventRef;
 
     private Event selectedEvent;
+    private String eventID;
     private String eventName;
     private String orgName;
     private String location;
@@ -46,7 +49,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private Uri imageURL;
     private Integer attendeeLimit;
     private Calendar date;
-    private AttendeeMyEventFragment eventFragment;
+    private AttendeeMyEventFragment myEventFragment;
 
 
 
@@ -74,14 +77,16 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
-                eventFragment = new AttendeeMyEventFragment();
+                //TODO: get eventID 
+                myEventFragment = new AttendeeMyEventFragment();
                 Bundle bundle = new Bundle();
+                bundle.putString("0", eventID);
                 bundle.putString("1", selectedEvent.getEventName());
                 bundle.putString("2", selectedEvent.getLocation());
-                bundle.putString("3", selectedEvent.getDateTime().toString());
+                bundle.putString("3", format(selectedEvent.getDateTime().getTime()));
                 //bundle.putString("4", selectedEvent.getDescription());
-                eventFragment.setArguments(bundle);
-                eventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
+                myEventFragment.setArguments(bundle);
+                myEventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
             }
         });
 
