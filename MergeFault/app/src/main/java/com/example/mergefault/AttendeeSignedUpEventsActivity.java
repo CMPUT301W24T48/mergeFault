@@ -12,6 +12,7 @@ import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
@@ -45,6 +46,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private Uri imageURL;
     private Integer attendeeLimit;
     private Calendar date;
+    private AttendeeMyEventFragment eventFragment;
 
 
 
@@ -72,6 +74,14 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+                eventFragment = new AttendeeMyEventFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("1", selectedEvent.getEventName());
+                bundle.putString("2", selectedEvent.getLocation());
+                bundle.putString("3", selectedEvent.getDateTime().toString());
+                //bundle.putString("4", selectedEvent.getDescription());
+                eventFragment.setArguments(bundle);
+                eventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
             }
         });
 
@@ -89,7 +99,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                         orgName = doc.getString("OrganizerID");
                         location = doc.getString("Location");
                         dateTime = doc.getDate("DateTime");
-                        attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
+                        attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                         imageURL = Uri.parse(doc.getString("EventPoster"));
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, orgName));
 
