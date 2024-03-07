@@ -40,7 +40,7 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
         TextView orgName = view.findViewById(R.id.organizerText);
 
         eventName.setText(event.getEventName());
-        orgName.setText(event.getOrgName());
+        orgName.setText(event.getOrganizerId());
 
         return view;
 

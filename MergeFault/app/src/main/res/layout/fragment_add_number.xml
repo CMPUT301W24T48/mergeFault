@@ -5,11 +5,10 @@
     android:layout_height="match_parent">
 
     <EditText
-        android:id="@+id/editLimitText"
+        android:id="@+id/editNumberText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="text"
-        android:hint="Attendee Limit">
+        android:inputType="number">
     </EditText>
 
 </LinearLayout>
