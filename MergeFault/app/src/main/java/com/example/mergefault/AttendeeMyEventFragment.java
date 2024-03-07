@@ -1,8 +1,11 @@
 package com.example.mergefault;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +20,13 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.ListFragment;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class AttendeeMyEventFragment extends DialogFragment {
 
@@ -28,10 +34,13 @@ public class AttendeeMyEventFragment extends DialogFragment {
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private CollectionReference attendeeRef;
+    private SharedPreferences sharedPreferences;
     private String eventID;
     private String eventName;
     private String eventLocation;
     private String eventDateTime;
+    private String imageUri;
+    private String attendeeID;
 
 
 
@@ -48,6 +57,8 @@ public class AttendeeMyEventFragment extends DialogFragment {
         eventLocation = getArguments().getString("2");
         eventDateTime = getArguments().getString("3");
         String[] eventDetails = {eventName, eventLocation, eventDateTime};
+        attendeeRef = db.collection("events").document(eventID).collection("attendees");
+        sharedPreferences = getActivity().getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
         return builder
                 .setView(view)
                 .setItems(eventDetails, new DialogInterface.OnClickListener() {
@@ -59,9 +70,28 @@ public class AttendeeMyEventFragment extends DialogFragment {
                 .setPositiveButton("Sign Up", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        attendeeRef = db.collection("events").document(eventID).collection("attendees");
+                        AddAttendee();
                     }
                 })
                 .create();
+    }
+    public void AddAttendee() {
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("AttendeeName", sharedPreferences.getString("name", ""));
+        data.put("AttendeePhoneNumber", sharedPreferences.getString("phonenumber", ""));;
+        data.put("AttendeeEmail", sharedPreferences.getString("email", ""));
+        data.put("AttendeeProfile", sharedPreferences.getString("imageUri", ""));
+        //data.put("AttendeeNotificationPref", attendee.getNotificationPref());
+        //data.put("AttendeeGeolocationPref", attendee.getGeolocationPref());
+        attendeeRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+            @Override
+            public void onSuccess(DocumentReference documentReference) {
+                attendeeID = documentReference.get().toString();
+                data.put("AttendeeID", attendeeID);
+                documentReference.delete();
+                attendeeRef.document(documentReference.getId()).set(data);
+                Log.d("attendeeIDBefore", "attendeeid" + attendeeID);
+            }
+        });
     }
 }

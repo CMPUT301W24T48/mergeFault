@@ -54,6 +54,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
 
 
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,7 +82,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 //TODO: get eventID 
                 myEventFragment = new AttendeeMyEventFragment();
                 Bundle bundle = new Bundle();
-                bundle.putString("0", eventID);
+                bundle.putString("0", selectedEvent.getEventID());
                 bundle.putString("1", selectedEvent.getEventName());
                 bundle.putString("2", selectedEvent.getLocation());
                 bundle.putString("3", format(selectedEvent.getDateTime().getTime()));
@@ -109,12 +110,14 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                         imageURL = Uri.parse(doc.getString("EventPoster"));
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
+                        eventID = doc.getId();
+
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
-                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn));
+                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID));
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }
