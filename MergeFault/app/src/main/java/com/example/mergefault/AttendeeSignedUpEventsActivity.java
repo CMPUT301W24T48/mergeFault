@@ -38,6 +38,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private ArrayList<Event> signedUpEventDataList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
+    private CollectionReference attendeeRef;
 
     private Event selectedEvent;
     private String eventID;
@@ -79,7 +80,6 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
-                //TODO: get eventID 
                 myEventFragment = new AttendeeMyEventFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("0", selectedEvent.getEventID());
@@ -102,6 +102,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 if (value != null){
                     signedUpEventDataList.clear();
                     for(QueryDocumentSnapshot doc: value){
+                        attendeeRef = db.collection("events").document(doc.getId()).collection("attendees");
                         eventName = doc.getString("EventName");
                         organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");

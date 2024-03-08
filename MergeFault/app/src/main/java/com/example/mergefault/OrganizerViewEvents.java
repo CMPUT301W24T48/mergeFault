@@ -50,6 +50,7 @@ public class OrganizerViewEvents extends AppCompatActivity {
     private Boolean geoLocOn;
     private String eventID;
     private String organizerId;
+    private Boolean geoLocation;
 
 
 

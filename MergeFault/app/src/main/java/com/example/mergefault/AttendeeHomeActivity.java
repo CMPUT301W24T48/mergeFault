@@ -11,10 +11,13 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
+/**
+ * This activity serves as the home screen for attendees.
+ * Attendees can view their profile image, view their events, and browse all events from this screen.
+ */
 public class AttendeeHomeActivity extends AppCompatActivity {
 
     private ImageView profileImageView;
-
     private ImageView homeIcon;
 
     private Button viewMyEvents;
@@ -29,13 +32,15 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         viewMyEvents = findViewById(R.id.viewMyEventsButton);
         browseAllEvents = findViewById(R.id.browseEventsButton);
         homeIcon = findViewById(R.id.imageView);
-        // start recording user information
+
+        // Start recording user information
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
         profileImageView = findViewById(R.id.profileImageView);
-        // loads the profile image at the top of the screen
+
+        // Load the profile image at the top of the screen
         loadProfileImage();
 
-        // makes it so that when the image icon is clicked we go to the edit/view profile screen
+        // Set click listener for the profile image to navigate to the edit/view profile screen
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -44,6 +49,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             }
         });
 
+        // Set click listener for "View My Events" button
         viewMyEvents.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -51,6 +57,8 @@ public class AttendeeHomeActivity extends AppCompatActivity {
                 startActivityForResult(intent, 1);
             }
         });
+
+        // Set click listener for "Browse All Events" button
         browseAllEvents.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,24 +76,30 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         });
     }
 
-    // loads the profile image from the saved user profile.
-    // imageuri references the link or source of where the image originates from such as it could originate from the device or the api call. However it is treated as empty if there is the generic pfp image there.
-    // picasso is an external api that helps cache in images and load them to the imageview works on urls as well as internal images
+    /**
+     * Loads the profile image from the saved user profile.
+     * If no image is found in the user profile, a default image is set.
+     */
     private void loadProfileImage() {
         String imageUri = sharedPreferences.getString("imageUri", "");
         if (!imageUri.isEmpty()) {
+            // Load the image using Picasso library
             Picasso.get().load(imageUri).into(profileImageView);
         } else {
+            // Set default profile image
             profileImageView.setImageResource(R.drawable.pfp);
         }
     }
 
-
-    // this is when we return to the activity from another one, essentially the cancel button. When we return to this activity, load the profile image depending upon any changes made to the Uri in the AttendeeEditProfileActivity.
+    /**
+     * Handles the result when returning from another activity.
+     * If changes were made to the profile image, reload it.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK) {
+            // Reload the profile image if changes were made
             loadProfileImage();
         }
     }

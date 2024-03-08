@@ -87,9 +87,9 @@ public class AttendeeMyEventFragment extends DialogFragment {
             @Override
             public void onSuccess(DocumentReference documentReference) {
                 attendeeID = documentReference.getId();
-                data.put("AttendeeID", attendeeID);
+                data.put("AttendeeID", sharedPreferences.getString("phonenumber", ""));
                 documentReference.delete();
-                attendeeRef.document(attendeeID).set(data);
+                attendeeRef.document(sharedPreferences.getString("phonenumber", "")).set(data);
                 Log.d("attendeeIDBefore", "attendeeid" + attendeeID);
             }
         });
