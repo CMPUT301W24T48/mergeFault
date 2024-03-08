@@ -5,6 +5,9 @@
       <entry key="AttendeeTest">
         <State />
       </entry>
+      <entry key="OrganizerAddEventActivityTest">
+        <State />
+      </entry>
       <entry key="app">
         <State>
           <targetSelectedWithDropDown>
@@ -25,6 +28,12 @@
         <State />
       </entry>
       <entry key="testSaveProfileData()">
+        <State />
+      </entry>
+      <entry key="testAddAddress()">
+        <State />
+      </entry>
+      <entry key="testAddEventName()">
         <State />
       </entry>
     </value>
