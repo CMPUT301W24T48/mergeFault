@@ -25,6 +25,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 
 public class OrganizerViewEvents extends AppCompatActivity {
@@ -45,6 +46,11 @@ public class OrganizerViewEvents extends AppCompatActivity {
     private Uri imageURL;
     private Integer attendeeLimit;
     private Calendar date;
+    private String description;
+    private Boolean geoLocOn;
+    private String eventID;
+    private String organizerId;
+    private Boolean geoLocation;
 
 
 
@@ -67,6 +73,8 @@ public class OrganizerViewEvents extends AppCompatActivity {
         eventRef = db.collection("events");
 
         eventArrayAdapter.notifyDataSetChanged();
+        Intent recieverIntent = getIntent();
+        organizerId = recieverIntent.getStringExtra("OrganizerID");
 
         signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -85,18 +93,23 @@ public class OrganizerViewEvents extends AppCompatActivity {
                 if (value != null){
                     signedUpEventDataList.clear();
                     for(QueryDocumentSnapshot doc: value){
-                        eventName = doc.getString("EventName");
-                        orgName = doc.getString("OrganizerID");
-                        location = doc.getString("Location");
-                        dateTime = doc.getDate("DateTime");
-                        attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
-                        imageURL = Uri.parse(doc.getString("EventPoster"));
-                        Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, orgName));
+                        if(Objects.equals(doc.getString("OrganizerID"), organizerId)){
+                            eventName = doc.getString("EventName");
+                            orgName = doc.getString("OrganizerID");
+                            location = doc.getString("Location");
+                            dateTime = doc.getDate("DateTime");
+                            attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
+                            imageURL = Uri.parse(doc.getString("EventPoster"));
+                            description = doc.getString("Description");
+                            geoLocOn = doc.getBoolean("GeoLocOn");
+                            eventID = doc.getString("EventID");
+                            Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, orgName));
 
-                        date = Calendar.getInstance();
-                        date.setTime(dateTime);
+                            date = Calendar.getInstance();
+                            date.setTime(dateTime);
 
-                        signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL));
+                            signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL,description,geoLocOn,eventID));
+                        }
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }

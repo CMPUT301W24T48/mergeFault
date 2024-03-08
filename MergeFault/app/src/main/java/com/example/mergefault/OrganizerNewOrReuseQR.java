@@ -9,6 +9,9 @@ import android.widget.Button;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * This activity allows organizers to choose whether to generate a new QR code or reuse an existing one.
+ */
 public class OrganizerNewOrReuseQR extends AppCompatActivity {
 
     private Button generateNewQR;
@@ -21,14 +24,17 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
 
         generateNewQR = findViewById(R.id.generateNewButton);
 
-        Intent recieverIntent = getIntent();
-        eventId = recieverIntent.getStringExtra("EventId");
+        // Retrieve the eventId from the intent
+        Intent receiverIntent = getIntent();
+        eventId = receiverIntent.getStringExtra("EventId");
         Log.d("eventIdAfter", "eventid:" + eventId);
+
+        // Set click listener for generate new QR code button
         generateNewQR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerGeneratedQR.class);
+                // Start OrganizerShareQR activity to generate a new QR code
+                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerShareQR.class);
                 intent.putExtra("EventId", eventId);
                 startActivity(intent);
             }
