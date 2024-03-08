@@ -30,7 +30,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-
+/**
+ * @see AttendeeSignUpEventFragment
+ * This activity displays all currently signed up events for attendees
+ * Attendees can view the list of signed up events
+ */
 public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private SharedPreferences sharedPreferences;

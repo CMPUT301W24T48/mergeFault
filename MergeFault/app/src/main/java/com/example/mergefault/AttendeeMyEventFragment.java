@@ -27,7 +27,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
+/**
+ * this fragment displays event details and a button that withdraws attendees from the event
+ */
 public class AttendeeMyEventFragment extends DialogFragment {
 
     private Button signup;
@@ -67,31 +69,12 @@ public class AttendeeMyEventFragment extends DialogFragment {
 
                     }
                 })
-                .setPositiveButton("Sign Up", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Withdraw", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        AddAttendee();
+                        attendeeRef.document(sharedPreferences.getString("phonenumber", "")).delete();
                     }
                 })
                 .create();
-    }
-    public void AddAttendee() {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("AttendeeName", sharedPreferences.getString("name", ""));
-        data.put("AttendeePhoneNumber", sharedPreferences.getString("phonenumber", ""));;
-        data.put("AttendeeEmail", sharedPreferences.getString("email", ""));
-        data.put("AttendeeProfile", sharedPreferences.getString("imageUri", ""));
-        //data.put("AttendeeNotificationPref", attendee.getNotificationPref());
-        //data.put("AttendeeGeolocationPref", attendee.getGeolocationPref());
-        attendeeRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-            @Override
-            public void onSuccess(DocumentReference documentReference) {
-                attendeeID = documentReference.getId();
-                data.put("AttendeeID", sharedPreferences.getString("phonenumber", ""));
-                documentReference.delete();
-                attendeeRef.document(sharedPreferences.getString("phonenumber", "")).set(data);
-                Log.d("attendeeIDBefore", "attendeeid" + attendeeID);
-            }
-        });
     }
 }
