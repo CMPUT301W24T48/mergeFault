@@ -46,6 +46,9 @@ public class OrganizerViewEvents extends AppCompatActivity {
     private Integer attendeeLimit;
     private Calendar date;
 
+    private String description;
+    private Boolean geoLocation;
+
 
 
     @Override
@@ -91,12 +94,13 @@ public class OrganizerViewEvents extends AppCompatActivity {
                         dateTime = doc.getDate("DateTime");
                         attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
                         imageURL = Uri.parse(doc.getString("EventPoster"));
+                        description = doc.getString("Description");
+                        geoLocation = doc.getBoolean("GeoLocOn");
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, orgName));
-
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
-                        signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL));
+                        signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL, description, geoLocation));
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }
