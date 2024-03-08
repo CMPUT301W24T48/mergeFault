@@ -18,6 +18,8 @@ import com.squareup.picasso.Picasso;
 public class AttendeeHomeActivity extends AppCompatActivity {
 
     private ImageView profileImageView;
+    private ImageView homeIcon;
+
     private Button viewMyEvents;
     private Button browseAllEvents;
     private SharedPreferences sharedPreferences;
@@ -29,6 +31,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
 
         viewMyEvents = findViewById(R.id.viewMyEventsButton);
         browseAllEvents = findViewById(R.id.browseEventsButton);
+        homeIcon = findViewById(R.id.imageView);
 
         // Start recording user information
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
@@ -61,6 +64,14 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeSignedUpEventsActivity.class);
                 startActivityForResult(intent, 1);
+            }
+        });
+
+        homeIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeHomeActivity.this, MainActivity.class);
+                startActivity(intent);
             }
         });
     }

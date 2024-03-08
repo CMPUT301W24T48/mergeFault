@@ -1,5 +1,7 @@
 package com.example.mergefault;
 
+import static okhttp3.internal.http.HttpDate.format;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -12,6 +14,7 @@ import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
@@ -35,8 +38,10 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private ArrayList<Event> signedUpEventDataList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
+    private CollectionReference attendeeRef;
 
     private Event selectedEvent;
+    private String eventID;
     private String eventName;
     private String organizerId;
     private String location;
@@ -44,8 +49,11 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private Uri imageURL;
     private Integer attendeeLimit;
     private Calendar date;
+    private AttendeeMyEventFragment myEventFragment;
     private String description;
     private Boolean geoLocOn;
+
+
 
 
     @Override
@@ -72,6 +80,15 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+                myEventFragment = new AttendeeMyEventFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("0", selectedEvent.getEventID());
+                bundle.putString("1", selectedEvent.getEventName());
+                bundle.putString("2", selectedEvent.getLocation());
+                bundle.putString("3", format(selectedEvent.getDateTime().getTime()));
+                //bundle.putString("4", selectedEvent.getDescription());
+                myEventFragment.setArguments(bundle);
+                myEventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
             }
         });
 
@@ -85,20 +102,23 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 if (value != null){
                     signedUpEventDataList.clear();
                     for(QueryDocumentSnapshot doc: value){
+                        attendeeRef = db.collection("events").document(doc.getId()).collection("attendees");
                         eventName = doc.getString("EventName");
                         organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");
                         dateTime = doc.getDate("DateTime");
-                        attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
+                        attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                         imageURL = Uri.parse(doc.getString("EventPoster"));
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
+                        eventID = doc.getId();
+
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
-                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn));
+                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID));
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }

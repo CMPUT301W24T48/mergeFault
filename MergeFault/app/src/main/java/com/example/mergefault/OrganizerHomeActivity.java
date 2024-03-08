@@ -45,6 +45,8 @@ public class OrganizerHomeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Start OrganizerViewEvents activity to view existing events
                 Intent intent = new Intent(OrganizerHomeActivity.this, OrganizerViewEvents.class);
+                String organizerIDString = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
+                intent.putExtra("OrganizerID", organizerIDString);
                 startActivity(intent);
             }
         });
