@@ -16,6 +16,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -52,8 +54,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private AttendeeMyEventFragment myEventFragment;
     private String description;
     private Boolean geoLocOn;
-
-
+    private ImageView homeIcon;
 
 
     @Override
@@ -63,6 +64,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
 
         profileImageView = findViewById(R.id.pfpImageView);
         signedUpEventsList = findViewById(R.id.myEventListView);
+        homeIcon = findViewById(R.id.imageView);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
         loadProfileImage();
@@ -76,6 +78,13 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
 
         eventArrayAdapter.notifyDataSetChanged();
 
+        homeIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
         signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -103,24 +112,41 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                     signedUpEventDataList.clear();
                     for(QueryDocumentSnapshot doc: value){
                         attendeeRef = db.collection("events").document(doc.getId()).collection("attendees");
-                        eventName = doc.getString("EventName");
-                        organizerId = doc.getString("OrganizerID");
-                        location = doc.getString("Location");
-                        dateTime = doc.getDate("DateTime");
-                        attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
-                        imageURL = Uri.parse(doc.getString("EventPoster"));
-                        description = doc.getString("Description");
-                        geoLocOn = doc.getBoolean("GeoLocOn");
-                        eventID = doc.getId();
+                        attendeeRef.get().addOnCompleteListener(task -> {
+                            if(task.isSuccessful()) {
+                                QuerySnapshot querySnapshot = task.getResult();
+                                if (querySnapshot != null) {
+                                    for(QueryDocumentSnapshot document : querySnapshot) {
+                                        String documentID = document.getId();
+                                        if(documentID.equals(sharedPreferences.getString("phonenumber", ""))){
+                                            eventName = doc.getString("EventName");
+                                            organizerId = doc.getString("OrganizerID");
+                                            location = doc.getString("Location");
+                                            dateTime = doc.getDate("DateTime");
+                                            attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                                            imageURL = Uri.parse(doc.getString("EventPoster"));
+                                            description = doc.getString("Description");
+                                            geoLocOn = doc.getBoolean("GeoLocOn");
+                                            eventID = doc.getId();
 
-                        Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+                                            Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
 
-                        date = Calendar.getInstance();
-                        date.setTime(dateTime);
-
-                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID));
+                                            date = Calendar.getInstance();
+                                            date.setTime(dateTime);
+                                            signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID));
+                                        }
+                                    }
+                                    eventArrayAdapter.notifyDataSetChanged();
+                                }
+                            }
+                            else{
+                                Exception e = task.getException();
+                                if (e != null) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
                     }
-                    eventArrayAdapter.notifyDataSetChanged();
                 }
             }
         });

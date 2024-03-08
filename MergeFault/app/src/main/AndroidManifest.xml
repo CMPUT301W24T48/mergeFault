@@ -95,6 +95,10 @@
             android:name="OrganizerViewEvents"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".AttendeeBrowsePostedEventsActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>
