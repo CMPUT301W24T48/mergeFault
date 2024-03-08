@@ -9,7 +9,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import java.util.Calendar;
-
+/**
+ * This is a fragment class for picking date
+ */
 public class DatePickerFragment extends DialogFragment {
     @NonNull
     @Override
