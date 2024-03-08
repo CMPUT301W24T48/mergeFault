@@ -5,21 +5,6 @@
       <entry key="OrganizerTest">
         <State />
       </entry>
-      <entry key="app">
-        <State />
-      </entry>
-      <entry key="deleteTestEvent()">
-        <State />
-      </entry>
-      <entry key="testCreateEvent()">
-        <State />
-      </entry>
-      <entry key="testCreateEventActivity()">
-        <State />
-      </entry>
-      <entry key="testViewEventsButton()">
-        <State />
-      </entry>
     </value>
   </component>
 </project>
