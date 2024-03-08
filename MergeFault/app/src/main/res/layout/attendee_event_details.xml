@@ -31,10 +31,8 @@
         android:layout_width="69dp"
         android:layout_height="49dp"
         android:layout_marginStart="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.045"
         app:srcCompat="@drawable/notifbell" />
 
 
@@ -43,12 +41,8 @@
         android:layout_width="89dp"
         android:layout_height="66dp"
         android:src="@drawable/pfp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.95"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.046" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/notifSwitch"
@@ -85,7 +79,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:backgroundTint="#00FFFFFF"
-        android:text="withdraw"
+        android:text="Withdraw"
         android:textColor="@color/red"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"

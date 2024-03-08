@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -33,8 +34,11 @@ public class AddLimitFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_add_limit, null);
-        EditText editLimit = view.findViewById(R.id.editLimitText);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_add_number, null);
+        EditText editLimit = view.findViewById(R.id.editNumberText);
+        editLimit.setInputType(InputType.TYPE_CLASS_NUMBER);
+        CharSequence hint = "Add Limit";
+        editLimit.setHint(hint);
         AlertDialog.Builder builder = new AlertDialog.Builder((getContext()));
         return builder
                 .setView(view)

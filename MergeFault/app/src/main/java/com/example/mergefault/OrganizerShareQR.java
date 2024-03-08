@@ -1,5 +1,6 @@
 package com.example.mergefault;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
@@ -13,14 +14,18 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 
+/**
+ * This activity allows organizers to generate QR codes for event check-in and promotion.
+ */
 public class OrganizerShareQR extends AppCompatActivity {
 
     private ImageView checkInQRImageView, promoteQRImageView;
     private Button cancelButton;
+    private Button shareBothButton;
 
-    private Integer eventId;
+    private String eventId;
 
-    private String PromotionalActivityRedirect= "www.lotuseventspromotions.com";
+    private String PromotionalActivityRedirect = "www.lotuseventspromotions.com";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,8 +34,10 @@ public class OrganizerShareQR extends AppCompatActivity {
 
         checkInQRImageView = findViewById(R.id.checkInQRImageView);
         promoteQRImageView = findViewById(R.id.promoteQRImageView);
+        shareBothButton = findViewById(R.id.shareBoth);
         cancelButton = findViewById(R.id.cancelButton);
 
+        // Set click listener for cancel button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -38,13 +45,20 @@ public class OrganizerShareQR extends AppCompatActivity {
             }
         });
 
-        eventId = 123;
-        String myEventID = String.valueOf(eventId);
+        Intent intent = getIntent();
+        eventId = intent.getStringExtra("EventId");
 
-        generateQRCode(myEventID, checkInQRImageView);
+        // Generate QR codes for event check-in and promotion
+        generateQRCode(eventId, checkInQRImageView);
         generateQRCode("myapp://" + PromotionalActivityRedirect, promoteQRImageView);
     }
 
+    /**
+     * Generates a QR code for the given content and sets it to the specified ImageView.
+     *
+     * @param content   The content to encode in the QR code.
+     * @param imageView The ImageView to display the QR code.
+     */
     private void generateQRCode(String content, ImageView imageView) {
         MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
         try {
@@ -58,6 +72,12 @@ public class OrganizerShareQR extends AppCompatActivity {
         }
     }
 
+    /**
+     * Converts a BitMatrix to a Bitmap.
+     *
+     * @param matrix The BitMatrix to convert.
+     * @return The converted Bitmap.
+     */
     private Bitmap toBitmap(BitMatrix matrix) {
         int height = matrix.getHeight();
         int width = matrix.getWidth();

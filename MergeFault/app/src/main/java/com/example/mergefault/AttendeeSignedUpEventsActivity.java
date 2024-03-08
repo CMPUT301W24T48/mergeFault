@@ -1,19 +1,18 @@
 package com.example.mergefault;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.content.SharedPreferences;
 import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -39,13 +38,14 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
 
     private Event selectedEvent;
     private String eventName;
-    private String orgName;
+    private String organizerId;
     private String location;
     private Date dateTime;
     private Uri imageURL;
     private Integer attendeeLimit;
     private Calendar date;
-
+    private String description;
+    private Boolean geoLocOn;
 
 
     @Override
@@ -86,17 +86,19 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                     signedUpEventDataList.clear();
                     for(QueryDocumentSnapshot doc: value){
                         eventName = doc.getString("EventName");
-                        orgName = doc.getString("OrganizerID");
+                        organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");
                         dateTime = doc.getDate("DateTime");
-                        attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                        attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
                         imageURL = Uri.parse(doc.getString("EventPoster"));
-                        Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, orgName));
+                        description = doc.getString("Description");
+                        geoLocOn = doc.getBoolean("GeoLocOn");
+                        Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
-                        signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL));
+                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn));
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }

@@ -1,4 +1,3 @@
-
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -20,10 +19,10 @@
 
     <ImageView
         android:id="@+id/eventPosterImageView"
-        android:layout_width="310dp"
-        android:layout_height="241dp"
-        android:src="@drawable/posterupload"
+        android:layout_width="284dp"
+        android:layout_height="173dp"
         android:clickable="true"
+        android:src="@drawable/posterupload"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
@@ -34,58 +33,92 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#00FFFFFF"
         android:text="Cancel"
+        android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+
     <EditText
+        android:id="@+id/eventNameEditText"
+        android:layout_width="300sp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="564dp"
+        android:backgroundTint="@color/black"
+        android:hint="*Event Name"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
         android:id="@+id/locationText"
         android:layout_width="300sp"
         android:layout_height="wrap_content"
-        android:hint="*Location"
+        android:backgroundTint="@color/black"
+        android:text="*Location"
         android:textColor="@color/black"
         android:textSize="25sp"
         android:textStyle="bold|italic"
-        android:backgroundTint="@color/black"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/eventPosterImageView" />
 
-    <EditText
+    <TextView
         android:id="@+id/dayText"
         android:layout_width="300sp"
         android:layout_height="wrap_content"
-        android:hint="*Day"
+        android:backgroundTint="@color/black"
+        android:text="*Day"
         android:textColor="@color/black"
         android:textSize="25sp"
         android:textStyle="bold|italic"
-        android:backgroundTint="@color/black"
+        app:layout_constraintBottom_toBottomOf="@+id/datSetButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/locationText" />
 
 
-    <EditText
+    <TextView
         android:id="@+id/timeText"
         android:layout_width="300sp"
         android:layout_height="wrap_content"
-        android:hint="*Time"
+        android:backgroundTint="@color/black"
+        android:text="*Time"
         android:textColor="@color/black"
         android:textSize="25sp"
         android:textStyle="bold|italic"
-        android:backgroundTint="@color/black"
+        app:layout_constraintBottom_toBottomOf="@+id/timeSetButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dayText" />
 
-    <EditText
+    <TextView
         android:id="@+id/attendeeLimitText"
         android:layout_width="300sp"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/black"
         android:text="Attendee Limit"
         android:textColor="@color/black"
         android:textSize="25sp"
         android:textStyle="bold|italic"
-        android:backgroundTint="@color/black"
+        app:layout_constraintBottom_toBottomOf="@+id/attendeeLimitSetButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/timeText" />
+
+    <TextView
+        android:id="@+id/descriptionText"
+        android:layout_width="300sp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/black"
+        android:text="Description"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toBottomOf="@+id/descriptionSetButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/attendeeLimitText" />
+
+
 
     <Button
         android:id="@+id/createEventButton"
@@ -98,15 +131,15 @@
         android:textStyle="bold|italic"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/attendeeLimitText" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/datSetButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
+        android:backgroundTint="#B2C8A6"
         android:text="Set Day"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/locationSetButton" />
 
@@ -114,8 +147,9 @@
         android:id="@+id/timeSetButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
+        android:backgroundTint="#B2C8A6"
         android:text="Set Time"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/datSetButton" />
 
@@ -123,19 +157,44 @@
         android:id="@+id/attendeeLimitSetButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
+        android:backgroundTint="#B2C8A6"
         android:text="Set Limit"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/attendeeLimitText"
         app:layout_constraintTop_toBottomOf="@+id/timeSetButton" />
+
+    <Button
+        android:id="@+id/descriptionSetButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#B2C8A6"
+        android:text="Set Desc"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/attendeeLimitText"
+        app:layout_constraintTop_toBottomOf="@+id/attendeeLimitSetButton" />
 
     <Button
         android:id="@+id/locationSetButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="340dp"
+        android:backgroundTint="#B2C8A6"
         android:text="Set Location"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/locationText" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/switch1"
+        android:layout_width="wrap_content"
+        android:layout_height="50sp"
+        android:text="Geolocation Tracking "
+        android:textColor="@color/black"
+        android:textSize="23sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/descriptionText" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
