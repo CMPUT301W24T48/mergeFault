@@ -28,6 +28,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * this fragment displays event details and a button that signs up attendees to the event
+ */
 public class AttendeeSignUpEventFragment extends DialogFragment {
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
@@ -70,6 +73,10 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
                 })
                 .create();
     }
+
+    /**
+     * Adds attendee and their information to the event upon signup button click with a unique ID
+     */
     public void AddAttendee() {
         HashMap<String, Object> data = new HashMap<>();
         data.put("AttendeeName", sharedPreferences.getString("name", ""));

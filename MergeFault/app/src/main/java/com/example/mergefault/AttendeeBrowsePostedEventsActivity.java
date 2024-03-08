@@ -27,7 +27,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-
+/**
+ * @see AttendeeSignUpEventFragment
+ * This activity displays the current list of all events posted on the app
+ * Attendees can view all event details and sign up to any event
+ */
 public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private SharedPreferences sharedPreferences;
