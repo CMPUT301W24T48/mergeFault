@@ -28,18 +28,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * this fragment displays event details and a button that signs up attendees to the event
+ */
 public class AttendeeSignUpEventFragment extends DialogFragment {
-
-    private Button signup;
     private FirebaseFirestore db;
-    private CollectionReference eventRef;
     private CollectionReference attendeeRef;
     private SharedPreferences sharedPreferences;
     private String eventID;
     private String eventName;
     private String eventLocation;
     private String eventDateTime;
-    private String imageUri;
     private String attendeeID;
 
 
@@ -49,7 +48,6 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         db = FirebaseFirestore.getInstance();
-        eventRef = db.collection("events");
         View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_event_details, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         eventID = getArguments().getString("0");
@@ -75,6 +73,10 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
                 })
                 .create();
     }
+
+    /**
+     * Adds attendee and their information to the event upon signup button click with a unique ID
+     */
     public void AddAttendee() {
         HashMap<String, Object> data = new HashMap<>();
         data.put("AttendeeName", sharedPreferences.getString("name", ""));
@@ -86,6 +88,7 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
         attendeeRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
             @Override
             public void onSuccess(DocumentReference documentReference) {
+                //TODO: make unique attendee ID for each new attendee
                 attendeeID = documentReference.getId();
                 data.put("AttendeeID", sharedPreferences.getString("phonenumber", ""));
                 documentReference.delete();
