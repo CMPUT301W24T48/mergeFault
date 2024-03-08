@@ -28,7 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class AttendeeMyEventFragment extends DialogFragment {
+public class AttendeeSignUpEventFragment extends DialogFragment {
 
     private Button signup;
     private FirebaseFirestore db;
