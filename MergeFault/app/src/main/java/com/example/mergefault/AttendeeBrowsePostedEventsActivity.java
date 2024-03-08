@@ -1,5 +1,7 @@
 package com.example.mergefault;
 
+import static okhttp3.internal.http.HttpDate.format;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -46,6 +48,8 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private Calendar date;
     private String description;
     private Boolean geoLocOn;
+    private String eventID;
+    private AttendeeSignUpEventFragment eventFragment;
 
 
 
@@ -73,6 +77,15 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+                eventFragment = new AttendeeSignUpEventFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("0", selectedEvent.getEventID());
+                bundle.putString("1", selectedEvent.getEventName());
+                bundle.putString("2", selectedEvent.getLocation());
+                bundle.putString("3", format(selectedEvent.getDateTime().getTime()));
+                bundle.putString("4", selectedEvent.getDescription());
+                eventFragment.setArguments(bundle);
+                eventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
             }
         });
 
@@ -90,16 +103,17 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                         organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");
                         dateTime = doc.getDate("DateTime");
-                        attendeeLimit = 0; TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
+                        attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                         imageURL = Uri.parse(doc.getString("EventPoster"));
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+                        eventID = doc.getString("eventID");
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
-                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn ));
+                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn, eventID ));
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }

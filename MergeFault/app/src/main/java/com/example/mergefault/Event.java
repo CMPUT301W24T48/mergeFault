@@ -14,8 +14,9 @@ public class Event {
     private Uri eventPoster;
     private String description;
     private Boolean geoLocOn;
+    private String eventID;
 
-    public Event (String eventName, String organizerId, String location, Calendar dateTime, Integer attendeeLimit, Uri eventPoster, String description, Boolean geoLocOn){
+    public Event (String eventName, String organizerId, String location, Calendar dateTime, Integer attendeeLimit, Uri eventPoster, String description, Boolean geoLocOn, String eventID){
         this.organizerId = organizerId;
         this.eventName = eventName;
         this.location = location;
@@ -24,6 +25,7 @@ public class Event {
         this.eventPoster = eventPoster;
         this.description = description;
         this.geoLocOn = geoLocOn;
+        this.eventID = eventID;
     }
 
     public void setEventName(String eventName)
@@ -57,7 +59,9 @@ public class Event {
     public void setGeoLocOn(Boolean geoLocOn) {
         this.geoLocOn = geoLocOn;
     }
-
+    public void setEventID(String eventID){
+        this.eventID = eventID;
+    }
     public String getOrganizerId(){
         return organizerId;
     }
@@ -86,5 +90,8 @@ public class Event {
 
     public String getDescription() {
         return description;
+    }
+    public String getEventID() {
+        return eventID;
     }
 }
