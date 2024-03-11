@@ -141,7 +141,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             public void onClick(View v) {
               
                 eventName = eventNameEditText.getText().toString();
-                addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked()));
+                addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(),eventId));
               
             }
         });
@@ -195,6 +195,9 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             @Override
             public void onSuccess(DocumentReference documentReference) {
                 eventId = documentReference.getId().toString();
+                data.put("EventID", eventId);
+                documentReference.delete();
+                eventRef.document(documentReference.getId()).set(data);
                 Log.d("eventIdBefore", "eventid: " + eventId);
                 switchActivities(eventId);
             }

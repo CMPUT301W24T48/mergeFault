@@ -1,5 +1,7 @@
 package com.example.mergefault;
 
+import static okhttp3.internal.http.HttpDate.format;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -25,14 +27,19 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-
+/**
+ * @see AttendeeSignUpEventFragment
+ * This activity displays the current list of all events posted on the app
+ * Attendees can view all event details and sign up to any event
+ */
 public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private SharedPreferences sharedPreferences;
-    private ListView signedUpEventsList;
+    private ListView eventsList;
     private EventArrayAdapter eventArrayAdapter;
+    private ImageView homeIcon;
 
-    private ArrayList<Event> signedUpEventDataList;
+    private ArrayList<Event> eventDataList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
 
@@ -46,6 +53,9 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private Calendar date;
     private String description;
     private Boolean geoLocOn;
+    private String eventID;
+    private AttendeeSignUpEventFragment eventFragment;
+
 
 
 
@@ -55,27 +65,43 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
         setContentView(R.layout.attendee_browse_posted_events);
 
         profileImageView = findViewById(R.id.pfpImageView);
-        signedUpEventsList = findViewById(R.id.myEventListView);
+        eventsList = findViewById(R.id.myEventListView);
+        homeIcon = findViewById(R.id.imageView);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
         loadProfileImage();
 
-        signedUpEventDataList = new ArrayList<Event>();
-        eventArrayAdapter = new EventArrayAdapter(this, signedUpEventDataList);
-        signedUpEventsList.setAdapter(eventArrayAdapter);
+        eventDataList = new ArrayList<Event>();
+        eventArrayAdapter = new EventArrayAdapter(this, eventDataList);
+        eventsList.setAdapter(eventArrayAdapter);
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
 
         eventArrayAdapter.notifyDataSetChanged();
 
-        signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        homeIcon.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, MainActivity.class);
+                startActivity(intent);
             }
         });
-
+        eventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedEvent = (Event) eventsList.getItemAtPosition(position);
+                eventFragment = new AttendeeSignUpEventFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("0", selectedEvent.getEventID());
+                bundle.putString("1", selectedEvent.getEventName());
+                bundle.putString("2", selectedEvent.getLocation());
+                bundle.putString("3", format(selectedEvent.getDateTime().getTime()));
+                bundle.putString("4", selectedEvent.getDescription());
+                eventFragment.setArguments(bundle);
+                eventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
+            }
+        });
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -84,22 +110,23 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                     return;
                 }
                 if (value != null){
-                    signedUpEventDataList.clear();
+                    eventDataList.clear();
                     for(QueryDocumentSnapshot doc: value){
                         eventName = doc.getString("EventName");
                         organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");
                         dateTime = doc.getDate("DateTime");
-                        attendeeLimit = 0; TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
+                        attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                         imageURL = Uri.parse(doc.getString("EventPoster"));
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+                        eventID = doc.getString("eventID");
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
-                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn ));
+                        eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn, eventID ));
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }

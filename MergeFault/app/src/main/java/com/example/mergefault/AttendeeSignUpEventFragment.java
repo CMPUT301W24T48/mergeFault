@@ -27,21 +27,18 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-/**
- * this fragment displays event details and a button that withdraws attendees from the event
- */
-public class AttendeeMyEventFragment extends DialogFragment {
 
-    private Button signup;
+/**
+ * this fragment displays event details and a button that signs up attendees to the event
+ */
+public class AttendeeSignUpEventFragment extends DialogFragment {
     private FirebaseFirestore db;
-    private CollectionReference eventRef;
     private CollectionReference attendeeRef;
     private SharedPreferences sharedPreferences;
     private String eventID;
     private String eventName;
     private String eventLocation;
     private String eventDateTime;
-    private String imageUri;
     private String attendeeID;
 
 
@@ -51,7 +48,6 @@ public class AttendeeMyEventFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         db = FirebaseFirestore.getInstance();
-        eventRef = db.collection("events");
         View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_event_details, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         eventID = getArguments().getString("0");
@@ -69,12 +65,36 @@ public class AttendeeMyEventFragment extends DialogFragment {
 
                     }
                 })
-                .setPositiveButton("Withdraw", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Sign Up", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        attendeeRef.document(sharedPreferences.getString("phonenumber", "")).delete();
+                        AddAttendee();
                     }
                 })
                 .create();
+    }
+
+    /**
+     * Adds attendee and their information to the event upon signup button click with a unique ID
+     */
+    public void AddAttendee() {
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("AttendeeName", sharedPreferences.getString("name", ""));
+        data.put("AttendeePhoneNumber", sharedPreferences.getString("phonenumber", ""));;
+        data.put("AttendeeEmail", sharedPreferences.getString("email", ""));
+        data.put("AttendeeProfile", sharedPreferences.getString("imageUri", ""));
+        //data.put("AttendeeNotificationPref", attendee.getNotificationPref());
+        //data.put("AttendeeGeolocationPref", attendee.getGeolocationPref());
+        attendeeRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+            @Override
+            public void onSuccess(DocumentReference documentReference) {
+                //TODO: make unique attendee ID for each new attendee
+                attendeeID = documentReference.getId();
+                data.put("AttendeeID", sharedPreferences.getString("phonenumber", ""));
+                documentReference.delete();
+                attendeeRef.document(sharedPreferences.getString("phonenumber", "")).set(data);
+                Log.d("attendeeIDBefore", "attendeeid" + attendeeID);
+            }
+        });
     }
 }

@@ -92,7 +92,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="OrganizerViewEvents"
+            android:name=".OrganizerViewEventsActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".AttendeeBrowsePostedEventsActivity"
             android:exported="false">
         </activity>
     </application>
