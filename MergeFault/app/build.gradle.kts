@@ -45,5 +45,4 @@ dependencies {
     testImplementation ("androidx.test:core:1.4.0")
     implementation ("com.google.zxing:core:3.3.0")
     implementation("com.journeyapps:zxing-android-embedded:4.2.0")
-
 }
