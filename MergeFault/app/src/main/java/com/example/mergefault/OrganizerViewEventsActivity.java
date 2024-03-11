@@ -13,7 +13,6 @@ import android.widget.ListView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,7 +27,7 @@ import java.util.Date;
 import java.util.Objects;
 
 
-public class OrganizerViewEvents extends AppCompatActivity {
+public class OrganizerViewEventsActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private SharedPreferences sharedPreferences;
     private ListView signedUpEventsList;
@@ -119,7 +118,7 @@ public class OrganizerViewEvents extends AppCompatActivity {
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OrganizerViewEvents.this, AttendeeEditProfileActivity.class);
+                Intent intent = new Intent(OrganizerViewEventsActivity.this, AttendeeEditProfileActivity.class);
                 startActivityForResult(intent, 1);
             }
         });
