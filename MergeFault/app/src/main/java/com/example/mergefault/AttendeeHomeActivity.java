@@ -1,5 +1,6 @@
 package com.example.mergefault;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +10,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -24,6 +31,9 @@ public class AttendeeHomeActivity extends AppCompatActivity {
     private Button browseAllEvents;
     private SharedPreferences sharedPreferences;
 
+    private FirebaseFirestore db;
+    private CollectionReference attendeeImageRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +42,9 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         viewMyEvents = findViewById(R.id.viewMyEventsButton);
         browseAllEvents = findViewById(R.id.browseEventsButton);
         homeIcon = findViewById(R.id.imageView);
+
+        db = FirebaseFirestore.getInstance();
+        attendeeImageRef = db.collection("attendees");
 
         // Start recording user information
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
@@ -80,14 +93,19 @@ public class AttendeeHomeActivity extends AppCompatActivity {
      * If no image is found in the user profile, a default image is set.
      */
     private void loadProfileImage() {
-        String imageUri = sharedPreferences.getString("imageUri", "");
-        if (!imageUri.isEmpty()) {
-            // Load the image using Picasso library
-            Picasso.get().load(imageUri).into(profileImageView);
-        } else {
-            // Set default profile image
-            profileImageView.setImageResource(R.drawable.pfp);
-        }
+        attendeeImageRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for(QueryDocumentSnapshot doc: value){
+                    if (doc.getId().equals(sharedPreferences.getString("phonenumber", ""))){
+                        if (!doc.getString("AttendeeProfile").isEmpty()) {
+                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+                        }
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     /**

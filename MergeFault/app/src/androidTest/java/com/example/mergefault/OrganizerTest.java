@@ -64,6 +64,7 @@ public class OrganizerTest {
         onView(withId(R.id.switch1)).perform(click());
         onView(withId(R.id.eventNameEditText)).perform(typeText("TestEvent"), ViewActions.closeSoftKeyboard());
         //onView(withId(R.id.createEventButton)).perform(click());
+        //onView(withId(R.id.generateNewButton)).perform(click());
     }
 
 
