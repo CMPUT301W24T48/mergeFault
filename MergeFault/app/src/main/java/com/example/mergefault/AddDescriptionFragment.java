@@ -12,9 +12,19 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-
+/**
+ * This is a fragment class for adding description
+ */
 public class AddDescriptionFragment extends DialogFragment {
+    /**
+     * this is a listener interface which the activity that calls this class implements
+     */
     interface AddDescriptionDialogListener {
+        /**
+         * This is the abstract method addDescription
+         * @param Description
+         * This is a String Description
+         */
         void addDescription(String Description);
     }
     private AddDescriptionDialogListener listener;
