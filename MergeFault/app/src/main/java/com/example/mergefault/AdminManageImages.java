@@ -31,16 +31,19 @@ public class AdminManageImages extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_browse_images);
 
+        images = findViewById(R.id.imageListView);
+
         eventImages = new ArrayList<String>();
 
         attendeeImages = new ArrayList<String>();
         attendeeImagesArrayAdapter = new AttendeeImagesArrayAdapter(this,attendeeImages);
 
-        attendeeImagesArrayAdapter.notifyDataSetChanged();
-
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
+
+        images.setAdapter(attendeeImagesArrayAdapter);
+        attendeeImagesArrayAdapter.notifyDataSetChanged();
 
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -52,8 +55,10 @@ public class AdminManageImages extends AppCompatActivity{
                 if (value != null) {
                     attendeeImages.clear();
                     for (QueryDocumentSnapshot doc : value) {
-                        imageURL = doc.getString("AttendeeProfile");
-                        attendeeImages.add(imageURL);
+                        if (doc.getString("AttendeeProfile") !=null) {
+                            imageURL = doc.getString("AttendeeProfile");
+                            attendeeImages.add(imageURL);
+                        }
                     }
                     attendeeImagesArrayAdapter.notifyDataSetChanged();
                 }
