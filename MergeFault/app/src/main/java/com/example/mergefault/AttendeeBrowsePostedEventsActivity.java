@@ -42,6 +42,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private ArrayList<Event> eventDataList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
+    private CollectionReference attendeeImageRef;
 
     private Event selectedEvent;
     private String eventName;
@@ -69,14 +70,16 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
         homeIcon = findViewById(R.id.imageView);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
+        db = FirebaseFirestore.getInstance();
+        eventRef = db.collection("events");
+        attendeeImageRef = db.collection("attendees");
+
         loadProfileImage();
 
         eventDataList = new ArrayList<Event>();
         eventArrayAdapter = new EventArrayAdapter(this, eventDataList);
         eventsList.setAdapter(eventArrayAdapter);
 
-        db = FirebaseFirestore.getInstance();
-        eventRef = db.collection("events");
 
         eventArrayAdapter.notifyDataSetChanged();
 
@@ -146,12 +149,19 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     // imageuri references the link or source of where the image originates from such as it could originate from the device or the api call. However it is treated as empty if there is the generic pfp image there.
     // picasso is an external api that helps cache in images and load them to the imageview works on urls as well as internal images
     private void loadProfileImage() {
-        String imageUri = sharedPreferences.getString("imageUri", "");
-        if (!imageUri.isEmpty()) {
-            Picasso.get().load(imageUri).into(profileImageView);
-        } else {
-            profileImageView.setImageResource(R.drawable.pfp);
-        }
+        attendeeImageRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for(QueryDocumentSnapshot  doc: value){
+                    if (doc.getId().equals(sharedPreferences.getString("phonenumber", ""))){
+                        if (!doc.getString("AttendeeProfile").isEmpty()) {
+                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+                        }
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     // this is when we return to the activity from another one, essentially the cancel button. When we return to this activity, load the profile image depending upon any changes made to the Uri in the AttendeeEditProfileActivity.

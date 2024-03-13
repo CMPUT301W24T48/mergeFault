@@ -21,10 +21,14 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 /**
  * This activity allows attendees to edit their profile information.
@@ -44,11 +48,15 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
 
     private SharedPreferences sharedPreferences;
     private String imageUri;
+    private FirebaseFirestore db;
+    private CollectionReference attendeesRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_edit_profile);
+        db = FirebaseFirestore.getInstance();
+        attendeesRef = db.collection("attendees");
 
         imageViewProfile = findViewById(R.id.imageView);
         textEditImage = findViewById(R.id.editEventPosterText);
@@ -171,6 +179,12 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         if (!imageUri.isEmpty()) {
             intent.putExtra("updatedImageUri", imageUri);
         }
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("AttendeeProfile", imageUri);
+        data.put("AttendeeName", name);
+        data.put("AttendeePhoneNumber", phonenum);
+        data.put("AttendeeEmail", email);
+        attendeesRef.document(phonenum).set(data);
         setResult(RESULT_OK, intent);
         finish();
     }

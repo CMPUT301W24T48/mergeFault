@@ -27,6 +27,12 @@
       <entry key="testSaveProfileData()">
         <State />
       </entry>
+      <entry key="app">
+        <State />
+      </entry>
+      <entry key="testCreateEventActivity()">
+        <State />
+      </entry>
     </value>
   </component>
 </project>
