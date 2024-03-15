@@ -115,7 +115,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                 if (value != null){
                     eventDataList.clear();
                     for(QueryDocumentSnapshot doc: value){
-                        eventName = doc.getString("EventName");
+                        eventName = doc.getString("EventName");//doc.getID();
                         organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");
                         dateTime = doc.getDate("DateTime");
