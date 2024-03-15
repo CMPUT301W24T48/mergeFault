@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="#EEECDE">
+    <ImageView
+        android:id="@+id/pfpImageView"
+        android:layout_width="116dp"
+        android:layout_height="96dp"
+        android:contentDescription="pfp"
+        android:padding="30dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/pfp"
+        android:textColor="#575656"
+        android:textSize="20sp"
+        android:textStyle="bold|italic" />
+
+    <TextView
+        android:id="@+id/nameText"
+        android:layout_width="wrap_content"
+        android:layout_height="95dp"
+        android:padding="30dp"
+        android:paddingStart="80dp"
+        android:paddingEnd="116dp"
+        android:text="Name"
+        android:textColor="#575656"
+        android:textSize="20sp"
+        android:textStyle="bold|italic" />
+
+</LinearLayout>
