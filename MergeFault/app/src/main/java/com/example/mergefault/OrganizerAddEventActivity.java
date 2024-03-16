@@ -16,19 +16,29 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.Calendar;
 import java.util.HashMap;
 
+/**
+ * This is the activity where the organizer creates an event
+ */
 public class OrganizerAddEventActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener, AddAddressFragment.AddAddressDialogListener, AddLimitFragment.AddLimitDialogListener , AddDescriptionFragment.AddDescriptionDialogListener {
     private Button editAddressButton;
     private Button editTimeButton;
@@ -52,27 +62,50 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     private Calendar dateTime = Calendar.getInstance();
     private Integer attendeeLimit;
     private Uri selectedImage;
+    private Uri downloadUrl;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference storageRef;
 
+    /**
+     * This function adds an String address to the corresponding textview and also saves it to location
+     * @param address
+     * This is the String given by the organizer through a textview
+     */
     @Override
     public void addAddress(String address) {
         addressText.setText("Address: " + address);
         location = address;
     }
-
+    /**
+     * This function adds an Integer limit to the corresponding textview and also saves it to attendeeLimit
+     * @param limit
+     * This is the Integer given by the organizer through a textview
+     */
     @Override
     public void addLimit(Integer limit) {
         limitText.setText("Limit: " + limit.toString());
         attendeeLimit = limit;
     }
-
+    /**
+     * This function adds an String description to the corresponding textview and also saves it to description
+     * @param description
+     * This is the String given by the organizer through a textview
+     */
     @Override
-    public void addDescription(String Description) {
-        descriptionText.setText("Description: " + Description);
-        description = Description;
+    public void addDescription(String description) {
+        descriptionText.setText("Description: " + description);
+        this.description = description;
     }
 
+    /**
+     * This is the function that runs at the start of the activity
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
+     *
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,13 +130,24 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
 
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageRef = firebaseStorage.getReference();
+
         editAddressButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * this is on on click listener for the address button, it opens a new AddAddressFragment
+             * @param v The view that was clicked.
+             */
             @Override
             public void onClick(View v) {
                 new AddAddressFragment().show(getSupportFragmentManager(), "Add Address");
             }
         });
         editTimeButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * this is on on click listener for the time button, it opens a new TimePickerFragment
+             * @param v The view that was clicked.
+             */
             @Override
             public void onClick(View v) {
                 DialogFragment timepicker = new TimePickerFragment();
@@ -111,6 +155,10 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             }
         });
         editDateButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * this is on on click listener for the date button, it opens a new DatePickerFragment
+             * @param v The view that was clicked.
+             */
             @Override
             public void onClick(View v) {
                 DialogFragment datepicker = new DatePickerFragment();
@@ -118,12 +166,20 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             }
         });
         editLimitButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * this is on on click listener for the limit button, it opens a new AddLimitFragment
+             * @param v The view that was clicked.
+             */
             @Override
             public void onClick(View v) {
                 new AddLimitFragment().show(getSupportFragmentManager(), "Add Limit");
             }
         });
         eventPosterImageView.setOnClickListener(new View.OnClickListener() {
+            /**
+             * this is on on click listener for the event poster imageview, it calls startActivityForResult
+             * @param v The view that was clicked.
+             */
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -131,27 +187,49 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             }
         });
         descriptionButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * this is on on click listener for the description button, it opens a new AddDescriptionFragment
+             * @param v The view that was clicked.
+             */
             @Override
             public void onClick(View v) {
                 new AddDescriptionFragment().show(getSupportFragmentManager(), "Add Description");
             }
         });
         createEventButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * this is on on click listener for the create event button, it collects all the given info and creates a calls addEvent with a new created event
+             * @param v The view that was clicked.
+             */
             @Override
             public void onClick(View v) {
               
                 eventName = eventNameEditText.getText().toString();
                 addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(),eventId));
-              
             }
         });
     }
+    /**
+     * This function switches activity to the next one which is OrganizerNewOrReuseQR and passes the eventId through intent
+     * @param eventId
+     * This is the event id given by a randomly generated firestore id
+     */
     public void switchActivities(String eventId){
         Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class);
         intent.putExtra("EventId", eventId);
         startActivity(intent);
     }
-
+    /**
+     * This opens up the user's gallery and has them pick an image and saves it into selectedImage and also sets the image in the event poster imageview
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode The integer result code returned by the child activity
+     *                   through its setResult().
+     * @param data An Intent, which can return result data to the caller
+     *               (various data can be attached to Intent "extras").
+     *
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -160,7 +238,12 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             eventPosterImageView.setImageURI(selectedImage);
         }
     }
-
+    /**
+     * This opens when the TimePickerFragment sets a time, then it saves the time in dateTime and sets the time textview to the new set time
+     * @param view the view associated with this listener
+     * @param hourOfDay the hour that was set
+     * @param minute the minute that was set
+     */
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         timeText = findViewById(R.id.timeText);
@@ -170,6 +253,15 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         timeText.setText("Time: " + time);
     }
 
+    /**
+     * This opens when the DatePickerFragment sets a date, then it saves the date in dateTime and sets the date textview to the new set date
+     * @param view the picker associated with the dialog
+     * @param year the selected year
+     * @param month the selected month (0-11 for compatibility with
+     *              {@link Calendar#MONTH})
+     * @param dayOfMonth the selected day of the month (1-31, depending on
+     *                   month)
+     */
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
         dayText = findViewById(R.id.dayText);
@@ -180,9 +272,58 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         dayText.setText("Day: " + day);
     }
 
+    /**
+     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.jpg) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
+     * @param event
+     * This is the event passed by the addEvent method
+     * @param documentReference
+     * This is the documentReference to event on the firebase
+     */
+    public void getDownloadUrl(Event event, DocumentReference documentReference){
+        StorageReference eventPosterRef = storageRef.child( event.getEventID() + ".jpg");
+        UploadTask uploadTask = eventPosterRef.putFile(event.getEventPoster());
+
+        Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
+
+                // Continue with the task to get the download URL
+                return eventPosterRef.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    downloadUrl = task.getResult();
+                    event.setEventPoster(downloadUrl);
+                    documentReference.update("EventPoster", event.getEventPoster()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        /**
+                         * Switches activity when the event is done updating
+                         * @param unused
+                         * Unused parameter
+                         */
+                        @Override
+                        public void onSuccess(Void unused) {
+                            Log.d("eventIdBefore", "eventid: " + event.getEventID());
+                            switchActivities(eventId);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /**
+     * This function adds an event on to the firebase
+     * @param event
+     * This is the event given by the on click listener for the create button
+     */
     public void addEvent(Event event){
         HashMap<String, Object> data = new HashMap<>();
-        data.put("EventPoster", event.getEventPoster());
+
         data.put("Location", event.getLocation());
         data.put("DateTime", event.getDateTime().getTime());
         data.put("AttendeeLimit", event.getAttendeeLimit().toString());
@@ -190,16 +331,28 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         data.put("Description", event.getDescription());
         data.put("GeoLocOn",event.getGeoLocOn());
         data.put("OrganizerID", event.getOrganizerId());
-        String eventIdtest;
+
         eventRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+            /**
+             * This opens when the data is successfully added on the firebase, this saves the eventId of the newly created event from firebase, then adds it into a new field on the firebase as well as passing the eventId to the method getDownloadUrl()
+             * @param documentReference
+             * This is a reference to the newly added event on the firebase
+             */
             @Override
             public void onSuccess(DocumentReference documentReference) {
                 eventId = documentReference.getId().toString();
-                data.put("EventID", eventId);
-                documentReference.delete();
-                eventRef.document(documentReference.getId()).set(data);
-                Log.d("eventIdBefore", "eventid: " + eventId);
-                switchActivities(eventId);
+                documentReference.update("EventID", eventId).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    /**
+                     * Waits for the update to finish then calling getDownloadUrl()
+                     * @param unused
+                     * Unused parameter
+                     */
+                    @Override
+                    public void onSuccess(Void unused) {
+                        event.setEventID(eventId);
+                        getDownloadUrl(event, documentReference);
+                    }
+                });
             }
         });
     }

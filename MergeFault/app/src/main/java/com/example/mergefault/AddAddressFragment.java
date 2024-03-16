@@ -13,8 +13,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+/**
+ * This is a fragment class for adding address
+ */
 public class AddAddressFragment extends DialogFragment {
+    /**
+     * this is a listener interface which the activity that calls this class implements
+     */
     interface AddAddressDialogListener {
+        /**
+         * This is the abstract method addAddress
+         * @param Address
+         * This is a String Address
+         */
         void addAddress(String Address);
     }
     private AddAddressDialogListener listener;
