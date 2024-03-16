@@ -73,7 +73,7 @@ public class ImagesArrayAdapter extends ArrayAdapter<String>{
                             return;
                         }
                         if (value != null){
-                            //delete eventimage
+
                         }
                     }
                 });

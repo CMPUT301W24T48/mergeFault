@@ -13,6 +13,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class AdminManageImages extends AppCompatActivity{
     private FirebaseFirestore db;
@@ -50,11 +51,13 @@ public class AdminManageImages extends AppCompatActivity{
                     return;
                 }
                 if (value != null) {
-                    Images.clear();
                     for (QueryDocumentSnapshot doc : value) {
                         if (doc.getString("AttendeeProfile") !=null) {
                             imageURL = doc.getString("AttendeeProfile");
-                            Images.add(imageURL);
+                            char firstChar = imageURL.charAt(0);
+                            if (!Images.contains(imageURL) && firstChar=='h'){
+                                Images.add(imageURL);
+                            }
                         }
                     }
                     ImagesArrayAdapter.notifyDataSetChanged();
@@ -72,7 +75,10 @@ public class AdminManageImages extends AppCompatActivity{
                     for(QueryDocumentSnapshot doc : value){
                         if(doc.getString("EventPoster") !=null){
                             imageURL = doc.getString("EventPoster");
-                            Images.add(imageURL);
+                            char firstChar = imageURL.charAt(0);
+                            if (!Images.contains(imageURL) && firstChar=='h'){
+                                Images.add(imageURL);
+                            }
                         }
                     }
                 }
