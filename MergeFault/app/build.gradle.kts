@@ -48,5 +48,4 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.2")
     implementation ("com.google.zxing:core:3.3.0")
     implementation("com.journeyapps:zxing-android-embedded:4.2.0")
-
 }
