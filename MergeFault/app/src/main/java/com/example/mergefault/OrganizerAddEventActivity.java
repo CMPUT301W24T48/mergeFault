@@ -16,15 +16,22 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -55,8 +62,11 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     private Calendar dateTime = Calendar.getInstance();
     private Integer attendeeLimit;
     private Uri selectedImage;
+    private Uri downloadUrl;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference storageRef;
 
     /**
      * This function adds an String address to the corresponding textview and also saves it to location
@@ -119,6 +129,9 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
+
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageRef = firebaseStorage.getReference();
 
         editAddressButton.setOnClickListener(new View.OnClickListener() {
             /**
@@ -193,7 +206,6 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
               
                 eventName = eventNameEditText.getText().toString();
                 addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(),eventId));
-              
             }
         });
     }
@@ -261,13 +273,57 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     }
 
     /**
+     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.jpg) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
+     * @param event
+     * This is the event passed by the addEvent method
+     * @param documentReference
+     * This is the documentReference to event on the firebase
+     */
+    public void getDownloadUrl(Event event, DocumentReference documentReference){
+        StorageReference eventPosterRef = storageRef.child( event.getEventID() + ".jpg");
+        UploadTask uploadTask = eventPosterRef.putFile(event.getEventPoster());
+
+        Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
+
+                // Continue with the task to get the download URL
+                return eventPosterRef.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    downloadUrl = task.getResult();
+                    event.setEventPoster(downloadUrl);
+                    documentReference.update("EventPoster", event.getEventPoster()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        /**
+                         * Switches activity when the event is done updating
+                         * @param unused
+                         * Unused parameter
+                         */
+                        @Override
+                        public void onSuccess(Void unused) {
+                            Log.d("eventIdBefore", "eventid: " + event.getEventID());
+                            switchActivities(eventId);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /**
      * This function adds an event on to the firebase
      * @param event
      * This is the event given by the on click listener for the create button
      */
     public void addEvent(Event event){
         HashMap<String, Object> data = new HashMap<>();
-        data.put("EventPoster", event.getEventPoster());
+
         data.put("Location", event.getLocation());
         data.put("DateTime", event.getDateTime().getTime());
         data.put("AttendeeLimit", event.getAttendeeLimit().toString());
@@ -275,21 +331,28 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         data.put("Description", event.getDescription());
         data.put("GeoLocOn",event.getGeoLocOn());
         data.put("OrganizerID", event.getOrganizerId());
-        String eventIdtest;
+
         eventRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
             /**
-             * This opens when the data is successfully added on the firebase, this saves the eventId of the newly created event from firebase, then adds it into a new field on the firebase as well as passing the eventId by calling switchActivities
+             * This opens when the data is successfully added on the firebase, this saves the eventId of the newly created event from firebase, then adds it into a new field on the firebase as well as passing the eventId to the method getDownloadUrl()
              * @param documentReference
              * This is a reference to the newly added event on the firebase
              */
             @Override
             public void onSuccess(DocumentReference documentReference) {
                 eventId = documentReference.getId().toString();
-                data.put("EventID", eventId);
-                documentReference.delete();
-                eventRef.document(documentReference.getId()).set(data);
-                Log.d("eventIdBefore", "eventid: " + eventId);
-                switchActivities(eventId);
+                documentReference.update("EventID", eventId).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    /**
+                     * Waits for the update to finish then calling getDownloadUrl()
+                     * @param unused
+                     * Unused parameter
+                     */
+                    @Override
+                    public void onSuccess(Void unused) {
+                        event.setEventID(eventId);
+                        getDownloadUrl(event, documentReference);
+                    }
+                });
             }
         });
     }

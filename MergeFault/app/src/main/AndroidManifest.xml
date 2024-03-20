@@ -75,6 +75,10 @@
             android:exported="false">
         </activity>
         <activity
+            android:name=".AdminManageImages"
+            android:exported="false">
+        </activity>
+        <activity
             android:name=".OrganizerAttendeeList"
             android:exported="false">
         </activity>
