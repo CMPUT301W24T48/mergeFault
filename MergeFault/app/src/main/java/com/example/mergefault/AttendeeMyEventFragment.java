@@ -51,7 +51,7 @@ public class AttendeeMyEventFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         db = FirebaseFirestore.getInstance();
-        eventRef = db.collection("events");
+        //eventRef = db.collection("events");
         View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_event_details, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         eventID = getArguments().getString("0");

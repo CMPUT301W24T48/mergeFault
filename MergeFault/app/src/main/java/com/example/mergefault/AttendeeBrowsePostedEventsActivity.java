@@ -55,7 +55,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private String description;
     private Boolean geoLocOn;
     private String eventID;
-    private AttendeeSignUpEventFragment eventFragment;
+    private AttendeeSignUpEventFragment signUpEventFragment;
 
 
 
@@ -94,15 +94,15 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) eventsList.getItemAtPosition(position);
-                eventFragment = new AttendeeSignUpEventFragment();
+                signUpEventFragment = new AttendeeSignUpEventFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("0", selectedEvent.getEventID());
                 bundle.putString("1", selectedEvent.getEventName());
                 bundle.putString("2", selectedEvent.getLocation());
                 bundle.putString("3", format(selectedEvent.getDateTime().getTime()));
-                bundle.putString("4", selectedEvent.getDescription());
-                eventFragment.setArguments(bundle);
-                eventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
+                //bundle.putString("4", selectedEvent.getDescription());
+                signUpEventFragment.setArguments(bundle);
+                signUpEventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
             }
         });
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -124,7 +124,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
-                        eventID = doc.getString("eventID");
+                        eventID = doc.getId();
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);

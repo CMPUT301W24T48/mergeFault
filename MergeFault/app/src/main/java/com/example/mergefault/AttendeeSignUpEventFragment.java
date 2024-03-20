@@ -42,8 +42,6 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
     private String attendeeID;
 
 
-
-
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -74,6 +72,7 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
                 .create();
     }
 
+
     /**
      * Adds attendee and their information to the event upon signup button click with a unique ID
      */
@@ -88,7 +87,6 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
         attendeeRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
             @Override
             public void onSuccess(DocumentReference documentReference) {
-                //TODO: make unique attendee ID for each new attendee
                 attendeeID = documentReference.getId();
                 data.put("AttendeeID", sharedPreferences.getString("phonenumber", ""));
                 documentReference.delete();
