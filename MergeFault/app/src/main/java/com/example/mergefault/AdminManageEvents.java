@@ -20,7 +20,6 @@ import java.util.Date;
 public class AdminManageEvents extends AppCompatActivity{
     private FirebaseFirestore db;
     private CollectionReference eventRef;
-    private Event selectedEvent;
     private String eventName;
     private String organizerId;
     private String location;
