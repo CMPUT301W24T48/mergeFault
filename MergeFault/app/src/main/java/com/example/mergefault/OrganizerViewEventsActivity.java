@@ -78,7 +78,11 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
         signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+                Event selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+
+                Intent intent = new Intent(OrganizerViewEventsActivity.this, OrganizerEventOptions.class);
+                intent.putExtra("SelectedEvent", selectedEvent);  //Event class implements Serializable
+                startActivity(intent);
             }
         });
 
@@ -144,4 +148,5 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
             loadProfileImage();
         }
     }
+
 }
