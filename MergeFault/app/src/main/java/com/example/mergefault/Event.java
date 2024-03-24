@@ -14,6 +14,7 @@ public class Event implements Serializable {
     private String eventName;
     private String organizerId;
     private String location;
+    private String placeId;
     private Calendar dateTime;
     private Integer attendeeLimit;
     private Uri eventPoster;
@@ -41,8 +42,10 @@ public class Event implements Serializable {
      * this is the Boolean stating if the event will track geo location
      * @param eventID
      * this is the String of the generated eventID
+     * @param placeId
+     * this is the placeId provided by google places of the address
      */
-    public Event (String eventName, String organizerId, String location, Calendar dateTime, Integer attendeeLimit, Uri eventPoster, String description, Boolean geoLocOn, String eventID){
+    public Event (String eventName, String organizerId, String location, Calendar dateTime, Integer attendeeLimit, Uri eventPoster, String description, Boolean geoLocOn, String eventID, String placeId){
         this.organizerId = organizerId;
         this.eventName = eventName;
         this.location = location;
@@ -52,6 +55,7 @@ public class Event implements Serializable {
         this.description = description;
         this.geoLocOn = geoLocOn;
         this.eventID = eventID;
+        this.placeId = placeId;
     }
     /**
      * This is a setter for the eventName
@@ -128,10 +132,19 @@ public class Event implements Serializable {
         this.eventID = eventId;
     }
     /**
+     * This is a setter for the placeId
+     * @param placeId
+     * This is the String of the placeId the caller wants to set
+     */
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
+    }
+    /**
      *This is a getter for the organizerId
      * @return
      * This returns a String of the organizerId
      */
+
     public String getOrganizerId(){
         return organizerId;
     }
@@ -198,5 +211,13 @@ public class Event implements Serializable {
      */
     public String getEventID() {
         return eventID;
+    }
+    /**
+     *This is a getter for the placeId
+     * @return
+     * This returns a String of the placeId
+     */
+    public String getPlaceId() {
+        return placeId;
     }
 }
