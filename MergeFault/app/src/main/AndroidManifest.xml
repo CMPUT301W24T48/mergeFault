@@ -26,6 +26,9 @@
         android:theme="@style/Theme.MergeFault"
         tools:targetApi="31">
         <activity
+            android:name=".CheckInScreen"
+            android:exported="false" />
+        <activity
             android:name=".OrganizerEventNotification"
             android:exported="false" />
         <activity
