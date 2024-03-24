@@ -1,12 +1,13 @@
 package com.example.mergefault;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.icu.text.DateFormat;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +17,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,6 +30,11 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -33,13 +42,15 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * This is the activity where the organizer creates an event
  */
-public class OrganizerAddEventActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener, AddAddressFragment.AddAddressDialogListener, AddLimitFragment.AddLimitDialogListener , AddDescriptionFragment.AddDescriptionDialogListener {
+public class OrganizerAddEventActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener, AddLimitFragment.AddLimitDialogListener , AddDescriptionFragment.AddDescriptionDialogListener {
     private Button editAddressButton;
     private Button editTimeButton;
     private Button editDateButton;
@@ -57,6 +68,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     private String eventName;
     private String organizerId;
     private String location;
+    private String placeId;
     private String description;
     private String eventId;
     private Calendar dateTime = Calendar.getInstance();
@@ -69,14 +81,16 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     private StorageReference storageRef;
 
     /**
-     * This function adds an String address to the corresponding textview and also saves it to location
+     * This function adds an String address to the corresponding textview and also saves it to location and placeId
      * @param address
      * This is the String given by the organizer through a textview
+     * @param selectedPlaceId
+     * This is the String of the placeId given by google places
      */
-    @Override
-    public void addAddress(String address) {
+    public void addAddress(String address, String selectedPlaceId) {
         addressText.setText("Address: " + address);
         location = address;
+        placeId = selectedPlaceId;
     }
     /**
      * This function adds an Integer limit to the corresponding textview and also saves it to attendeeLimit
@@ -133,6 +147,22 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
 
+        // Define a variable to hold the Places API key.
+        String apiKey = BuildConfig.PLACES_API_KEY;
+
+        // Log an error if apiKey is not set.
+        if (TextUtils.isEmpty(apiKey) || apiKey.equals("DEFAULT_API_KEY")) {
+            Log.e("Places test", "No api key");
+            finish();
+            return;
+        }
+
+        // Initialize the SDK
+        Places.initialize(getApplicationContext(), apiKey);
+
+        // Create a new PlacesClient instance
+        PlacesClient placesClient = Places.createClient(this);
+
         editAddressButton.setOnClickListener(new View.OnClickListener() {
             /**
              * this is on on click listener for the address button, it opens a new AddAddressFragment
@@ -140,7 +170,12 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
              */
             @Override
             public void onClick(View v) {
-                new AddAddressFragment().show(getSupportFragmentManager(), "Add Address");
+                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+
+                // Start the autocomplete intent.
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(OrganizerAddEventActivity.this);
+                startAutocomplete.launch(intent);
+
             }
         });
         editTimeButton.setOnClickListener(new View.OnClickListener() {
@@ -182,8 +217,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
              */
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent, 3);
+                startPickingImage.launch("image/*");
             }
         });
         descriptionButton.setOnClickListener(new View.OnClickListener() {
@@ -205,7 +239,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             public void onClick(View v) {
               
                 eventName = eventNameEditText.getText().toString();
-                addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(),eventId));
+                addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(),eventId, placeId));
             }
         });
     }
@@ -219,25 +253,40 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         intent.putExtra("EventId", eventId);
         startActivity(intent);
     }
+
     /**
-     * This opens up the user's gallery and has them pick an image and saves it into selectedImage and also sets the image in the event poster imageview
-     * @param requestCode The integer request code originally supplied to
-     *                    startActivityForResult(), allowing you to identify who this
-     *                    result came from.
-     * @param resultCode The integer result code returned by the child activity
-     *                   through its setResult().
-     * @param data An Intent, which can return result data to the caller
-     *               (various data can be attached to Intent "extras").
-     *
+     * This function opens the Autocomplete activity and calls addAddress with the selected placeName and placeId
      */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && data != null){
-            selectedImage = data.getData();
-            eventPosterImageView.setImageURI(selectedImage);
-        }
-    }
+    private final ActivityResultLauncher<Intent> startAutocomplete = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent intent = result.getData();
+                    if (intent != null) {
+                        Place place = Autocomplete.getPlaceFromIntent(intent);
+                        addAddress(place.getName(),place.getId());
+                        Log.d("places", "Place: " + place.getName() + place.getId());
+                    }
+                } else if (result.getResultCode() == Activity.RESULT_CANCELED) {
+                    // The user canceled the operation.
+                    Log.d("places", "User canceled autocomplete");
+                }
+            });
+    /**
+     * This function opens the image picker and stores the imageUri into selected Image as well as sets the eventPosterImageView to the selected image
+     */
+    private final ActivityResultLauncher<String> startPickingImage = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            new ActivityResultCallback<Uri>() {
+                @Override
+                public void onActivityResult(Uri uri) {
+                    if (uri != null) {
+                        selectedImage = uri;
+                        eventPosterImageView.setImageURI(selectedImage);
+                    }
+                }
+            }
+    );
     /**
      * This opens when the TimePickerFragment sets a time, then it saves the time in dateTime and sets the time textview to the new set time
      * @param view the view associated with this listener
@@ -281,6 +330,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
      */
     public void getDownloadUrl(Event event, DocumentReference documentReference){
         StorageReference eventPosterRef = storageRef.child( event.getEventID() + ".jpg");
+        Log.d("eventPoster", "eventPoster: "+ event.getEventPoster());
         UploadTask uploadTask = eventPosterRef.putFile(event.getEventPoster());
 
         Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
@@ -299,7 +349,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                 if (task.isSuccessful()) {
                     downloadUrl = task.getResult();
                     event.setEventPoster(downloadUrl);
-                    documentReference.update("EventPoster", event.getEventPoster()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    documentReference.update("EventPoster", downloadUrl).addOnSuccessListener(new OnSuccessListener<Void>() {
                         /**
                          * Switches activity when the event is done updating
                          * @param unused
@@ -308,6 +358,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                         @Override
                         public void onSuccess(Void unused) {
                             Log.d("eventIdBefore", "eventid: " + event.getEventID());
+                            Log.d("eventPoster", "eventPoster: " + event.getEventPoster());
                             switchActivities(eventId);
                         }
                     });
@@ -323,8 +374,10 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
      */
     public void addEvent(Event event){
         HashMap<String, Object> data = new HashMap<>();
+        Log.d("eventPoster", "eventPoster: "+ event.getEventPoster());
 
         data.put("Location", event.getLocation());
+        data.put("PlaceID", event.getPlaceId());
         data.put("DateTime", event.getDateTime().getTime());
         data.put("AttendeeLimit", event.getAttendeeLimit().toString());
         data.put("EventName", event.getEventName());

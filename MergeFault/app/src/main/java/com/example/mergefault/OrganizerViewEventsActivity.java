@@ -41,6 +41,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
     private String eventName;
     private String orgName;
     private String location;
+    private String placeId;
     private Date dateTime;
     private Uri imageURL;
     private Integer attendeeLimit;
@@ -100,6 +101,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
                             eventName = doc.getString("EventName");
                             orgName = doc.getString("OrganizerID");
                             location = doc.getString("Location");
+                            placeId = doc.getString("PlaceID");
                             dateTime = doc.getDate("DateTime");
                             attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
                             imageURL = Uri.parse(doc.getString("EventPoster"));
@@ -111,7 +113,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
                             date = Calendar.getInstance();
                             date.setTime(dateTime);
 
-                            signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL,description,geoLocOn,eventID));
+                            signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL,description,geoLocOn,eventID, placeId));
                         }
                     }
                     eventArrayAdapter.notifyDataSetChanged();
