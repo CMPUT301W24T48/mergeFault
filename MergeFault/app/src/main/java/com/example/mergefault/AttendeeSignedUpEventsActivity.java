@@ -14,10 +14,7 @@ import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -52,6 +49,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private String eventName;
     private String organizerId;
     private String location;
+    private String placeId;
     private Date dateTime;
     private Uri imageURL;
     private Integer attendeeLimit;
@@ -129,6 +127,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                                             eventName = doc.getString("EventName");
                                             organizerId = doc.getString("OrganizerID");
                                             location = doc.getString("Location");
+                                            placeId = doc.getString("PlaceID");
                                             dateTime = doc.getDate("DateTime");
                                             attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                                             imageURL = Uri.parse(doc.getString("EventPoster"));
@@ -140,7 +139,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
 
                                             date = Calendar.getInstance();
                                             date.setTime(dateTime);
-                                            signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID));
+                                            signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
                                         }
                                     }
                                     eventArrayAdapter.notifyDataSetChanged();

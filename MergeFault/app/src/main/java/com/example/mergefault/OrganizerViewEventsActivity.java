@@ -41,6 +41,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
     private String eventName;
     private String orgName;
     private String location;
+    private String placeId;
     private Date dateTime;
     private Uri imageURL;
     private Integer attendeeLimit;
@@ -78,7 +79,11 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
         signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+                Event selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+
+                Intent intent = new Intent(OrganizerViewEventsActivity.this, OrganizerEventOptions.class);
+                intent.putExtra("SelectedEvent", selectedEvent);  //Event class implements Serializable
+                startActivity(intent);
             }
         });
 
@@ -96,6 +101,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
                             eventName = doc.getString("EventName");
                             orgName = doc.getString("OrganizerID");
                             location = doc.getString("Location");
+                            placeId = doc.getString("PlaceID");
                             dateTime = doc.getDate("DateTime");
                             attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
                             imageURL = Uri.parse(doc.getString("EventPoster"));
@@ -107,7 +113,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
                             date = Calendar.getInstance();
                             date.setTime(dateTime);
 
-                            signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL,description,geoLocOn,eventID));
+                            signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL,description,geoLocOn,eventID, placeId));
                         }
                     }
                     eventArrayAdapter.notifyDataSetChanged();
@@ -144,4 +150,5 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
             loadProfileImage();
         }
     }
+
 }
