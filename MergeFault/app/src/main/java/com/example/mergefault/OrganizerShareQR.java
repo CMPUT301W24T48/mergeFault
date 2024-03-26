@@ -32,7 +32,7 @@ public class OrganizerShareQR extends AppCompatActivity {
 
     private String eventId;
 
-    private String PromotionalActivityRedirect = "www.lotuseventspromotions.com";
+    private String PromotionalActivityRedirect = "www.lotuseventspromotions.com?eventId=";
 
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
@@ -100,7 +100,7 @@ public class OrganizerShareQR extends AppCompatActivity {
 
         // Generate QR codes for event check-in and promotion
         generateQRCode(eventId, checkInQRImageView);
-        generateQRCode("myapp://" + PromotionalActivityRedirect, promoteQRImageView);
+        generateQRCode("myapp://" + PromotionalActivityRedirect + eventId, promoteQRImageView);
     }
 
     private void checkPermissionAndShare(Bitmap bitmap) {
