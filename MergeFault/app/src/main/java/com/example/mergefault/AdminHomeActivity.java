@@ -38,5 +38,13 @@ public class AdminHomeActivity extends AppCompatActivity{
                 startActivity(intent);
             }
         });
+
+        manageImages.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminHomeActivity.this, AdminManageImages.class);
+                startActivity(intent);
+            }
+        });
     }
 }

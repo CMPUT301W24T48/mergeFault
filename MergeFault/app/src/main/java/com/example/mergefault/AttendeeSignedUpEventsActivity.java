@@ -14,10 +14,7 @@ import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -45,12 +42,14 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private CollectionReference attendeeRef;
+    private CollectionReference attendeeImageRef;
 
     private Event selectedEvent;
     private String eventID;
     private String eventName;
     private String organizerId;
     private String location;
+    private String placeId;
     private Date dateTime;
     private Uri imageURL;
     private Integer attendeeLimit;
@@ -71,14 +70,16 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         homeIcon = findViewById(R.id.imageView);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
+        db = FirebaseFirestore.getInstance();
+        eventRef = db.collection("events");
+        attendeeImageRef = db.collection("attendees");
+
         loadProfileImage();
 
         signedUpEventDataList = new ArrayList<Event>();
         eventArrayAdapter = new EventArrayAdapter(this, signedUpEventDataList);
         signedUpEventsList.setAdapter(eventArrayAdapter);
 
-        db = FirebaseFirestore.getInstance();
-        eventRef = db.collection("events");
 
         eventArrayAdapter.notifyDataSetChanged();
 
@@ -126,6 +127,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                                             eventName = doc.getString("EventName");
                                             organizerId = doc.getString("OrganizerID");
                                             location = doc.getString("Location");
+                                            placeId = doc.getString("PlaceID");
                                             dateTime = doc.getDate("DateTime");
                                             attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                                             imageURL = Uri.parse(doc.getString("EventPoster"));
@@ -137,7 +139,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
 
                                             date = Calendar.getInstance();
                                             date.setTime(dateTime);
-                                            signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID));
+                                            signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
                                         }
                                     }
                                     eventArrayAdapter.notifyDataSetChanged();
@@ -168,12 +170,19 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     // imageuri references the link or source of where the image originates from such as it could originate from the device or the api call. However it is treated as empty if there is the generic pfp image there.
     // picasso is an external api that helps cache in images and load them to the imageview works on urls as well as internal images
     private void loadProfileImage() {
-        String imageUri = sharedPreferences.getString("imageUri", "");
-        if (!imageUri.isEmpty()) {
-            Picasso.get().load(imageUri).into(profileImageView);
-        } else {
-            profileImageView.setImageResource(R.drawable.pfp);
-        }
+        attendeeImageRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for(QueryDocumentSnapshot  doc: value){
+                    if (doc.getId().equals(sharedPreferences.getString("phonenumber", ""))){
+                        if (!doc.getString("AttendeeProfile").isEmpty()) {
+                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+                        }
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     // this is when we return to the activity from another one, essentially the cancel button. When we return to this activity, load the profile image depending upon any changes made to the Uri in the AttendeeEditProfileActivity.

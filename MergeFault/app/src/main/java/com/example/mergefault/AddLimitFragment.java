@@ -13,9 +13,19 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-
+/**
+ * This is a fragment class for adding limit
+ */
 public class AddLimitFragment extends DialogFragment {
+    /**
+     * this is a listener interface which the activity that calls this class implements
+     */
     interface AddLimitDialogListener {
+        /**
+         * This is the abstract method addLimit
+         * @param Limit
+         * This is a Integer Limit
+         */
         void addLimit(Integer Limit);
     }
     private AddLimitDialogListener listener;
