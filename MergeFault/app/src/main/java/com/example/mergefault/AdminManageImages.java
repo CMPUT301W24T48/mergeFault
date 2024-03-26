@@ -106,7 +106,7 @@ public class AdminManageImages extends AppCompatActivity{
                 if (eventIDs.size() != 0 && Images.size() != 0) {
                     DocumentReference tempRef = db.collection("events").document(eventIDs.get(position));
                     Map<String, Object> updates = new HashMap<>();
-                    updates.put("EventPoster", FieldValue.delete());
+                    updates.put("EventPoster", "");
                     tempRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
