@@ -66,7 +66,8 @@ public class AdminManageEvents extends AppCompatActivity{
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
-                        eventID = doc.getString("eventID");
+                        eventID = doc.getString("EventID");
+                        placeId = doc.getString("PlaceID");
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
