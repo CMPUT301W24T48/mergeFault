@@ -22,6 +22,7 @@ public class AdminManageEvents extends AppCompatActivity{
     private CollectionReference eventRef;
     private String eventName;
     private String organizerId;
+    private String placeId;
     private String location;
     private Date dateTime;
     private Uri imageURL;
@@ -59,6 +60,7 @@ public class AdminManageEvents extends AppCompatActivity{
                         eventName = doc.getString("EventName");
                         organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");
+                        placeId = doc.getString("PlaceID");
                         dateTime = doc.getDate("DateTime");
                         attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                         imageURL = Uri.parse(doc.getString("EventPoster"));
