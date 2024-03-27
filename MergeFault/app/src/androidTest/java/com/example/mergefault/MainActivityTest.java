@@ -2,6 +2,8 @@ package com.example.mergefault;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import android.content.Context;
@@ -54,9 +56,10 @@ public class MainActivityTest {
         onView(withId(R.id.createNewEventButton)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
     }
 
+    // Tests that the admin button is not visible as it should only be visible to the admins
     @Test
     public void testAdminButton() {
-        onView(withId(R.id.adminButton)).perform(click());
-        onView(withId(R.id.manageEventsButton)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+        onView(withId(R.id.adminButton)).check(ViewAssertions.matches(withEffectiveVisibility(GONE)));
+        onView(withId(R.id.manageEventsButton)).check(ViewAssertions.doesNotExist());
     }
 }
