@@ -48,6 +48,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private String eventName;
     private String organizerId;
     private String location;
+    private String placeId;
     private Date dateTime;
     private Uri imageURL;
     private Integer attendeeLimit;
@@ -118,18 +119,19 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                         eventName = doc.getString("EventName");//doc.getID();
                         organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");
+                        placeId = doc.getString("PlaceID");
                         dateTime = doc.getDate("DateTime");
                         attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                         imageURL = Uri.parse(doc.getString("EventPoster"));
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
-                        eventID = doc.getString("eventID");
+                        eventID = doc.getId().toString();
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
-                        eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn, eventID ));
+                        eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn, eventID, placeId));
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }
