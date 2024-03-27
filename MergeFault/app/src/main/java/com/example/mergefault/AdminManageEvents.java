@@ -31,7 +31,6 @@ public class AdminManageEvents extends AppCompatActivity{
     private String description;
     private Boolean geoLocOn;
     private String eventID;
-    private String placeId;
     private ArrayList<Event> eventDataList;
     private EventArrayAdapter eventArrayAdapter;
     private ListView eventsList;
