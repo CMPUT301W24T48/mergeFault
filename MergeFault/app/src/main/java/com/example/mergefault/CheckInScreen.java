@@ -7,6 +7,12 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.Collection;
+
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,7 +29,6 @@ import com.google.android.gms.location.LocationServices;
  * Activity for attendee check-in at an event.
  */
 public class CheckInScreen extends AppCompatActivity {
-
     // Request code for location permission
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
 

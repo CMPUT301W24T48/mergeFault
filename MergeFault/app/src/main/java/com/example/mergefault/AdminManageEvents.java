@@ -73,6 +73,7 @@ public class AdminManageEvents extends AppCompatActivity{
                         date.setTime(dateTime);
 
                         eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn, eventID, placeId));
+
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }

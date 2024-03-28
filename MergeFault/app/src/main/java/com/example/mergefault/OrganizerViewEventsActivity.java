@@ -29,6 +29,7 @@ import java.util.Objects;
 
 public class OrganizerViewEventsActivity extends AppCompatActivity {
     private ImageView profileImageView;
+    private ImageView homeButton;
     private SharedPreferences sharedPreferences;
     private ListView signedUpEventsList;
     private EventArrayAdapter eventArrayAdapter;
@@ -60,6 +61,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
         setContentView(R.layout.attendee_signed_up_events);
 
         profileImageView = findViewById(R.id.pfpImageView);
+        homeButton = findViewById(R.id.imageView);
         signedUpEventsList = findViewById(R.id.myEventListView);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
@@ -76,6 +78,13 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
         Intent recieverIntent = getIntent();
         organizerId = recieverIntent.getStringExtra("OrganizerID");
 
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerViewEventsActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
         signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

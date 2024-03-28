@@ -106,6 +106,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         editor.apply();
         imageUri = "";
         Toast.makeText(this, "Profile picture deleted", Toast.LENGTH_SHORT).show();
+
     }
 
     /**
@@ -160,6 +161,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         if (!imageUri.isEmpty()) {
             Picasso.get().load(imageUri).into(imageViewProfile);
         }
+
     }
 
     /**
