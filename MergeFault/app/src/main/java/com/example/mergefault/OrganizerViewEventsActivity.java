@@ -80,9 +80,8 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Event selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
-
                 Intent intent = new Intent(OrganizerViewEventsActivity.this, OrganizerEventOptions.class);
-                intent.putExtra("SelectedEvent", selectedEvent);  //Event class implements Serializable
+                intent.putExtra("EventId", selectedEvent.getEventID());  //Event class implements Serializable
                 startActivity(intent);
             }
         });
