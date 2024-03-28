@@ -42,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), apiKey);
+        }
+
         Places.initialize(getApplicationContext(), apiKey);
 
         // Restore the visibility of adminButton if it was visible before
