@@ -69,4 +69,10 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.2")
     implementation ("com.google.zxing:core:3.3.0")
     implementation("com.journeyapps:zxing-android-embedded:4.2.0")
+    implementation("com.google.firebase:firebase-inappmessaging-display:20.4.1")
+    implementation("com.google.firebase:firebase-messaging:23.4.1")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.2")
+   
+    
+
 }

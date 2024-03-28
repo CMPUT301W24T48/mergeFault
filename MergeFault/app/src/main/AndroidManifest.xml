@@ -130,8 +130,6 @@
         <activity
             android:name=".AttendeeBrowsePostedEventsActivity"
             android:exported="false" />
-
-
     </application>
 
 </manifest>
