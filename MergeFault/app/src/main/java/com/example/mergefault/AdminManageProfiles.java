@@ -38,7 +38,8 @@ public class AdminManageProfiles extends AppCompatActivity{
         db = FirebaseFirestore.getInstance();
         attendeeRef = db.collection("attendees");
         attendees = new ArrayList<Attendee>();
-        attendeeArrayAdapter = new AttendeeArrayAdapter(this,attendees);
+        String user = "admin";
+        attendeeArrayAdapter = new AttendeeArrayAdapter(this,attendees,user);
         attendeeList.setAdapter(attendeeArrayAdapter);
 
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -56,11 +57,12 @@ public class AdminManageProfiles extends AppCompatActivity{
                         emailId = doc.getString("AttendeeEmail");
                         profImageURL = doc.getString("AttendeeProfile");
 
-                        attendees.add(new Attendee(name, phoneNum, emailId, false, false, profImageURL));
+                        attendees.add(new Attendee(name, phoneNum, emailId, false, false, profImageURL, 0));
                     }
                     attendeeArrayAdapter.notifyDataSetChanged();
                 }
             }
         });
+        
     }
 }

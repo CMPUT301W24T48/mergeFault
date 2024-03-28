@@ -126,7 +126,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
-                        eventID = doc.getString("eventID");
+                        eventID = doc.getId().toString();
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
