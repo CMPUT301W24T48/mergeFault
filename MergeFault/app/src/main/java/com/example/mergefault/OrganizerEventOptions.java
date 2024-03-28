@@ -24,7 +24,6 @@ public class OrganizerEventOptions extends AppCompatActivity {
     private String eventId;
     private FirebaseFirestore db;
     private DocumentReference eventRef;
-
     private Event event;
 
     @Override
@@ -70,6 +69,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
         Button eventDetailsButton = findViewById(R.id.eventDetailsButton);
         Button sendNotificationsButton = findViewById(R.id.sendNotifButton);
         Button cancelButton = findViewById(R.id.cancelButton);
+        Button mapButton = findViewById(R.id.checkinMapButton);
         /// TODO: 20-03-2024 add map button
 
         // Attendee List button click
@@ -96,6 +96,13 @@ public class OrganizerEventOptions extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerEventOptions.this, OrganizerEventNotification.class);
                 startActivity(intent);
+            }
+        });
+        
+        mapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // implement map
             }
         });
 
