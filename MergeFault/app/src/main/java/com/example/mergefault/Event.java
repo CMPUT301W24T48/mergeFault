@@ -3,12 +3,11 @@ package com.example.mergefault;
 import android.net.Uri;
 
 import java.util.Calendar;
-import java.io.Serializable;
 
 /**
  * This class defines an Event
  */
-public class Event implements Serializable {
+public class Event {
 
     private String eventName;
     private String organizerId;
