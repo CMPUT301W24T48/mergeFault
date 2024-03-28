@@ -68,11 +68,8 @@ public class AdminManageImages extends AppCompatActivity{
                     for (QueryDocumentSnapshot doc : value) {
                         if (doc.getString("AttendeeProfile") !=null) {
                             imageURL = doc.getString("AttendeeProfile");
-                            char firstChar = imageURL.charAt(0);
-                            if (!Images.contains(imageURL) && firstChar=='h'){
-                                Images.add(imageURL);
-                                attendeeIDS.add(doc.getString("AttendeePhoneNumber"));
-                            }
+                            Images.add(imageURL);
+                            attendeeIDS.add(doc.getString("AttendeePhoneNumber"));
                         }
                     }
                     ImagesArrayAdapter.notifyDataSetChanged();
@@ -90,11 +87,8 @@ public class AdminManageImages extends AppCompatActivity{
                     for(QueryDocumentSnapshot doc : value){
                         if(doc.getString("EventPoster") !=null){
                             imageURL = doc.getString("EventPoster");
-                            char firstChar = imageURL.charAt(0);
-                            if (!Images.contains(imageURL) && firstChar=='h'){
-                                Images.add(imageURL);
-                                eventIDs.add(doc.getString("EventID"));
-                            }
+                            Images.add(imageURL);
+                            eventIDs.add(doc.getString("EventID"));
                         }
                     }
                 }
