@@ -34,7 +34,7 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
         <activity
-            android:name=".CheckInScreen"
+            android:name=".AttendeeCheckInScreenActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -130,6 +130,10 @@
         <activity
             android:name=".AttendeeBrowsePostedEventsActivity"
             android:exported="false" />
+        <activity
+            android:name=".AttendeeViewEventDetailsActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>
