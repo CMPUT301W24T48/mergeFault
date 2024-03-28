@@ -111,6 +111,9 @@
             android:name=".OrganizerAttendeeList"
             android:exported="false" />
         <activity
+            android:name=".MapActivity"
+            android:exported="false" />
+        <activity
             android:name=".AttendeeSignUpPage"
             android:exported="true">
             <intent-filter>

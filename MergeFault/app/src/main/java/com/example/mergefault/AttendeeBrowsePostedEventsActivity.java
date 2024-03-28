@@ -1,6 +1,8 @@
 package com.example.mergefault;
 
-import static okhttp3.internal.http.HttpDate.format;
+
+
+import static com.squareup.okhttp.internal.http.HttpDate.format;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
