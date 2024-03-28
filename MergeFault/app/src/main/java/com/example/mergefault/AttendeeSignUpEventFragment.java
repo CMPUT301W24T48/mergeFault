@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,6 +36,7 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
     private SharedPreferences sharedPreferences;
+    private TextView location;
     private String eventID;
     private String eventName;
     private String eventLocation;
@@ -46,23 +48,18 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         db = FirebaseFirestore.getInstance();
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_event_details, null);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.attendee_signup_for_event, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        location = view.findViewById(R.id.description);
         eventID = getArguments().getString("0");
         eventName = getArguments().getString("1");
         eventLocation = getArguments().getString("2");
         eventDateTime = getArguments().getString("3");
-        String[] eventDetails = {eventName, eventLocation, eventDateTime};
+        location.setText(eventLocation);
         attendeeRef = db.collection("events").document(eventID).collection("attendees");
         sharedPreferences = getActivity().getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
         return builder
                 .setView(view)
-                .setItems(eventDetails, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                })
                 .setPositiveButton("Sign Up", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

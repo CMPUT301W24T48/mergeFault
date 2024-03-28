@@ -30,6 +30,7 @@ public class AdminManageEvents extends AppCompatActivity{
     private String description;
     private Boolean geoLocOn;
     private String eventID;
+    private String placeID;
     private ArrayList<Event> eventDataList;
     private EventArrayAdapter eventArrayAdapter;
     private ListView eventsList;
@@ -63,13 +64,14 @@ public class AdminManageEvents extends AppCompatActivity{
                         imageURL = Uri.parse(doc.getString("EventPoster"));
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
+                        placeID = doc.getString("placeID");
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
                         eventID = doc.getString("eventID");
 
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
-                        eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn, eventID ));
+                        eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn, eventID, placeID ));
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }
