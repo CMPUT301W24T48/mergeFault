@@ -1,9 +1,5 @@
 package com.example.mergefault;
 
-
-
-import static com.squareup.okhttp.internal.http.HttpDate.format;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -101,7 +97,6 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 bundle.putString("0", selectedEvent.getEventID());
                 bundle.putString("1", selectedEvent.getEventName());
                 bundle.putString("2", selectedEvent.getLocation());
-                bundle.putString("3", format(selectedEvent.getDateTime().getTime()));
                 //bundle.putString("4", selectedEvent.getDescription());
                 myEventFragment.setArguments(bundle);
                 myEventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
