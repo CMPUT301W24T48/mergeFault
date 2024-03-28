@@ -103,6 +103,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 //bundle.putString("4", selectedEvent.getDescription());
                 myEventFragment.setArguments(bundle);
                 myEventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
+
             }
         });
 

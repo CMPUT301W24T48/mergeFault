@@ -1,6 +1,7 @@
 package com.example.mergefault;
 
 import android.net.Uri;
+import android.util.Log;
 
 import java.util.Calendar;
 
