@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,7 +30,7 @@ import java.util.Objects;
 /**
  * Activity for attendee sign-up for an event.
  */
-public class AttendeeSignUpPage extends AppCompatActivity {
+public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
 
     // Event ID
     private String eventId;
@@ -40,39 +39,30 @@ public class AttendeeSignUpPage extends AppCompatActivity {
     private CollectionReference attendeeRef;
     private TextView location;
     private TextView description;
-    private Button signUpButton;
+    private Button withdrawButton;
     private Button cancelButton;
     private SharedPreferences sharedPreferences;
+
     /**
-     * this Activity displays event details and a button that signs up attendees to the event
+     * This Activity displays event details and allows users to sign up for notifications or withdraw
      */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.attendee_signup_for_event);
+        setContentView(R.layout.attendee_event_details);
+
         location = findViewById(R.id.location);
         description = findViewById(R.id.description);
-        signUpButton = findViewById(R.id.withdrawButton);
+        withdrawButton = findViewById(R.id.withdrawButton);
         cancelButton = findViewById(R.id.cancelButton);
+
         // Get the intent that started this activity
         Intent intent = getIntent();
-
-        // Get the data URI from the intent
-        Uri uri = intent.getData();
-
         db = FirebaseFirestore.getInstance();
         events = db.collection("events");
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
-        /*
-        if (("myapp".equals(uri.getScheme()) && "www.lotuseventspromotions.com".equals(uri.getHost()))) {
-            eventId = uri.getQueryParameter("eventId");
-        }
-        else {
-
-         */
-            Bundle bundle = intent.getExtras();
-            eventId = bundle.getString("0");
-        //}
+        Bundle bundle = intent.getExtras();
+        eventId = bundle.getString("0");
         attendeeRef = db.collection("events").document(eventId).collection("attendees");
 
         events.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -95,45 +85,19 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeBrowsePostedEventsActivity.class);
+                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
                 startActivity(intent);
             }
         });
-        signUpButton.setOnClickListener(new View.OnClickListener() {
+        withdrawButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AddAttendee();
-                Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeBrowsePostedEventsActivity.class);
+                attendeeRef.document(sharedPreferences.getString("phonenumber", "")).delete();
+                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
                 startActivity(intent);
             }
         });
 
     }
-
-    /**
-     * Adds attendee and their information to the event upon signup button click with a unique ID
-     */
-    public void AddAttendee() {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("AttendeeName", sharedPreferences.getString("name", ""));
-        data.put("AttendeePhoneNumber", sharedPreferences.getString("phonenumber", ""));;
-        data.put("AttendeeEmail", sharedPreferences.getString("email", ""));
-        data.put("AttendeeProfile", sharedPreferences.getString("imageUri", ""));
-        data.put("CheckedIn", false);
-        //data.put("AttendeeNotificationPref", attendee.getNotificationPref());
-        //data.put("AttendeeGeolocationPref", attendee.getGeolocationPref());
-        attendeeRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-            @Override
-            public void onSuccess(DocumentReference documentReference) {
-                String attendeeID = documentReference.getId();
-                data.put("AttendeeID", sharedPreferences.getString("phonenumber", ""));
-                documentReference.delete();
-                attendeeRef.document(sharedPreferences.getString("phonenumber", "")).set(data);
-                Log.d("attendeeIDBefore", "attendeeid" + attendeeID);
-                //Toast.makeText(this, "Successfully Signed Up", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
 }
 
