@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -26,8 +27,13 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.HashMap;
 import java.util.Objects;
 
+
+/**
+ * Activity for attendee sign-up for an event.
+ */
 public class AttendeeSignUpPage extends AppCompatActivity {
 
+    // Event ID
     private String eventId;
     private FirebaseFirestore db;
     private CollectionReference events;
@@ -37,17 +43,21 @@ public class AttendeeSignUpPage extends AppCompatActivity {
     private Button signUpButton;
     private Button cancelButton;
     private SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_signup_for_event);
-
         location = findViewById(R.id.location);
         description = findViewById(R.id.description);
         signUpButton = findViewById(R.id.withdrawButton);
         cancelButton = findViewById(R.id.cancelButton);
+        // Get the intent that started this activity
         Intent intent = getIntent();
+
+        // Get the data URI from the intent
         Uri uri = intent.getData();
+
         db = FirebaseFirestore.getInstance();
         events = db.collection("events");
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
@@ -95,8 +105,6 @@ public class AttendeeSignUpPage extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-
 
     }
 

@@ -4,12 +4,11 @@ import android.net.Uri;
 import android.util.Log;
 
 import java.util.Calendar;
-import java.io.Serializable;
 
 /**
  * This class defines an Event
  */
-public class Event implements Serializable {
+public class Event {
 
     private String eventName;
     private String organizerId;

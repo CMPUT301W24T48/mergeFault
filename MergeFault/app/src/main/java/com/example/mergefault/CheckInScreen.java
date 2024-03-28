@@ -25,10 +25,20 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
+/**
+ * Activity for attendee check-in at an event.
+ */
 public class CheckInScreen extends AppCompatActivity {
+    // Request code for location permission
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+
+    // Event ID
     private String eventId;
+
+    // TextView to display location information
     private TextView locationText;
+
+    // FusedLocationProviderClient for accessing device location
     private FusedLocationProviderClient fusedLocationClient;
 
     @Override
@@ -49,13 +59,17 @@ public class CheckInScreen extends AppCompatActivity {
         if (uri != null && "myapp".equals(uri.getScheme()) && "www.lotuseventscheckin.com".equals(uri.getHost())) {
             eventId = uri.getQueryParameter("eventId");
 
-            //change later
+            // Change later
             TextView descriptionText = findViewById(R.id.description);
             descriptionText.setText(eventId);
         }
     }
 
-    // Method to handle button click event
+    /**
+     * Method to handle the button click event for check-in.
+     *
+     * @param view The View that was clicked.
+     */
     public void onCheckInButtonClick(View view) {
         // Check for location permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -77,7 +91,7 @@ public class CheckInScreen extends AppCompatActivity {
                 // Permission granted, start location retrieval
                 getLocation();
             } else {
-                Toast.makeText(this, "Do not have permission to access location do check in settings", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Do not have permission to access location. Please check in settings.", Toast.LENGTH_SHORT).show();
             }
         }
     }

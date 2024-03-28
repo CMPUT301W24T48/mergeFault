@@ -25,6 +25,9 @@ import com.google.zxing.common.BitMatrix;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * Activity for sharing QR codes with organizers.
+ */
 public class OrganizerShareQR extends AppCompatActivity {
 
     private ImageView checkInQRImageView, promoteQRImageView;
@@ -104,6 +107,11 @@ public class OrganizerShareQR extends AppCompatActivity {
         generateQRCode("myapp://" + PromotionalActivityRedirect + eventId, promoteQRImageView);
     }
 
+    /**
+     * Check if write external storage permission is granted, and proceed with sharing QR code if granted.
+     *
+     * @param bitmap The bitmap image of the QR code to share.
+     */
     private void checkPermissionAndShare(Bitmap bitmap) {
         // Check if we have permission to write to external storage
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -120,13 +128,8 @@ public class OrganizerShareQR extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_WRITE_EXTERNAL_STORAGE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, proceed with sharing
-                Bitmap bitmap = combineBitmaps(checkInQRImageView, promoteQRImageView);
-                if (bitmap != null) {
-                    shareQRCode(bitmap);
-                } else {
-                    Toast.makeText(OrganizerShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
-                }
+                // Permission granted
+                Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
             } else {
                 // Permission denied
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
@@ -134,6 +137,13 @@ public class OrganizerShareQR extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Generate a QR code bitmap for the given content and set it to the specified ImageView.
+     *
+     * @param content    The content to encode into the QR code.
+     * @param imageView  The ImageView to display the QR code.
+     */
     private void generateQRCode(String content, ImageView imageView) {
         MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
         try {
@@ -147,6 +157,12 @@ public class OrganizerShareQR extends AppCompatActivity {
         }
     }
 
+    /**
+     * Convert a BitMatrix to a Bitmap.
+     *
+     * @param matrix The BitMatrix to convert.
+     * @return The resulting Bitmap.
+     */
     private Bitmap toBitmap(BitMatrix matrix) {
         int height = matrix.getHeight();
         int width = matrix.getWidth();
@@ -159,6 +175,12 @@ public class OrganizerShareQR extends AppCompatActivity {
         return bitmap;
     }
 
+    /**
+     * Combine multiple bitmaps into a single bitmap.
+     *
+     * @param imageViews ImageViews containing bitmaps to be combined.
+     * @return The combined bitmap.
+     */
     private Bitmap combineBitmaps(ImageView... imageViews) {
         Bitmap combinedBitmap = null;
         int totalWidth = 0;
@@ -182,6 +204,11 @@ public class OrganizerShareQR extends AppCompatActivity {
         return combinedBitmap;
     }
 
+    /**
+     * Share the QR code bitmap via an intent.
+     *
+     * @param bitmap The bitmap image of the QR code to share.
+     */
     private void shareQRCode(Bitmap bitmap) {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
