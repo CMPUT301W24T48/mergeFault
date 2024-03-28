@@ -35,7 +35,19 @@
             android:value="@integer/google_play_services_version" />
         <activity
             android:name=".CheckInScreen"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data
+                    android:host="www.lotuseventscheckin.com"
+                    android:scheme="myapp" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".OrganizerEventNotification"
             android:exported="false" />
@@ -47,8 +59,15 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="www.lotuseventsadminpermission.com"
+                    android:scheme="myapp" />
             </intent-filter>
         </activity>
         <activity

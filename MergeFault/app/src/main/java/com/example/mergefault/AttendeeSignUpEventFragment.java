@@ -21,13 +21,18 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.ListFragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 /**
  * this fragment displays event details and a button that signs up attendees to the event
@@ -64,6 +69,7 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         AddAttendee();
+                        SubscribeAttendee();
                     }
                 })
                 .create();
@@ -91,5 +97,29 @@ public class AttendeeSignUpEventFragment extends DialogFragment {
                 Log.d("attendeeIDBefore", "attendeeid" + attendeeID);
             }
         });
+    }
+
+    /**
+     * Subscribes attendee to event's topic upon signup button
+     */
+    public void SubscribeAttendee(){
+        FirebaseMessaging.getInstance().subscribeToTopic(eventID)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            // Subscription successful
+                            Log.d("SubscribeAttendee","Successfully subscribed to topic: " + eventID);
+                        } else {
+                            // Subscription failed
+                            Log.d("SubscribeAttendee","Failed to subscribe to topic: " + eventID);
+                            Exception e = task.getException();
+                            if (e != null) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
     }
 }
