@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +17,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.net.InetSocketAddress;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -98,11 +100,15 @@ public class OrganizerEventOptions extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        
+
         mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // implement map
+
+                Intent intent = new Intent(OrganizerEventOptions.this, MapActivity.class);
+                intent.putExtra("placeID", event.getPlaceId());
+
+                startActivity(intent);
             }
         });
 
