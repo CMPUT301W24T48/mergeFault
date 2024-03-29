@@ -1,7 +1,5 @@
 package com.example.mergefault;
 
-import static okhttp3.internal.http.HttpDate.format;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -28,7 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * @see AttendeeSignUpEventFragment
+ * @see AttendeeCheckInScreenActivity
  * This activity displays the current list of all events posted on the app
  * Attendees can view all event details and sign up to any event
  */
@@ -56,7 +54,6 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private String description;
     private Boolean geoLocOn;
     private String eventID;
-    private AttendeeSignUpEventFragment eventFragment;
 
 
 
@@ -95,15 +92,16 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) eventsList.getItemAtPosition(position);
-                eventFragment = new AttendeeSignUpEventFragment();
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpPage.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("0", selectedEvent.getEventID());
                 bundle.putString("1", selectedEvent.getEventName());
                 bundle.putString("2", selectedEvent.getLocation());
-                bundle.putString("3", format(selectedEvent.getDateTime().getTime()));
                 bundle.putString("4", selectedEvent.getDescription());
-                eventFragment.setArguments(bundle);
-                eventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
+                bundle.putString("5", selectedEvent.getPlaceId());
+                bundle.putString("6", selectedEvent.getEventPoster().toString());
+                intent.putExtras(bundle);
+                startActivity(intent);
             }
         });
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -117,6 +115,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                     eventDataList.clear();
                     for(QueryDocumentSnapshot doc: value){
                         eventName = doc.getString("EventName");//doc.getID();
+                        eventID = doc.getString("EventID");
                         organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");
                         placeId = doc.getString("PlaceID");
@@ -126,8 +125,6 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
                         Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
-                        eventID = doc.getId().toString();
-
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
