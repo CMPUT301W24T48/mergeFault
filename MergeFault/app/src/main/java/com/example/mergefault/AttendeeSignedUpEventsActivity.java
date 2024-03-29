@@ -1,6 +1,6 @@
 package com.example.mergefault;
 
-import static okhttp3.internal.http.HttpDate.format;
+import static com.squareup.okhttp.internal.http.HttpDate.format;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,7 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * @see AttendeeSignUpEventFragment
+ * @see AttendeeViewEventDetailsActivity
  * This activity displays all currently signed up events for attendees
  * Attendees can view the list of signed up events
  */
@@ -54,7 +54,6 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private Uri imageURL;
     private Integer attendeeLimit;
     private Calendar date;
-    private AttendeeMyEventFragment myEventFragment;
     private String description;
     private Boolean geoLocOn;
     private ImageView homeIcon;
@@ -94,15 +93,14 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
-                myEventFragment = new AttendeeMyEventFragment();
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeViewEventDetailsActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("0", selectedEvent.getEventID());
                 bundle.putString("1", selectedEvent.getEventName());
                 bundle.putString("2", selectedEvent.getLocation());
-                bundle.putString("3", format(selectedEvent.getDateTime().getTime()));
                 //bundle.putString("4", selectedEvent.getDescription());
-                myEventFragment.setArguments(bundle);
-                myEventFragment.show(getSupportFragmentManager(), selectedEvent.getEventName());
+                intent.putExtras(bundle);
+                startActivity(intent);
 
             }
         });
