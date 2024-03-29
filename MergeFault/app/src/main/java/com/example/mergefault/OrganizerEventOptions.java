@@ -107,7 +107,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
 
                 Intent intent = new Intent(OrganizerEventOptions.this, MapActivity.class);
                 intent.putExtra("placeID", event.getPlaceId());
-
+                intent.putExtra("eventPosterUri", event.getEventPoster().toString());
                 startActivity(intent);
             }
         });
