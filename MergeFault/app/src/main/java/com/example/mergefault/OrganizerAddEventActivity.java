@@ -238,7 +238,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class);
         intent.putExtra("EventId", eventId);
         startActivity(intent);
-        Places.deinitialize();
+        //Places.deinitialize();
     }
 
     /**
