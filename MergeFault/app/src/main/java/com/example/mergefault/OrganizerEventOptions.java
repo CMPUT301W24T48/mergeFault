@@ -104,12 +104,10 @@ public class OrganizerEventOptions extends AppCompatActivity {
         mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Double lat = 53.5222986;
-                Double longitude = -113.5215354;
 
                 Intent intent = new Intent(OrganizerEventOptions.this, MapActivity.class);
-                intent.putExtra("lat", lat);
-                intent.putExtra("long", longitude);
+                intent.putExtra("placeID", event.getPlaceId());
+
                 startActivity(intent);
             }
         });
