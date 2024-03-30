@@ -12,57 +12,56 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-
 /**
- * This is a fragment class for adding address
+ * This is a fragment class for adding description
  */
-public class AddAddressFragment extends DialogFragment {
+public class EditDescriptionFragment extends DialogFragment {
     /**
      * this is a listener interface which the activity that calls this class implements
      */
-    interface AddAddressDialogListener {
+    interface EditDescriptionDialogListener {
         /**
-         * This is the abstract method addAddress
-         * @param Address
-         * This is a String Address
+         * This is the abstract method addDescription
+         * @param Description
+         * This is a String Description
          */
-        void addAddress(String Address);
+        void addDescription(String Description);
     }
-    private AddAddressDialogListener listener;
+    private EditDescriptionDialogListener listener;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (context instanceof AddAddressDialogListener) {
-            listener = (AddAddressDialogListener) context;
+        if (context instanceof EditDescriptionDialogListener) {
+            listener = (EditDescriptionDialogListener) context;
         }
         else {
-            throw new RuntimeException(context + "must implement AddAddressDialogListener");
+            throw new RuntimeException(context + "must implement EditDescriptionDialogListener");
         }
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        String description = getArguments().getString("description");
         View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_add_text,null);
-        EditText editAddress = view.findViewById(R.id.editTextBox);
-        CharSequence hint = "Add Address";
-        editAddress.setHint(hint);
+        EditText editDescription = view.findViewById(R.id.editTextBox);
+        editDescription.setText(description);
         AlertDialog.Builder builder = new AlertDialog.Builder((getContext()));
         return builder
                 .setView(view)
-                .setTitle("Add a Address")
+                .setTitle("Edit Description")
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
                     }
                 })
-                .setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Finish", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String address = editAddress.getText().toString();
-                        listener.addAddress(address);
+                        String description = editDescription.getText().toString();
+                        listener.addDescription(description);
                     }
                 })
                 .create();
