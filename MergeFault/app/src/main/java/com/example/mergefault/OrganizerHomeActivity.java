@@ -46,6 +46,7 @@ public class OrganizerHomeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerHomeActivity.this, MainActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -58,6 +59,7 @@ public class OrganizerHomeActivity extends AppCompatActivity {
                 String organizerIDString = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
                 intent.putExtra("OrganizerID", organizerIDString);
                 startActivity(intent);
+                finish();
             }
         });
     }
