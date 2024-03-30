@@ -73,6 +73,8 @@
         <activity
             android:name=".OrganizerAddEventActivity"
             android:exported="false" />
+        <activity android:name=".OrganizerEditEventActivity"
+            android:exported="false"/>
         <activity
             android:name=".AttendeeHomeActivity"
             android:exported="false" />

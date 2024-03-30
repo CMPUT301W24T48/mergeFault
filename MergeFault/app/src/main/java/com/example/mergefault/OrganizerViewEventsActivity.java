@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.content.SharedPreferences;
 import android.widget.ListView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -32,6 +34,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
     private ImageView homeButton;
     private SharedPreferences sharedPreferences;
     private ListView signedUpEventsList;
+    private Button cancelButton;
     private EventArrayAdapter eventArrayAdapter;
 
     private ArrayList<Event> signedUpEventDataList;
@@ -62,6 +65,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
 
         profileImageView = findViewById(R.id.pfpImageView);
         homeButton = findViewById(R.id.imageView);
+        cancelButton = findViewById(R.id.cancelButton);
         signedUpEventsList = findViewById(R.id.myEventListView);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
@@ -83,6 +87,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerViewEventsActivity.this, MainActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
         signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -90,8 +95,10 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Event selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
                 Intent intent = new Intent(OrganizerViewEventsActivity.this, OrganizerEventOptions.class);
-                intent.putExtra("EventId", selectedEvent.getEventID());  //Event class implements Serializable
+                intent.putExtra("EventId", selectedEvent.getEventID());
+                intent.putExtra("OrganizerID", organizerId);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -136,6 +143,23 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
                 startActivityForResult(intent, 1);
             }
         });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerViewEventsActivity.this, OrganizerHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(OrganizerViewEventsActivity.this, OrganizerHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        OrganizerViewEventsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     // loads the profile image from the saved user profile.
