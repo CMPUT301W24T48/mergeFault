@@ -36,14 +36,6 @@
         app:srcCompat="@drawable/notifbell" />
 
 
-    <ImageView
-        android:id="@+id/ProfilePicture"
-        android:layout_width="89dp"
-        android:layout_height="66dp"
-        android:src="@drawable/pfp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/notifSwitch"
         android:layout_width="312dp"
@@ -136,20 +128,34 @@
         app:layout_constraintVertical_bias="0.541" />
 
     <TextView
-        android:id="@+id/day"
-        android:layout_width="150sp"
+        android:id="@+id/EventDetailsLocationText"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Day: "
-        android:textColor="@color/black"
-        android:textSize="23sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/location"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.061"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/eventPoster"
-        app:layout_constraintVertical_bias="0.427" />
+        app:layout_constraintStart_toEndOf="@+id/location"
+        app:layout_constraintTop_toTopOf="@+id/location" />
+
+    <TextView
+        android:id="@+id/EventDetailsDescriptionText"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/description"
+        app:layout_constraintTop_toTopOf="@+id/description" />
+
+    <TextView
+        android:id="@+id/EventDetailsTimeText"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/time"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/time"
+        app:layout_constraintTop_toTopOf="@+id/time" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
