@@ -89,6 +89,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
         Button cancelButton = findViewById(R.id.cancelButton);
         Button mapButton = findViewById(R.id.checkinMapButton);
         Button removeButton = findViewById(R.id.removeEventButton);
+        Button shareButton = findViewById(R.id.shareQR);
         homeButton = findViewById(R.id.logoImageView);
         /// TODO: 20-03-2024 add map button
 
@@ -98,6 +99,17 @@ public class OrganizerEventOptions extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerEventOptions.this, OrganizerAttendeeList.class);
                 intent.putExtra("EventId", eventId);
+                intent.putExtra("OrganizerID", organizerId);
+                startActivity(intent);
+            }
+        });
+
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerEventOptions.this, OrganizerShareQR.class);
+                intent.putExtra("EventId", eventId);
+                intent.putExtra("PrevActivity", "OrganizerEventOptions");
                 intent.putExtra("OrganizerID", organizerId);
                 startActivity(intent);
             }
