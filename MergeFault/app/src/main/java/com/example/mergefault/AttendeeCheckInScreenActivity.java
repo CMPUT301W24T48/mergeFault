@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 
@@ -48,6 +50,10 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     // FusedLocationProviderClient for accessing device location
     private FusedLocationProviderClient fusedLocationClient;
 
+    private TextView location;
+    private TextView description;
+    private TextView time;
+    private ImageView eventPoster;
     private Button checkInButton;
     private Button cancelButton;
     private SharedPreferences sharedPreferences;
@@ -87,7 +93,25 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             descriptionText.setText(eventId);
         }
         attendeeRef = eventsRef.document(eventId).collection("attendees");
-
+        eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.e("Firestore", error.toString());
+                    return;
+                }
+                if (value != null) {
+                    for (QueryDocumentSnapshot doc : value) {
+                        if (doc.getId().equals(eventId)) {
+                            location.setText(doc.getString("Location"));
+                            description.setText(doc.getString("Description"));
+                            time.setText(doc.getDate("DateTime").toString());
+                            Picasso.get().load(Uri.parse(doc.getString("EventPoster"))).into(eventPoster);
+                        }
+                    }
+                }
+            }
+        });
         checkInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -115,6 +139,13 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                     Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
                     startActivity(intent);
                 }
+            }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
             }
         });
     }

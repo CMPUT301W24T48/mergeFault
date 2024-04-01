@@ -49,6 +49,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private EditText editTextEmail;
     private EditText editTextPhoneNumber;
     private Button cancelButton;
+    private ImageView homeButton;
     private ImageButton deleteImageButton;
 
     private SharedPreferences sharedPreferences;
@@ -74,8 +75,17 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         editTextPhoneNumber = findViewById(R.id.eventDetailsButton);
         cancelButton = findViewById(R.id.cancelButton);
         deleteImageButton = findViewById(R.id.deleteImageButton);
+        homeButton = findViewById(R.id.imageView2);
 
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
+
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeEditProfileActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+            }
+        });
 
         // Set click listener for editing profile picture
         textEditImage.setOnClickListener(new View.OnClickListener() {
