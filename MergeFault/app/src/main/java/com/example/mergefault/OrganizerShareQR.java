@@ -1,29 +1,28 @@
 package com.example.mergefault;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Activity for sharing QR codes with organizers.
@@ -35,10 +34,12 @@ public class OrganizerShareQR extends AppCompatActivity {
 
     private String eventId;
 
+    private String pastActivity;
+
+    private String organizerId;
+
     private String PromotionalActivityRedirect = "www.lotuseventspromotions.com?eventId=";
     private String CheckInActivityRedirect = "www.lotuseventscheckin.com?eventId=";
-
-    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,12 +54,7 @@ public class OrganizerShareQR extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancelButton);
 
         // Set click listener for cancel button
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish(); // Close the activity when cancel button is clicked
-            }
-        });
+
 
         // Set click listener for share check-in button
         shareCheckInButton.setOnClickListener(new View.OnClickListener() {
@@ -66,7 +62,7 @@ public class OrganizerShareQR extends AppCompatActivity {
             public void onClick(View v) {
                 Bitmap bitmap = combineBitmaps(checkInQRImageView);
                 if (bitmap != null) {
-                    checkPermissionAndShare(bitmap);
+                    shareQRCode(bitmap);
                 } else {
                     Toast.makeText(OrganizerShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
                 }
@@ -79,7 +75,7 @@ public class OrganizerShareQR extends AppCompatActivity {
             public void onClick(View v) {
                 Bitmap bitmap = combineBitmaps(promoteQRImageView);
                 if (bitmap != null) {
-                    checkPermissionAndShare(bitmap);
+                    shareQRCode(bitmap);
                 } else {
                     Toast.makeText(OrganizerShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
                 }
@@ -92,7 +88,7 @@ public class OrganizerShareQR extends AppCompatActivity {
             public void onClick(View v) {
                 Bitmap bitmap = combineBitmaps(checkInQRImageView, promoteQRImageView);
                 if (bitmap != null) {
-                    checkPermissionAndShare(bitmap);
+                    shareQRCode(bitmap);
                 } else {
                     Toast.makeText(OrganizerShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
                 }
@@ -101,42 +97,31 @@ public class OrganizerShareQR extends AppCompatActivity {
 
         Intent intent = getIntent();
         eventId = intent.getStringExtra("EventId");
+        pastActivity = intent.getStringExtra("PrevActivity");
+        organizerId = intent.getStringExtra("OrganizerID");
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (pastActivity != null && pastActivity.equals("OrganizerEventOptions")) {
+                    Intent intent = new Intent(OrganizerShareQR.this, OrganizerEventOptions.class);
+                    intent.putExtra("EventId", eventId);
+                    intent.putExtra("OrganizerID", organizerId);
+                    startActivity(intent);
+                } else {
+
+                    Intent defaultIntent = new Intent(OrganizerShareQR.this, OrganizerHomeActivity.class);
+                    startActivity(defaultIntent);
+                }
+                // Finish the current activity
+                finish();
+            }
+        });
 
         // Generate QR codes for event check-in and promotion
         generateQRCode("myapp://" + CheckInActivityRedirect + eventId, checkInQRImageView);
         generateQRCode("myapp://" + PromotionalActivityRedirect + eventId, promoteQRImageView);
     }
-
-    /**
-     * Check if write external storage permission is granted, and proceed with sharing QR code if granted.
-     *
-     * @param bitmap The bitmap image of the QR code to share.
-     */
-    private void checkPermissionAndShare(Bitmap bitmap) {
-        // Check if we have permission to write to external storage
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted, request it
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
-        } else {
-            // Permission is granted, proceed with sharing
-            shareQRCode(bitmap);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_WRITE_EXTERNAL_STORAGE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted
-                Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                // Permission denied
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
 
     /**
      * Generate a QR code bitmap for the given content and set it to the specified ImageView.
@@ -211,16 +196,31 @@ public class OrganizerShareQR extends AppCompatActivity {
      */
     private void shareQRCode(Bitmap bitmap) {
         try {
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes);
-            String path = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "QR Code", null);
-            Uri imageUri = Uri.parse(path);
+            // Create a temporary file to hold the bitmap
+            File tempFile = File.createTempFile("qr_code", ".png", getCacheDir());
+            tempFile.deleteOnExit(); // Delete the file when the VM exits
+
+            // Write the bitmap to the temporary file
+            FileOutputStream outputStream = new FileOutputStream(tempFile);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            outputStream.close();
+
+            // Generate a content URI for the temporary file
+            Uri contentUri = FileProvider.getUriForFile(this, "com.example.mergefault.fileprovider", tempFile);
+
+            // Create a sharing intent
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("image/*");
-            shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+            shareIntent.setType("image/png");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            // Start the chooser for sharing
             startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
-        } catch (Exception e) {
+        } catch (IOException e) {
+            e.printStackTrace();
             Toast.makeText(OrganizerShareQR.this, "Error sharing QR code: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
+
+
 }

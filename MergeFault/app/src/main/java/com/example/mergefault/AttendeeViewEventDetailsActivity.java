@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -22,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -39,8 +41,11 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     private CollectionReference attendeeRef;
     private TextView location;
     private TextView description;
+    private TextView time;
+    private ImageView eventPoster;
     private Button withdrawButton;
     private Button cancelButton;
+    private ImageView homeButton;
     private SharedPreferences sharedPreferences;
 
     /**
@@ -51,10 +56,13 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_event_details);
 
-        location = findViewById(R.id.location);
-        description = findViewById(R.id.description);
+        location = findViewById(R.id.EventDetailsLocationText);
+        description = findViewById(R.id.EventDetailsDescriptionText);
+        time = findViewById(R.id.EventDetailsTimeText);
+        eventPoster = findViewById(R.id.eventPoster);
         withdrawButton = findViewById(R.id.withdrawButton);
         cancelButton = findViewById(R.id.cancelButton);
+        homeButton = findViewById(R.id.imageView);
 
         // Get the intent that started this activity
         Intent intent = getIntent();
@@ -77,6 +85,8 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                         if(Objects.equals(doc.getString("EventID"), eventId)){
                             location.setText(doc.getString("Location"));
                             description.setText(doc.getString("Description"));
+                            time.setText(doc.getDate("DateTime").toString());
+                            Picasso.get().load(Uri.parse(doc.getString("EventPoster"))).into(eventPoster);
                         }
                     }
                 }
@@ -94,6 +104,13 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 attendeeRef.document(sharedPreferences.getString("phonenumber", "")).delete();
                 Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
+                startActivity(intent);
+            }
+        });
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
             }
         });

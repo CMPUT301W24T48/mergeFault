@@ -84,7 +84,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
         homeIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, MainActivity.class);
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
             }
         });
