@@ -49,13 +49,11 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
 
     // FusedLocationProviderClient for accessing device location
     private FusedLocationProviderClient fusedLocationClient;
-
-    private TextView location;
-    private TextView description;
     private TextView time;
     private ImageView eventPoster;
     private Button checkInButton;
     private Button cancelButton;
+    private TextView descriptionText;
     private SharedPreferences sharedPreferences;
     private FirebaseFirestore db;
     private CollectionReference eventsRef;
@@ -78,6 +76,10 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         // Initialize location text view
         locationText = findViewById(R.id.location);
 
+        eventPoster = findViewById(R.id.eventPoster);
+
+        time = findViewById(R.id.time);
+
         // Initialize FusedLocationProviderClient
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -87,9 +89,10 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
 
         if (uri != null && "myapp".equals(uri.getScheme()) && "www.lotuseventscheckin.com".equals(uri.getHost())) {
             eventId = uri.getQueryParameter("eventId");
+            Log.d("EVENT CHECK-IN ID", eventId);
 
             // Change later
-            TextView descriptionText = findViewById(R.id.description);
+            descriptionText = findViewById(R.id.description);
             descriptionText.setText(eventId);
         }
         attendeeRef = eventsRef.document(eventId).collection("attendees");
@@ -103,8 +106,8 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                 if (value != null) {
                     for (QueryDocumentSnapshot doc : value) {
                         if (doc.getId().equals(eventId)) {
-                            location.setText(doc.getString("Location"));
-                            description.setText(doc.getString("Description"));
+                            locationText.setText(doc.getString("Location"));
+                            descriptionText.setText(doc.getString("Description"));
                             time.setText(doc.getDate("DateTime").toString());
                             Picasso.get().load(Uri.parse(doc.getString("EventPoster"))).into(eventPoster);
                         }
@@ -124,7 +127,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                         }
                         if (value != null){
                             for(QueryDocumentSnapshot doc: value) {
-                                if(doc.getId() == sharedPreferences.getString("phonenumber", "")) {
+                                if (doc.getId().equals(sharedPreferences.getString("phonenumber", ""))) {
                                     onCheckInButtonClick(v);
                                     CheckInAttendee();
                                     attendeeCheckedIn = true;
