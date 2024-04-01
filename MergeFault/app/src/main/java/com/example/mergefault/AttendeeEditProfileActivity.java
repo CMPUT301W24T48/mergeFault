@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,7 +24,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -50,6 +55,10 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private String imageUri;
     private FirebaseFirestore db;
     private CollectionReference attendeesRef;
+    private String name;
+    private String phonenumber;
+    private String email;
+    private Boolean infoFound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,10 +160,34 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
      * Loads profile data from SharedPreferences.
      */
     private void loadProfileData() {
-        String name = sharedPreferences.getString("name", "");
-        String email = sharedPreferences.getString("email", "");
-        String phonenumber = sharedPreferences.getString("phonenumber", "");
-        imageUri = sharedPreferences.getString("imageUri", "");
+
+        infoFound = false;
+        attendeesRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.e("Firestore", error.toString());
+                    return;
+                }
+                if (value != null) {
+                    for(QueryDocumentSnapshot doc: value){
+                        if (doc.getId().equals(sharedPreferences.getString("phonenumber", ""))){
+                            name = doc.getString("AttendeeName");
+                            email = doc.getString("AttendeeEmail");
+                            phonenumber = doc.getId();
+                            imageUri = doc.getString("AttendeeProfile");
+                            infoFound = true;
+                        }
+                    }
+                }
+            }
+        });
+        if(!infoFound){
+            name = sharedPreferences.getString("name","");
+            email = sharedPreferences.getString("email", "");
+            phonenumber = "";
+            imageUri = sharedPreferences.getString("imageUri","");
+        }
         editTextName.setText(name);
         editTextEmail.setText(email);
         editTextPhoneNumber.setText(phonenumber);
@@ -186,7 +219,9 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         data.put("AttendeeName", name);
         data.put("AttendeePhoneNumber", phonenum);
         data.put("AttendeeEmail", email);
-        attendeesRef.document(phonenum).set(data);
+        if(!phonenum.equals("")){
+            attendeesRef.document(phonenum).set(data);
+        }
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -208,7 +243,12 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         editor.putString("imageUri", imageUri);
         editor.putString("phonenumber", phonenum);
         editor.apply();
-        Toast.makeText(context, "Profile created and saved successfully", Toast.LENGTH_SHORT).show();
+        if(phonenum.isEmpty()){
+            Toast.makeText(context, "Error: No phone number, rest of profile saved", Toast.LENGTH_SHORT).show();
+        }
+        else{
+            Toast.makeText(context, "Profile created and saved successfully", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**

@@ -1,13 +1,17 @@
 package com.example.mergefault;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +23,14 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.HashMap;
 
 /**
  * Activity for attendee check-in at an event.
@@ -36,10 +48,26 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     // FusedLocationProviderClient for accessing device location
     private FusedLocationProviderClient fusedLocationClient;
 
+    private Button checkInButton;
+    private Button cancelButton;
+    private SharedPreferences sharedPreferences;
+    private FirebaseFirestore db;
+    private CollectionReference eventsRef;
+    private CollectionReference attendeeRef;
+    private Integer checkedInCount;
+    private Boolean attendeeCheckedIn = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_check_in_screen);
+
+        checkInButton = findViewById(R.id.checkInButton);
+        cancelButton = findViewById(R.id.cancelButton);
+
+        db = FirebaseFirestore.getInstance();
+        eventsRef = db.collection("events");
+        sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
 
         // Initialize location text view
         locationText = findViewById(R.id.location);
@@ -58,6 +86,37 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             TextView descriptionText = findViewById(R.id.description);
             descriptionText.setText(eventId);
         }
+        attendeeRef = eventsRef.document(eventId).collection("attendees");
+
+        checkInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if (error != null) {
+                            Log.e("Firestore", error.toString());
+                            return;
+                        }
+                        if (value != null){
+                            for(QueryDocumentSnapshot doc: value) {
+                                if(doc.getId() == sharedPreferences.getString("phonenumber", "")) {
+                                    onCheckInButtonClick(v);
+                                    CheckInAttendee();
+                                    attendeeCheckedIn = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+                if (!attendeeCheckedIn) {
+                    Toast.makeText(getApplicationContext(), "Error: You have not signed up to this event", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
     }
 
     /**
@@ -74,6 +133,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         } else {
             // Permission already granted, start location retrieval
             getLocation();
+
         }
     }
 
@@ -130,5 +190,36 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             // Log an error if the TextView is not found
             Toast.makeText(this, "This view doesn't exist", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void CheckInAttendee() {
+        attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.e("Firestore", error.toString());
+                    return;
+                }
+                if (value != null){
+                    for(QueryDocumentSnapshot doc: value) {
+                        if(doc.getId() == sharedPreferences.getString("phonenumber", "")) {
+                            checkedInCount = Integer.parseInt(doc.getString("CheckedInCount"));
+                            checkedInCount += 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("AttendeeName", sharedPreferences.getString("name", ""));
+        data.put("AttendeePhoneNumber", sharedPreferences.getString("phonenumber", ""));;
+        data.put("AttendeeEmail", sharedPreferences.getString("email", ""));
+        data.put("AttendeeProfile", sharedPreferences.getString("imageUri", ""));
+        data.put("CheckedIn", true);
+        data.put("CheckedInCount", checkedInCount.toString());
+        data.put("CheckInLocation", locationText.getText().toString());
+        attendeeRef.document(sharedPreferences.getString("phonenumber","")).set(data);
+        Toast.makeText(getApplicationContext(), "Successfully Checked In", Toast.LENGTH_SHORT).show();
     }
 }

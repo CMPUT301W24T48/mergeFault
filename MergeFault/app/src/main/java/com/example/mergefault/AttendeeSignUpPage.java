@@ -120,6 +120,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         data.put("AttendeeEmail", sharedPreferences.getString("email", ""));
         data.put("AttendeeProfile", sharedPreferences.getString("imageUri", ""));
         data.put("CheckedIn", false);
+        data.put("CheckedInCount", "0");
         //data.put("AttendeeNotificationPref", attendee.getNotificationPref());
         //data.put("AttendeeGeolocationPref", attendee.getGeolocationPref());
         attendeeRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
@@ -130,7 +131,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
                 documentReference.delete();
                 attendeeRef.document(sharedPreferences.getString("phonenumber", "")).set(data);
                 Log.d("attendeeIDBefore", "attendeeid" + attendeeID);
-                //Toast.makeText(this, "Successfully Signed Up", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
             }
         });
     }
