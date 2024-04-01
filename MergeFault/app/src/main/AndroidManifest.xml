@@ -27,6 +27,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MergeFault"
         tools:targetApi="31">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.mergefault.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
+        </provider>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
@@ -34,8 +44,20 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
         <activity
-            android:name=".CheckInScreen"
-            android:exported="false" />
+            android:name=".AttendeeCheckInScreenActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data
+                    android:host="www.lotuseventscheckin.com"
+                    android:scheme="myapp" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".OrganizerEventNotification"
             android:exported="false" />
@@ -61,6 +83,8 @@
         <activity
             android:name=".OrganizerAddEventActivity"
             android:exported="false" />
+        <activity android:name=".OrganizerEditEventActivity"
+            android:exported="false"/>
         <activity
             android:name=".AttendeeHomeActivity"
             android:exported="false" />
@@ -99,6 +123,9 @@
             android:name=".OrganizerAttendeeList"
             android:exported="false" />
         <activity
+            android:name=".MapActivity"
+            android:exported="false" />
+        <activity
             android:name=".AttendeeSignUpPage"
             android:exported="true">
             <intent-filter>
@@ -118,6 +145,10 @@
         <activity
             android:name=".AttendeeBrowsePostedEventsActivity"
             android:exported="false" />
+        <activity
+            android:name=".AttendeeViewEventDetailsActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

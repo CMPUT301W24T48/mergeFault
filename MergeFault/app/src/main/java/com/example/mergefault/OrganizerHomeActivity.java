@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,7 @@ public class OrganizerHomeActivity extends AppCompatActivity {
 
     private Button createNewEventButton;
     private Button viewMyEvents;
+    private ImageView homeButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -25,6 +27,7 @@ public class OrganizerHomeActivity extends AppCompatActivity {
 
         createNewEventButton = findViewById(R.id.createNewEventButton);
         viewMyEvents = findViewById(R.id.viewMyEventsButton);
+        homeButton = findViewById(R.id.imageView);
 
         // Set click listener for "Create New Event" button
         createNewEventButton.setOnClickListener(new View.OnClickListener() {
@@ -38,6 +41,14 @@ public class OrganizerHomeActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerHomeActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         // Set click listener for "View My Events" button
         viewMyEvents.setOnClickListener(new View.OnClickListener() {
@@ -48,6 +59,7 @@ public class OrganizerHomeActivity extends AppCompatActivity {
                 String organizerIDString = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
                 intent.putExtra("OrganizerID", organizerIDString);
                 startActivity(intent);
+                finish();
             }
         });
     }

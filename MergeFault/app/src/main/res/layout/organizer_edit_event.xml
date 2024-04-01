@@ -25,19 +25,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
 
-    <TextView
-        android:id="@+id/editPosterText"
-        android:layout_width="100sp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Edit Poster"
-        android:textColor="@color/black"
-        android:textSize="15sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/eventPosterImageView" />
-
     <Button
         android:id="@+id/eventDetailsButton"
         android:layout_width="250sp"
@@ -82,15 +69,17 @@
         android:id="@+id/attendeeListButton"
         android:layout_width="250sp"
         android:layout_height="70sp"
+        android:layout_marginTop="20dp"
         android:backgroundTint="#9A8FBF"
         android:text="Attendee List"
         android:textColor="@color/white"
         android:textSize="17sp"
-        android:textStyle="bold|italic"
 
+        android:textStyle="bold|italic"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editPosterText" />
+        app:layout_constraintTop_toBottomOf="@+id/eventPosterImageView" />
 
     <Button
         android:id="@+id/cancelButton"
@@ -104,7 +93,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/removeProfileButton"
+        android:id="@+id/removeEventButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="#00FFFFFF"
@@ -113,6 +102,18 @@
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/cancelButton" />
+    <Button
+        android:id="@+id/shareQR"
+        android:layout_width="250sp"
+        android:layout_height="70sp"
+        android:backgroundTint="#9A8FBF"
+        android:text="Share QR"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkinMapButton" />
 
     <TextView
         android:id="@+id/checkInsText"
@@ -123,7 +124,7 @@
         android:textColor="@color/black"
         android:textSize="23sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toTopOf="@+id/removeProfileButton"
+        app:layout_constraintBottom_toTopOf="@+id/removeEventButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -134,6 +135,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/notifbell" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

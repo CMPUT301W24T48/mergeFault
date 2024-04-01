@@ -4,8 +4,11 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.icu.text.DateFormat;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -36,27 +39,27 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * This is the activity where the organizer creates an event
  */
-public class OrganizerAddEventActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener, AddLimitFragment.AddLimitDialogListener , AddDescriptionFragment.AddDescriptionDialogListener {
+public class OrganizerEditEventActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener, EditLimitFragment.EditLimitDialogListener , EditDescriptionFragment.EditDescriptionDialogListener {
     private Button editAddressButton;
     private Button editTimeButton;
     private Button editDateButton;
     private Button editLimitButton;
-    private Button createEventButton;
+    private Button editEventButton;
     private Button descriptionButton;
     private Button cancelButton;
     private ImageView homeButton;
@@ -68,24 +71,23 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     private ImageView eventPosterImageView;
     private TextView descriptionText;
     private EditText eventNameEditText;
-    private String eventName = null;
+    private String eventName;
     private String organizerId;
-    private String location = null;
+    private String location;
     private String placeId;
-    private String description = null;
+    private String description;
     private String eventId;
-    private String time = null;
-    private String day = null;
     private Calendar dateTime = Calendar.getInstance();
     private Integer attendeeLimit;
-    private Uri selectedImage = null;
+    private Uri selectedImage;
     private Uri downloadUrl;
-    private Uri tempEventPoster = Uri.parse("https://firebasestorage.googleapis.com/v0/b/eventlisttest-5190e.appspot.com/o/eventPosters%2Feventposter.png?alt=media&token=7b06ed59-eb3b-40a2-acaf-0e3b3aa30b25");
+    private Boolean geoLocOn;
     private FirebaseFirestore db;
-    private CollectionReference eventRef;
+    private DocumentReference eventRef;
     private FirebaseStorage firebaseStorage;
     private StorageReference storageRef;
     private PlacesClient placesClient;
+    private Event event;
 
     /**
      * This function adds an String address to the corresponding textview and also saves it to location and placeId
@@ -119,7 +121,6 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         descriptionText.setText("Description: " + description);
         this.description = description;
     }
-
     /**
      * This is the function that runs at the start of the activity
      * @param savedInstanceState If the activity is being re-initialized after
@@ -133,53 +134,98 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         setContentView(R.layout.organizer_add_event_details);
 
         editAddressButton = findViewById(R.id.locationSetButton);
+        editAddressButton.setText("Edit Location");
         editTimeButton = findViewById(R.id.timeSetButton);
+        editTimeButton.setText("Edit Time");
         editDateButton = findViewById(R.id.datSetButton);
+        editDateButton.setText("Edit Day");
         editLimitButton = findViewById(R.id.attendeeLimitSetButton);
+        editLimitButton.setText("Edit Limit");
+        cancelButton = findViewById(R.id.cancelButton);
+        homeButton = findViewById(R.id.logoImageView);
         descriptionButton = findViewById(R.id.descriptionSetButton);
+        descriptionButton.setText("Edit Desc");
+        eventPosterImageView = findViewById(R.id.eventPosterImageView);
         geoLocSwitch = findViewById(R.id.switch1);
         addressText = findViewById(R.id.locationText);
         limitText = findViewById(R.id.attendeeLimitText);
         descriptionText = findViewById(R.id.descriptionText);
         eventNameEditText = findViewById(R.id.eventNameEditText);
-        eventPosterImageView = findViewById(R.id.eventPosterImageView);
-        createEventButton = findViewById(R.id.createEventButton);
-        cancelButton = findViewById(R.id.cancelButton);
-        homeButton = findViewById(R.id.logoImageView);
+        editEventButton = findViewById(R.id.createEventButton);
+        editEventButton.setText("Edit Event");
+        timeText = findViewById(R.id.timeText);
+        dayText = findViewById(R.id.dayText);
 
-        Intent recieverIntent = getIntent();
-        organizerId = recieverIntent.getStringExtra("OrganizerID");
+        Intent receiverIntent = getIntent();
+        eventId = receiverIntent.getStringExtra("EventId");
+        organizerId = receiverIntent.getStringExtra("OrganizerID");
+
+        Log.d("eventId", "eventid: " + eventId);
 
         db = FirebaseFirestore.getInstance();
-        eventRef = db.collection("events");
+        eventRef = db.collection("events").document(eventId);
 
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
+
+        eventRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
+                    if (doc.exists()) {
+                        if (doc.getString("AttendeeLimit") != null) {
+                            attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                        }
+                        downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        location = doc.getString("Location");
+                        dateTime.setTime(doc.getDate("DateTime"));
+                        eventName = doc.getString("EventName");
+                        description = doc.getString("Description");
+                        placeId = doc.getString("PlaceID");
+                        geoLocOn = doc.getBoolean("GeoLocOn");
+
+                        new DownloadImageFromInternet((ImageView) findViewById(R.id.eventPosterImageView)).execute(downloadUrl.toString());
+
+                        addressText.setText("Address: " + location);
+                        dayText.setText("Day: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
+                        timeText.setText("Time: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
+                        limitText.setText("Limit: " + attendeeLimit.toString());
+                        descriptionText.setText("Description: " + description);
+                        eventNameEditText.setText(eventName);
+                        geoLocSwitch.setChecked(geoLocOn);
+
+                        event = new Event(eventName,organizerId,location,dateTime,attendeeLimit,downloadUrl,description,geoLocOn,eventId,placeId);
+                    }
+                }
+            }
+        });
+
+
 
         placesClient = Places.createClient(this);
 
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                finish();
+                switchActivities();
             }
         };
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                switchActivities();
             }
         });
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OrganizerAddEventActivity.this, MainActivity.class);
+                Intent intent = new Intent(OrganizerEditEventActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
             }
         });
-
         editAddressButton.setOnClickListener(new View.OnClickListener() {
             /**
              * this is on on click listener for the address button, it opens a new AddAddressFragment
@@ -190,7 +236,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                 List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
 
                 // Start the autocomplete intent.
-                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(OrganizerAddEventActivity.this);
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(OrganizerEditEventActivity.this);
                 startAutocomplete.launch(intent);
 
             }
@@ -224,7 +270,11 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
              */
             @Override
             public void onClick(View v) {
-                new AddLimitFragment().show(getSupportFragmentManager(), "Add Limit");
+                Bundle bundle = new Bundle();
+                bundle.putString("attendeeLimit", attendeeLimit.toString());
+                EditLimitFragment fragInfo = new EditLimitFragment();
+                fragInfo.setArguments(bundle);
+                fragInfo.show(getSupportFragmentManager(), "Edit Limit");
             }
         });
         eventPosterImageView.setOnClickListener(new View.OnClickListener() {
@@ -244,36 +294,63 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
              */
             @Override
             public void onClick(View v) {
-                new AddDescriptionFragment().show(getSupportFragmentManager(), "Add Description");
+                Bundle bundle = new Bundle();
+                bundle.putString("description", description);
+                EditDescriptionFragment fragInfo = new EditDescriptionFragment();
+                fragInfo.setArguments(bundle);
+                fragInfo.show(getSupportFragmentManager(), "Edit Description");
             }
         });
-        createEventButton.setOnClickListener(new View.OnClickListener() {
+        editEventButton.setOnClickListener(new View.OnClickListener() {
             /**
              * this is on on click listener for the create event button, it collects all the given info and creates a calls addEvent with a new created event
              * @param v The view that was clicked.
              */
             @Override
             public void onClick(View v) {
+
                 eventName = eventNameEditText.getText().toString();
-                if (location != null && day != null && time != null && !eventName.equals("") && selectedImage != null && description != null) {
-                    eventName = eventNameEditText.getText().toString();
-                    addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(),eventId, placeId));
-                } else {
-                    Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
-                }
+                event.setEventName(eventName);
+                event.setLocation(location);
+                event.setDateTime(dateTime);
+                event.setAttendeeLimit(attendeeLimit);
+                event.setEventPoster(selectedImage);
+                event.setDescription(description);
+                event.setGeoLocOn(geoLocSwitch.isChecked());
+                event.setPlaceId(placeId);
+                editEvent();
             }
         });
     }
-    /**
-     * This function switches activity to the next one which is OrganizerNewOrReuseQR and passes the eventId through intent
-     * @param eventId
-     * This is the event id given by a randomly generated firestore id
-     */
-    public void switchActivities(String eventId){
-        Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class);
-        intent.putExtra("EventId", eventId);
+    private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
+        ImageView imageView;
+        public DownloadImageFromInternet(ImageView imageView) {
+            this.imageView=imageView;
+            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
+        }
+        protected Bitmap doInBackground(String... urls) {
+            String imageURL=urls[0];
+            Bitmap bimage=null;
+            try {
+                InputStream in=new java.net.URL(imageURL).openStream();
+                bimage= BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error Message", e.getMessage());
+                e.printStackTrace();
+            }
+            return bimage;
+        }
+        protected void onPostExecute(Bitmap result) {
+            imageView.setImageBitmap(result);
+        }
+    }
+
+    public void switchActivities(){
+        Intent intent = new Intent(OrganizerEditEventActivity.this, OrganizerEventOptions.class);
+        intent.putExtra("EventId", event.getEventID());
+        intent.putExtra("OrganizerID", organizerId);
         startActivity(intent);
-        //Places.deinitialize();
+        finish();
     }
 
     /**
@@ -317,10 +394,9 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
      */
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        timeText = findViewById(R.id.timeText);
         dateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
         dateTime.set(Calendar.MINUTE, minute);
-        time = DateFormat.getPatternInstance(DateFormat.HOUR24_MINUTE).format(dateTime.getTime());
+        String time = DateFormat.getPatternInstance(DateFormat.HOUR24_MINUTE).format(dateTime.getTime());
         timeText.setText("Time: " + time);
     }
 
@@ -335,22 +411,19 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
      */
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        dayText = findViewById(R.id.dayText);
         dateTime.set(Calendar.YEAR, year);
         dateTime.set(Calendar.MONTH, month);
         dateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        day = DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime());
+        String day = DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime());
         dayText.setText("Day: " + day);
     }
 
     /**
      * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.jpg) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
-     * @param event
      * This is the event passed by the addEvent method
-     * @param documentReference
      * This is the documentReference to event on the firebase
      */
-    public void getDownloadUrl(Event event, DocumentReference documentReference){
+    public void getDownloadUrl(){
         StorageReference eventPosterRef = storageRef.child( "eventPosters/" + event.getEventID() + ".jpg");
         Log.d("eventPoster", "eventPoster: "+ event.getEventPoster());
         UploadTask uploadTask = eventPosterRef.putFile(event.getEventPoster());
@@ -371,7 +444,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                 if (task.isSuccessful()) {
                     downloadUrl = task.getResult();
                     event.setEventPoster(downloadUrl);
-                    documentReference.update("EventPoster", downloadUrl).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    eventRef.update("EventPoster", downloadUrl).addOnSuccessListener(new OnSuccessListener<Void>() {
                         /**
                          * Switches activity when the event is done updating
                          * @param unused
@@ -379,9 +452,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                          */
                         @Override
                         public void onSuccess(Void unused) {
-                            Log.d("eventIdBefore", "eventid: " + event.getEventID());
-                            Log.d("eventPoster", "eventPoster: " + event.getEventPoster());
-                            switchActivities(eventId);
+                            switchActivities();
                         }
                     });
                 }
@@ -391,45 +462,24 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
 
     /**
      * This function adds an event on to the firebase
-     * @param event
      * This is the event given by the on click listener for the create button
      */
-    public void addEvent(Event event){
-        HashMap<String, Object> data = new HashMap<>();
+    public void editEvent(){
         Log.d("eventPoster", "eventPoster: "+ event.getEventPoster());
 
-        data.put("Location", event.getLocation());
-        data.put("PlaceID", event.getPlaceId());
-        data.put("DateTime", event.getDateTime().getTime());
-        data.put("AttendeeLimit", event.getAttendeeLimit().toString());
-        data.put("EventName", event.getEventName());
-        data.put("Description", event.getDescription());
-        data.put("GeoLocOn",event.getGeoLocOn());
-        data.put("OrganizerID", event.getOrganizerId());
-        data.put("EventPoster", tempEventPoster);
+        eventRef.update("Location", event.getLocation());
+        eventRef.update("PlaceID", event.getPlaceId());
+        eventRef.update("DateTime", event.getDateTime().getTime());
+        eventRef.update("AttendeeLimit", event.getAttendeeLimit().toString());
+        eventRef.update("EventName", event.getEventName());
+        eventRef.update("Description", event.getDescription());
+        eventRef.update("GeoLocOn",event.getGeoLocOn());
+        eventRef.update("OrganizerID", event.getOrganizerId());
 
-        eventRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-            /**
-             * This opens when the data is successfully added on the firebase, this saves the eventId of the newly created event from firebase, then adds it into a new field on the firebase as well as passing the eventId to the method getDownloadUrl()
-             * @param documentReference
-             * This is a reference to the newly added event on the firebase
-             */
-            @Override
-            public void onSuccess(DocumentReference documentReference) {
-                eventId = documentReference.getId().toString();
-                documentReference.update("EventID", eventId).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    /**
-                     * Waits for the update to finish then calling getDownloadUrl()
-                     * @param unused
-                     * Unused parameter
-                     */
-                    @Override
-                    public void onSuccess(Void unused) {
-                        event.setEventID(eventId);
-                        getDownloadUrl(event, documentReference);
-                    }
-                });
-            }
-        });
+        if (selectedImage != null){
+            getDownloadUrl();
+        } else {
+            switchActivities();
+        }
     }
 }

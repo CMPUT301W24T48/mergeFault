@@ -1,12 +1,17 @@
 package com.example.mergefault;
 
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.libraries.places.api.Places;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +31,22 @@ public class MainActivity extends AppCompatActivity {
         attendeeButton = findViewById(R.id.attendeeButton);
         organizerButton = findViewById(R.id.organizerButton);
         adminButton = findViewById(R.id.adminButton);
+
+        // Define a variable to hold the Places API key.
+        String apiKey = BuildConfig.PLACES_API_KEY;
+
+        // Log an error if apiKey is not set.
+        if (TextUtils.isEmpty(apiKey) || apiKey.equals("DEFAULT_API_KEY")) {
+            Log.e("Places test", "No api key");
+            finish();
+            return;
+        }
+
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), apiKey);
+        }
+
+        Places.initialize(getApplicationContext(), apiKey);
 
         // Restore the visibility of adminButton if it was visible before
         boolean isAdminVisible = sharedPreferences.getBoolean("isAdminVisible", false);

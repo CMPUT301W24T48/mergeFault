@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CheckInScreen"
+    tools:context=".AttendeeCheckInScreenActivity"
     android:background="#EEECDE">
 
     <ImageView
@@ -98,6 +98,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
+    <!-- Added onClick para for now to make sure everything works we can remove this later -->
+
     <Button
         android:id="@+id/checkInButton"
         android:layout_width="250sp"
@@ -112,6 +114,7 @@
         app:layout_constraintHorizontal_bias="0.577"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/eventPoster"
-        app:layout_constraintVertical_bias="0.793" />
+        app:layout_constraintVertical_bias="0.793"
+        android:onClick="onCheckInButtonClick" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
