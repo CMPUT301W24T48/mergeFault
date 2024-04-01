@@ -195,7 +195,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         if(!infoFound){
             name = sharedPreferences.getString("name","");
             email = sharedPreferences.getString("email", "");
-            phonenumber = "";
+            phonenumber = sharedPreferences.getString("phonenumber", "");
             imageUri = sharedPreferences.getString("imageUri","");
         }
         editTextName.setText(name);
