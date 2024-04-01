@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -103,6 +104,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 attendeeRef.document(sharedPreferences.getString("phonenumber", "")).delete();
+                Toast.makeText(getApplicationContext(), "Successfully Withdrew", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
                 startActivity(intent);
             }
