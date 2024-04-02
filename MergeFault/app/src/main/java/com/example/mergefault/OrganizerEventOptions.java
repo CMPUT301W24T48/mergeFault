@@ -98,6 +98,8 @@ public class OrganizerEventOptions extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerEventOptions.this, OrganizerAttendeeList.class);
+                intent.putExtra("EventId", eventId);
+                intent.putExtra("OrganizerID", organizerId);
                 startActivity(intent);
             }
         });

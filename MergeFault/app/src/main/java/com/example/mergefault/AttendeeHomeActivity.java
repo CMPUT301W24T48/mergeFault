@@ -1,14 +1,19 @@
 package com.example.mergefault;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
@@ -16,7 +21,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.squareup.picasso.Picasso;
+
+import java.io.InputStream;
 
 /**
  * This activity serves as the home screen for attendees.
@@ -32,7 +38,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
 
     private FirebaseFirestore db;
-    private CollectionReference attendeeImageRef;
+    private CollectionReference attendeeRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +50,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         homeIcon = findViewById(R.id.imageView);
 
         db = FirebaseFirestore.getInstance();
-        attendeeImageRef = db.collection("attendees");
+        attendeeRef = db.collection("attendees");
 
         // Start recording user information
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
@@ -58,7 +64,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeEditProfileActivity.class);
-                startActivityForResult(intent, 1);
+                startActivity(intent);
             }
         });
 
@@ -67,7 +73,8 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeSignedUpEventsActivity.class);
-                startActivityForResult(intent, 1);
+                startActivity(intent);
+                finish();
             }
         });
 
@@ -76,7 +83,8 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeBrowsePostedEventsActivity.class);
-                startActivityForResult(intent, 1);
+                startActivity(intent);
+                finish();
             }
         });
         homeIcon.setOnClickListener(new View.OnClickListener() {
@@ -84,6 +92,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, MainActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
     }
@@ -93,31 +102,40 @@ public class AttendeeHomeActivity extends AppCompatActivity {
      * If no image is found in the user profile, a default image is set.
      */
     private void loadProfileImage() {
-        attendeeImageRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 for(QueryDocumentSnapshot doc: value){
-                    if (doc.getId().equals(sharedPreferences.getString("phonenumber", ""))){
-                        if (!doc.getString("AttendeeProfile").isEmpty()) {
-                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+                    if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))){
+                        if (doc.getString("AttendeeProfile") != null) {
+                            new AttendeeHomeActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.profileImageView)).execute(doc.getString("AttendeeProfile"));
                         }
-                        break;
                     }
                 }
             }
         });
     }
 
-    /**
-     * Handles the result when returning from another activity.
-     * If changes were made to the profile image, reload it.
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            // Reload the profile image if changes were made
-            loadProfileImage();
+    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
+        ImageView imageView;
+        public DownloadImageFromInternet(ImageView imageView) {
+            this.imageView=imageView;
+            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
+        }
+        protected Bitmap doInBackground(String... urls) {
+            String imageURL=urls[0];
+            Bitmap bimage=null;
+            try {
+                InputStream in=new java.net.URL(imageURL).openStream();
+                bimage= BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error Message", e.getMessage());
+                e.printStackTrace();
+            }
+            return bimage;
+        }
+        protected void onPostExecute(Bitmap result) {
+            imageView.setImageBitmap(result);
         }
     }
 }

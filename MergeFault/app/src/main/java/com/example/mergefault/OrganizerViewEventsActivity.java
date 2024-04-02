@@ -118,7 +118,11 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
                             location = doc.getString("Location");
                             placeId = doc.getString("PlaceID");
                             dateTime = doc.getDate("DateTime");
-                            attendeeLimit = 0;  TODO: //Integer.parseInt(doc.getString("AttendeeLimit"));
+                            if (doc.getString("AttendeeLimit") != null) {
+                                attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                            } else {
+                                attendeeLimit = null;
+                            }
                             imageURL = Uri.parse(doc.getString("EventPoster"));
                             description = doc.getString("Description");
                             geoLocOn = doc.getBoolean("GeoLocOn");
