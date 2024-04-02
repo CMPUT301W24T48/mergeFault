@@ -12,6 +12,7 @@ public class Attendee {
     private Boolean notificationPref;
     private Boolean geolocationPref;
     private String profImageURL;
+    private Integer checkInCount;
 
     /**
      * Constructs an Attendee object with the specified information.
@@ -30,6 +31,7 @@ public class Attendee {
         this.notificationPref = notificationPref;
         this.geolocationPref = geolocationPref;
         this.profImageURL = profImageURL;
+        this.checkInCount = checkInCount;
     }
 
     /**
@@ -84,7 +86,14 @@ public class Attendee {
     public String getProfImageURL(){
         return profImageURL;
     }
-
+    /**
+     * Retrieves the check-in count of the attendee
+     *
+     * @return The check-in count of the attendee
+     */
+    public Integer getCheckInCount(){
+        return checkInCount;
+    }
     /**
      * Sets the name of the attendee.
      *
