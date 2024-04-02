@@ -2,6 +2,9 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="OrganizerShareQRTest">
+        <State />
+      </entry>
       <entry key="app">
         <State>
           <targetSelectedWithDropDown>
@@ -18,7 +21,16 @@
           <timeTargetWasSelectedWithDropDown value="2024-04-01T18:49:10.934351400Z" />
         </State>
       </entry>
-      <entry key="testAdminButton()">
+      <entry key="testButtons()">
+        <State />
+      </entry>
+      <entry key="testSharePromoteButton()">
+        <State />
+      </entry>
+      <entry key="testShareQRWithEventId()">
+        <State />
+      </entry>
+      <entry key="testSignUpQRWithEventId()">
         <State />
       </entry>
     </value>

@@ -3,6 +3,7 @@ package com.example.mergefault;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import android.Manifest;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -60,6 +62,11 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private String phonenumber;
     private String email;
     private Boolean infoFound;
+    private SwitchCompat geoLocTrackSwitch;
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 100;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +74,8 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         setContentView(R.layout.attendee_edit_profile);
         db = FirebaseFirestore.getInstance();
         attendeesRef = db.collection("attendees");
+
+
 
         imageViewProfile = findViewById(R.id.imageView);
         textEditImage = findViewById(R.id.editEventPosterText);
@@ -76,6 +85,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancelButton);
         deleteImageButton = findViewById(R.id.deleteImageButton);
         homeButton = findViewById(R.id.imageView2);
+        geoLocTrackSwitch = findViewById(R.id.geolocationTrackSwitch);
 
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
@@ -108,6 +118,27 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 deleteProfilePicture();
+            }
+        });
+
+        boolean isGeoLocTrackOn = sharedPreferences.getBoolean("geoLocTrackSwitchState", false);
+        geoLocTrackSwitch.setChecked(isGeoLocTrackOn);
+
+        // Set switch listener for tracking location
+        geoLocTrackSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // Save the state of geoLocTrackSwitch in SharedPreferences
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("geoLocTrackSwitchState", isChecked);
+                editor.apply();
+
+                if (isChecked) {
+                    // If switch is turned on, request location permission
+                    requestLocationPermission();
+                } else {
+                    // Handle if switch is turned off
+                }
             }
         });
 
@@ -161,7 +192,24 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openGallery();
             } else {
-                Toast.makeText(this, "Permission denied. Cannot access images.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Permission denied for image selection.", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Location permission granted, handle accordingly
+            } else {
+                Toast.makeText(this, "Permission denied for location access.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    private void requestLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            } else {
+                // Permission already granted, handle accordingly
             }
         }
     }
@@ -215,11 +263,12 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         String name = editTextName.getText().toString().trim();
         String email = editTextEmail.getText().toString().trim();
         String phonenum = editTextPhoneNumber.getText().toString().trim();
+        boolean isGeoLocTrackOn = geoLocTrackSwitch.isChecked();
         if (imageUri == null || imageUri.isEmpty()) {
             Picasso.get().load(url + name).into(imageViewProfile);
             imageUri = url + name;
         }
-        saveProfileData(getApplicationContext(), name, email, imageUri, phonenum);
+        saveProfileData(getApplicationContext(), name, email, imageUri, phonenum, isGeoLocTrackOn);
         Intent intent = new Intent();
         if (!imageUri.isEmpty()) {
             intent.putExtra("updatedImageUri", imageUri);
@@ -245,13 +294,14 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
      * @param imageUri
      * @param phonenum
      */
-    private void saveProfileData(Context context, String name, String email, String imageUri, String phonenum) {
+    private void saveProfileData(Context context, String name, String email, String imageUri, String phonenum, boolean isGeoLocTrackOn) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("UserProfile", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("name", name);
         editor.putString("email", email);
         editor.putString("imageUri", imageUri);
         editor.putString("phonenumber", phonenum);
+        editor.putBoolean("geoLocTrackSwitchState", isGeoLocTrackOn);
         editor.apply();
         if(phonenum.isEmpty()){
             Toast.makeText(context, "Error: No phone number, rest of profile saved", Toast.LENGTH_SHORT).show();
