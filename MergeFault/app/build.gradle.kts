@@ -5,6 +5,11 @@ plugins {
 }
 
 android {
+
+    packagingOptions {
+        exclude("/META-INF/DEPENDENCIES")
+    }
+
     namespace = "com.example.mergefault"
     compileSdk = 34
 
@@ -72,6 +77,12 @@ dependencies {
     implementation("com.google.firebase:firebase-inappmessaging-display:20.4.1")
     implementation("com.google.firebase:firebase-messaging:23.4.1")
     implementation ("com.squareup.okhttp3:okhttp:4.9.2")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.17.0")
+    implementation("com.google.firebase:firebase-core:21.1.1")
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.android.volley:volley:1.2.1")
+    testImplementation("junit:junit:4.13.2")
+
    
     
 
