@@ -14,14 +14,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+
 /**
  * This is a fragment class for adding limit
  */
-public class AddLimitFragment extends DialogFragment {
+public class EditLimitFragment extends DialogFragment {
     /**
      * this is a listener interface which the activity that calls this class implements
      */
-    interface AddLimitDialogListener {
+    interface EditLimitDialogListener {
         /**
          * This is the abstract method addLimit
          * @param Limit
@@ -29,16 +30,16 @@ public class AddLimitFragment extends DialogFragment {
          */
         void addLimit(Integer Limit);
     }
-    private AddLimitDialogListener listener;
+    private EditLimitDialogListener listener;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (context instanceof AddLimitDialogListener) {
-            listener = (AddLimitDialogListener) context;
+        if (context instanceof EditLimitDialogListener) {
+            listener = (EditLimitDialogListener) context;
         }
         else {
-            throw new RuntimeException(context + "must implement AddLimitDialogListener");
+            throw new RuntimeException(context + "must implement EditLimitDialogListener");
         }
     }
 
@@ -48,19 +49,23 @@ public class AddLimitFragment extends DialogFragment {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_add_number, null);
         EditText editLimit = view.findViewById(R.id.editNumberText);
         editLimit.setInputType(InputType.TYPE_CLASS_NUMBER);
-        CharSequence hint = "Add Limit";
-        editLimit.setHint(hint);
+
+        Bundle bundle = getArguments();
+        if (!bundle.isEmpty()){
+            String attendeeLimitString = getArguments().getString("attendeeLimit");
+            editLimit.setText(attendeeLimitString);
+        }
         AlertDialog.Builder builder = new AlertDialog.Builder((getContext()));
         return builder
                 .setView(view)
-                .setTitle("Add a Limit")
+                .setTitle("Edit Limit")
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
                     }
                 })
-                .setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Finish", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (!editLimit.getText().toString().equals("")) {
