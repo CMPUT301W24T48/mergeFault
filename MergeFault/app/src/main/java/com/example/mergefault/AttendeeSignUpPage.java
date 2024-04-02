@@ -139,7 +139,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 SubscribeAttendee();
-                //AddAttendee();
+                AddAttendee();
 
             }
         });
