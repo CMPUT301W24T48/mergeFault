@@ -1,17 +1,13 @@
 package com.example.mergefault;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.annotation.Nullable;
-
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import java.util.ArrayList;
-import java.util.Collections;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
@@ -20,6 +16,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+
 /**
  * This activity displays the list of attendees for an event to the organizer.
  * It also provides functionality to count the number of attendees who have checked in or signed up for the event.
@@ -27,9 +25,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 public class OrganizerAttendeeList extends AppCompatActivity{
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
+    private CollectionReference eventAttendeeRef;
     private String name;
     private Integer phoneNum;
     private String emailId;
+    private String eventId;
+    private String organizerId;
     private Boolean notificationPref;
     private Boolean geolocationPref;
     private String profImageURL;
@@ -47,16 +48,18 @@ public class OrganizerAttendeeList extends AppCompatActivity{
         checkInCount = findViewById(R.id.checkedInCountText);
         signUpCount = findViewById(R.id.signUpCountText);
 
+        Intent receiverIntent = getIntent();
+        eventId = receiverIntent.getStringExtra("EventId");
+        organizerId = receiverIntent.getStringExtra("OrganizerID");
+
         db = FirebaseFirestore.getInstance();
-        attendeeRef = db.collection("attendees");
+        eventAttendeeRef = db.collection("events").document(eventId).collection("attendees");
         attendees = new ArrayList<Attendee>();
         String user = "organizer";
         attendeeArrayAdapter = new AttendeeArrayAdapter(this,attendees,user);
         attendeeList.setAdapter(attendeeArrayAdapter);
 
-
-
-        attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        eventAttendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if (error != null) {
@@ -65,7 +68,7 @@ public class OrganizerAttendeeList extends AppCompatActivity{
                 }
                 if (value != null) {
                     attendees.clear();
-                    for (QueryDocumentSnapshot doc : value){
+                    for (QueryDocumentSnapshot doc : value) {
                         name = doc.getString("AttendeeName");
                         phoneNum = Integer.parseInt(doc.getString("AttendeePhoneNumber"));
                         emailId = doc.getString("AttendeeEmail");
@@ -75,7 +78,9 @@ public class OrganizerAttendeeList extends AppCompatActivity{
                     }
                     attendeeArrayAdapter.notifyDataSetChanged();
                 }
+
             }
         });
+
     }
 }

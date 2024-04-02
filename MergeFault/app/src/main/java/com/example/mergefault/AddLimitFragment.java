@@ -9,6 +9,7 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -62,8 +63,12 @@ public class AddLimitFragment extends DialogFragment {
                 .setPositiveButton("Add", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Integer Limit = Integer.parseInt(editLimit.getText().toString());
-                        listener.addLimit(Limit);
+                        if (!editLimit.getText().toString().equals("")) {
+                            Integer Limit = Integer.parseInt(editLimit.getText().toString());
+                            listener.addLimit(Limit);
+                        } else {
+                            Toast.makeText(getContext(), "Invalid Limit", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 })
                 .create();

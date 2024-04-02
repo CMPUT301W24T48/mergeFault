@@ -76,6 +76,8 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
             @Override
             public void handleOnBackPressed() {
                 eventRef.delete();
+                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerAddEventActivity.class);
+                startActivity(intent);
                 finish();
             }
         };
@@ -84,6 +86,7 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                eventRef.delete();
                 Intent intent = new Intent(OrganizerNewOrReuseQR.this, MainActivity.class);
                 startActivity(intent);
                 finish();

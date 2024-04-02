@@ -161,6 +161,8 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
+                Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerHomeActivity.class);
+                startActivity(intent);
                 finish();
             }
         };
@@ -168,13 +170,15 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerHomeActivity.class);
+                startActivity(intent);
                 finish();
             }
         });
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OrganizerAddEventActivity.this, MainActivity.class);
+                Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerHomeActivity.class);
                 startActivity(intent);
                 finish();
             }
@@ -273,7 +277,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class);
         intent.putExtra("EventId", eventId);
         startActivity(intent);
-        //Places.deinitialize();
+        finish();
     }
 
     /**
@@ -401,7 +405,11 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         data.put("Location", event.getLocation());
         data.put("PlaceID", event.getPlaceId());
         data.put("DateTime", event.getDateTime().getTime());
-        data.put("AttendeeLimit", event.getAttendeeLimit().toString());
+        if (event.getAttendeeLimit() != null) {
+            data.put("AttendeeLimit", event.getAttendeeLimit().toString());
+        } else {
+            data.put("AttendeeLimit", null);
+        }
         data.put("EventName", event.getEventName());
         data.put("Description", event.getDescription());
         data.put("GeoLocOn",event.getGeoLocOn());
@@ -416,7 +424,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
              */
             @Override
             public void onSuccess(DocumentReference documentReference) {
-                eventId = documentReference.getId().toString();
+                eventId = documentReference.getId();
                 documentReference.update("EventID", eventId).addOnSuccessListener(new OnSuccessListener<Void>() {
                     /**
                      * Waits for the update to finish then calling getDownloadUrl()

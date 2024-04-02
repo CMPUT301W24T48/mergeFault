@@ -86,7 +86,6 @@ public class Attendee {
     public String getProfImageURL(){
         return profImageURL;
     }
-
     /**
      * Retrieves the check-in count of the attendee
      *
@@ -95,7 +94,6 @@ public class Attendee {
     public Integer getCheckInCount(){
         return checkInCount;
     }
-
     /**
      * Sets the name of the attendee.
      *

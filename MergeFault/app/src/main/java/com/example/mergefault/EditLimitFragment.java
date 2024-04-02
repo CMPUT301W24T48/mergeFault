@@ -9,10 +9,12 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+
 /**
  * This is a fragment class for adding limit
  */
@@ -44,11 +46,15 @@ public class EditLimitFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        String attendeeLimitString = getArguments().getString("attendeeLimit");
         View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_add_number, null);
         EditText editLimit = view.findViewById(R.id.editNumberText);
         editLimit.setInputType(InputType.TYPE_CLASS_NUMBER);
-        editLimit.setText(attendeeLimitString);
+
+        Bundle bundle = getArguments();
+        if (!bundle.isEmpty()){
+            String attendeeLimitString = getArguments().getString("attendeeLimit");
+            editLimit.setText(attendeeLimitString);
+        }
         AlertDialog.Builder builder = new AlertDialog.Builder((getContext()));
         return builder
                 .setView(view)
@@ -62,8 +68,12 @@ public class EditLimitFragment extends DialogFragment {
                 .setPositiveButton("Finish", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Integer Limit = Integer.parseInt(editLimit.getText().toString());
-                        listener.addLimit(Limit);
+                        if (!editLimit.getText().toString().equals("")) {
+                            Integer Limit = Integer.parseInt(editLimit.getText().toString());
+                            listener.addLimit(Limit);
+                        } else {
+                            Toast.makeText(getContext(), "Invalid Limit", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 })
                 .create();

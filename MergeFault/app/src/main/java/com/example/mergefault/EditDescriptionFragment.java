@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -60,8 +61,13 @@ public class EditDescriptionFragment extends DialogFragment {
                 .setPositiveButton("Finish", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String description = editDescription.getText().toString();
-                        listener.addDescription(description);
+                        if (!editDescription.getText().toString().equals("")) {
+                            String description = editDescription.getText().toString();
+                            listener.addDescription(description);
+                        } else {
+                            Toast.makeText(getContext(), "Invalid Description", Toast.LENGTH_SHORT).show();
+                        }
+
                     }
                 })
                 .create();

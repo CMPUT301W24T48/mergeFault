@@ -1,10 +1,16 @@
 package com.example.mergefault;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -20,6 +26,7 @@ public class AdminManageProfiles extends AppCompatActivity{
 
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
+    private CollectionReference eventAttendeeRef;
     private String name;
     private Integer phoneNum;
     private String emailId;
@@ -63,6 +70,62 @@ public class AdminManageProfiles extends AppCompatActivity{
                 }
             }
         });
-        
+
+        attendeeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (attendees.size() != 0){
+                    db.collection("attendees").document(attendees.get(position).getPhoneNum().toString()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            Log.d("","profile deleted successfully");
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w("","failed to delete profile");
+                        }
+                    });
+                    attendeeArrayAdapter.notifyDataSetChanged();
+
+                    eventAttendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                            if (error != null) {
+                                Log.e("Firestore", error.toString());
+                                return;
+                            }
+                            if (value != null){
+                                for (QueryDocumentSnapshot doc : value){
+                                    eventAttendeeRef = db.collection("events").document(doc.getId()).collection("attendees");
+                                    eventAttendeeRef.get().addOnCompleteListener(task -> {
+                                        QuerySnapshot querySnapshot = task.getResult();
+                                        if (querySnapshot != null){
+                                            for (QueryDocumentSnapshot document : querySnapshot){
+                                                if (doc.getString("AttendeeID") == attendees.get(position).getPhoneNum().toString()){
+                                                    db.collection("events").document(attendees.get(position).getPhoneNum().toString()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void unused) {
+                                                            Log.d("","deleted profile from all events");
+                                                        }
+                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Log.w("", "failed to delete profile from all events");
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                    attendees.remove(position);
+                    attendeeArrayAdapter.notifyDataSetChanged();
+                }
+            }
+        });
     }
 }
