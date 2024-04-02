@@ -113,7 +113,7 @@ public class AdminManageImages extends AppCompatActivity{
                 if (attendeeIDS.size() != 0 && Images.size() != 0){
                     DocumentReference tempRef = db.collection("attendees").document(attendeeIDS.get(position));
                     Map<String, Object> updates = new HashMap<>();
-                    updates.put("AttendeeProfile", FieldValue.delete());
+                    updates.put("AttendeeProfile", "");
                     tempRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {

@@ -1,11 +1,18 @@
 package com.example.mergefault;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -75,6 +82,27 @@ public class AdminManageEvents extends AppCompatActivity{
                         eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL,description,geoLocOn, eventID, placeId));
 
                     }
+                    eventArrayAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+
+        eventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (eventDataList.size() != 0){
+                    db.collection("events").document(eventDataList.get(position).getEventID()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            Log.d("","event deleted successfully");
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w("","failed to delete event");
+                        }
+                    });
+                    eventDataList.remove(position);
                     eventArrayAdapter.notifyDataSetChanged();
                 }
             }
