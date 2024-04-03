@@ -17,16 +17,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -134,7 +138,9 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SubscribeAttendee();
                 AddAttendee();
+
             }
         });
         profileImageView.setOnClickListener(new View.OnClickListener() {
@@ -163,6 +169,27 @@ public class AttendeeSignUpPage extends AppCompatActivity {
                 switchActivities();
             }
         });
+    }
+    public void SubscribeAttendee(){
+        FirebaseMessaging.getInstance().subscribeToTopic(eventId)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            // Subscription successful
+                            Log.d("Subscribe","Successfully subscribed to topic: " + eventId);
+                        } else {
+                            // Subscription failed
+                            Log.d("Subscribe","Failed to subscribe to topic: " + eventId);
+                            Exception e = task.getException();
+                            if (e != null) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
+
     }
     private void loadProfileImage() {
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {

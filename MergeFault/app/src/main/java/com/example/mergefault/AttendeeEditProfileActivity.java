@@ -1,12 +1,15 @@
 package com.example.mergefault;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,6 +27,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -65,6 +70,8 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private Boolean geoLocChecked;
     private Boolean notifChecked;
     private String attendeeId;
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +103,8 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -139,6 +148,15 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 }
             }
         });
+
+        geoLocSwitch = findViewById(R.id.geolocationTrackSwitch);
+        geoLocSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                requestLocationPermission();
+            } else {
+                Toast.makeText(this, "No permission please manage in settings", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
@@ -154,6 +172,30 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         }
         Toast.makeText(this, "Profile picture deleted", Toast.LENGTH_SHORT).show();
 
+    }
+
+    private void requestLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        LOCATION_PERMISSION_REQUEST_CODE);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                geoLocSwitch.setChecked(false);
+            }
+        }
     }
 
     private final ActivityResultLauncher<String> startPickingImage = registerForActivityResult(

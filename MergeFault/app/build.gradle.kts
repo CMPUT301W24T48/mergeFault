@@ -5,6 +5,11 @@ plugins {
 }
 
 android {
+
+    packagingOptions {
+        exclude("/META-INF/DEPENDENCIES")
+    }
+
     namespace = "com.example.mergefault"
     compileSdk = 34
 
@@ -63,9 +68,10 @@ dependencies {
     implementation("com.google.android.libraries.places:places:3.4.0")
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
     implementation("com.google.zxing:core:3.3.3")
-    //testImplementation("junit:junit:4.13.2")
+    testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
     testImplementation ("androidx.test:core:1.4.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.3.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.2")
@@ -74,6 +80,12 @@ dependencies {
     implementation("com.google.firebase:firebase-inappmessaging-display:20.4.1")
     implementation("com.google.firebase:firebase-messaging:23.4.1")
     implementation ("com.squareup.okhttp3:okhttp:4.9.2")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.17.0")
+    implementation("com.google.firebase:firebase-core:21.1.1")
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.android.volley:volley:1.2.1")
+    testImplementation("junit:junit:4.13.2")
+
    
     
 
