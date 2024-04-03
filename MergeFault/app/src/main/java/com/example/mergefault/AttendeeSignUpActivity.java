@@ -40,7 +40,7 @@ import java.util.Objects;
 /**
  * Activity for attendee sign-up for an event.
  */
-public class AttendeeSignUpPage extends AppCompatActivity {
+public class AttendeeSignUpActivity extends AppCompatActivity {
 
     // Event ID
     private String eventId;
@@ -109,7 +109,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
                             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy MMM dd hh:mm a z");
                             String dateString = simpleDateFormat.format(doc.getDate("DateTime"));
                             time.setText(dateString);
-                            new AttendeeSignUpPage.DownloadImageFromInternet((ImageView) findViewById(R.id.eventPoster)).execute(doc.getString("EventPoster"));
+                            new AttendeeSignUpActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.eventPoster)).execute(doc.getString("EventPoster"));
                         }
                     }
                 }
@@ -130,7 +130,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeHomeActivity.class);
+                Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
                 finish();
             }
@@ -146,7 +146,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeEditProfileActivity.class);
+                Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeEditProfileActivity.class);
                 startActivityForResult(intent, 0);
             }
         });
@@ -198,7 +198,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
                 for (QueryDocumentSnapshot doc : value) {
                     if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
-                            new AttendeeSignUpPage.DownloadImageFromInternet((ImageView) findViewById(R.id.ProfilePicture)).execute(doc.getString("AttendeeProfile"));
+                            new AttendeeSignUpActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.ProfilePicture)).execute(doc.getString("AttendeeProfile"));
                         }
                     }
                 }
@@ -227,7 +227,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         }
     }
     public void switchActivities() {
-        Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeBrowsePostedEventsActivity.class);
+        Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeBrowsePostedEventsActivity.class);
         startActivity(intent);
         finish();
     }

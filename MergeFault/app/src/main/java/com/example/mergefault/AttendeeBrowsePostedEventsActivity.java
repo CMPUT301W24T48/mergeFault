@@ -114,7 +114,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) eventsList.getItemAtPosition(position);
-                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpPage.class);
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("0", selectedEvent.getEventID());
                 intent.putExtras(bundle);
