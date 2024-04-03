@@ -18,11 +18,9 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * Activity for sharing QR codes with organizers.
@@ -31,15 +29,13 @@ public class OrganizerShareQR extends AppCompatActivity {
 
     private ImageView checkInQRImageView, promoteQRImageView;
     private Button cancelButton, shareCheckInButton, sharePromoteButton, shareBothButton;
+    private ImageView homeButton;
 
     private String eventId;
 
     private String pastActivity;
 
     private String organizerId;
-
-    private String PromotionalActivityRedirect = "www.lotuseventspromotions.com?eventId=";
-    private String CheckInActivityRedirect = "www.lotuseventscheckin.com?eventId=";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +48,7 @@ public class OrganizerShareQR extends AppCompatActivity {
         sharePromoteButton = findViewById(R.id.sharePromoteButton);
         shareBothButton = findViewById(R.id.shareBoth);
         cancelButton = findViewById(R.id.cancelButton);
+        homeButton = findViewById(R.id.logoImgView);
 
         // Set click listener for cancel button
 
@@ -117,10 +114,18 @@ public class OrganizerShareQR extends AppCompatActivity {
                 finish();
             }
         });
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerShareQR.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         // Generate QR codes for event check-in and promotion
-        generateQRCode("myapp://" + CheckInActivityRedirect + eventId, checkInQRImageView);
-        generateQRCode("myapp://" + PromotionalActivityRedirect + eventId, promoteQRImageView);
+        generateQRCode("CheckIn." + eventId, checkInQRImageView);
+        generateQRCode("Promotion."  + eventId, promoteQRImageView);
     }
 
     /**
