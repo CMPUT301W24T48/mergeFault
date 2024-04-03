@@ -109,7 +109,7 @@
             android:name=".MapActivity"
             android:exported="false" />
         <activity
-            android:name=".AttendeeSignUpPage"
+            android:name=".AttendeeSignUpActivity"
             android:exported="false"/>
         <activity
             android:name=".OrganizerViewEventsActivity"
