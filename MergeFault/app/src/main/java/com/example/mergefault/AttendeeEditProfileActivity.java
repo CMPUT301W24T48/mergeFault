@@ -154,6 +154,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             if (isChecked) {
                 requestLocationPermission();
             } else {
+                geoLocSwitch.setChecked(false);
                 Toast.makeText(this, "No permission please manage in settings", Toast.LENGTH_SHORT).show();
             }
         });

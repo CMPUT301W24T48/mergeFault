@@ -124,6 +124,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, QRCodeScannerActivity.class);
+                intent.putExtra("parentActivity", "AttendeeViewEventDetailsActivity");
                 startActivityForResult(intent,0);
             }
         });
