@@ -15,13 +15,22 @@ import androidx.core.app.ActivityCompat;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.util.Objects;
+
 public class QRCodeScannerActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CAMERA = 1;
 
+    private String callerActivity;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent receiverIntent = getIntent();
+        callerActivity = receiverIntent.getStringExtra("parentActivity");
+        Log.d("activity", callerActivity);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -37,7 +46,6 @@ public class QRCodeScannerActivity extends AppCompatActivity {
     private void initQRCodeScanner() {
         IntentIntegrator integrator = new IntentIntegrator(this);
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
-        integrator.setOrientationLocked(true);
         integrator.setPrompt("Scan a QR code");
         integrator.initiateScan();
     }
@@ -61,17 +69,26 @@ public class QRCodeScannerActivity extends AppCompatActivity {
             if (result.getContents() == null) {
                 Toast.makeText(this, "Scan cancelled", Toast.LENGTH_LONG).show();
             } else {
-                Log.d("result", result.getContents());
-                Intent intent = new Intent();
-                String resultString = result.getContents();
-                Log.d("result", resultString);
-                Bundle bundle = new Bundle();
-                String action = resultString.substring(0,resultString.indexOf("."));
-                String eventId = resultString.substring(resultString.indexOf(".") + 1);
-                intent.putExtra("action", action);
-                intent.putExtra("eventId", eventId);
-                setResult(RESULT_OK,intent);
-                finish();
+                if (!Objects.equals(callerActivity, "Main")) {
+                    //Log.d("result", result.getContents());
+                    Intent intent = new Intent();
+                    String resultString = result.getContents();
+                    Log.d("result", resultString);
+                    Bundle bundle = new Bundle();
+                    String action = resultString.substring(0,resultString.indexOf("."));
+                    String eventId = resultString.substring(resultString.indexOf(".") + 1);
+                    intent.putExtra("action", action);
+                    intent.putExtra("eventId", eventId);
+                    setResult(RESULT_OK,intent);
+                    finish();
+                } else {
+                    Intent intent = new Intent();
+                    String resultString = result.getContents();
+                    //Log.d("result", resultString);
+                    intent.putExtra("AdminKey", resultString);
+                    setResult(RESULT_OK,intent);
+                    finish();
+                }
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
