@@ -73,10 +73,10 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         attendeesRef = db.collection("attendees");
 
         imageViewProfile = findViewById(R.id.imageView);
-        textEditImage = findViewById(R.id.editEventPosterText);
-        editTextName = findViewById(R.id.attendeeListButton);
-        editTextEmail = findViewById(R.id.manageProfilesButton);
-        editTextPhoneNumber = findViewById(R.id.eventDetailsButton);
+        textEditImage = findViewById(R.id.editProfilePictureButton);
+        editTextName = findViewById(R.id.editAttendeeName);
+        editTextEmail = findViewById(R.id.editEmailText);
+        editTextPhoneNumber = findViewById(R.id.editPhoneNumber);
         cancelButton = findViewById(R.id.cancelButton);
         deleteImageButton = findViewById(R.id.deleteImageButton);
         homeButton = findViewById(R.id.imageView2);
@@ -87,8 +87,6 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
 
         // Load profile data when activity is created
         loadProfileData();
-
-        Log.d("attendeeId", attendeeId);
 
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,7 +99,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (name != null && email != null) {
+                if (editTextName.getText() != null && editTextEmail.getText() != null) {
                     saveProfile();
                 } else {
                     Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
@@ -121,7 +119,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (name != null && email != null) {
+                if (editTextName.getText() != null && editTextEmail.getText() != null) {
                     saveProfile();
                 } else {
                     Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
@@ -134,10 +132,10 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         deleteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (sharedPreferences.getString("imageUri", null) == null){
-                    Toast.makeText(getApplicationContext(),"No image to delete", Toast.LENGTH_SHORT);
+                if (editTextName.getText() != null && editTextEmail.getText() != null) {
+                    saveProfile();
                 } else {
-                    deleteProfilePicture();
+                    Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -225,40 +223,44 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         }
         new AttendeeEditProfileActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.imageView)).execute(imageUri.toString());
 
-        DocumentReference doc = attendeesRef.document(attendeeId);
-        doc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Log.d("LoadProfile", "attendee in firebase");
-                        doc.update("AttendeeProfile", imageUri);
-                        doc.update("AttendeeName", name);
-                        doc.update("AttendeePhoneNumber", phonenumber);
-                        doc.update("AttendeeEmail", email);
-                        doc.update("geoLocChecked", geoLocChecked);
-                        doc.update("notifChecked", notifChecked);
-                        saveProfileData(getApplicationContext(), name, email, imageUri, phonenumber, geoLocChecked, notifChecked,attendeeId);
-                    } else {
-                        HashMap<String, Object> data = new HashMap<>();
-                        data.put("AttendeeProfile", imageUri);
-                        data.put("AttendeeName", name);
-                        data.put("AttendeePhoneNumber", phonenumber);
-                        data.put("AttendeeEmail", email);
-                        data.put("geoLocChecked", geoLocChecked);
-                        data.put("notifChecked", notifChecked);
-                        attendeesRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                            @Override
-                            public void onSuccess(DocumentReference documentReference) {
-                                attendeeId = documentReference.getId();
-                                saveProfileData(getApplicationContext(), name, email, imageUri, phonenumber, geoLocChecked, notifChecked,attendeeId);
-                            }
-                        });
+        if (attendeeId != null) {
+            DocumentReference doc = attendeesRef.document(attendeeId);
+            doc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            Log.d("LoadProfile", "attendee in firebase");
+                            doc.update("AttendeeProfile", imageUri);
+                            doc.update("AttendeeName", name);
+                            doc.update("AttendeePhoneNumber", phonenumber);
+                            doc.update("AttendeeEmail", email);
+                            doc.update("geoLocChecked", geoLocChecked);
+                            doc.update("notifChecked", notifChecked);
+                            saveProfileData(getApplicationContext(), name, email, imageUri, phonenumber, geoLocChecked, notifChecked, attendeeId);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
+        else {
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("AttendeeProfile", imageUri);
+            data.put("AttendeeName", name);
+            data.put("AttendeePhoneNumber", phonenumber);
+            data.put("AttendeeEmail", email);
+            data.put("geoLocChecked", geoLocChecked);
+            data.put("notifChecked", notifChecked);
+            attendeesRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+                    attendeeId = documentReference.getId();
+                    saveProfileData(getApplicationContext(), name, email, imageUri, phonenumber, geoLocChecked, notifChecked,attendeeId);
+                }
+            });
+        }
+
     }
 
     /**
@@ -274,7 +276,6 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
      * @param attendeeId
      */
     private void saveProfileData(Context context, String name, String email, Uri imageUri, String phonenum, Boolean geoLocChecked, Boolean notifSwitchChecked, String attendeeId) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("UserProfile", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("name", name);
         editor.putString("email", email);
@@ -286,14 +287,13 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
 
         editor.apply();
         Toast.makeText(context, "Profile created and saved successfully", Toast.LENGTH_SHORT).show();
-
+        setResult(RESULT_OK);
         switchActivities();
     }
     class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
         ImageView imageView;
         public DownloadImageFromInternet(ImageView imageView) {
             this.imageView=imageView;
-            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
         }
         protected Bitmap doInBackground(String... urls) {
             String imageURL=urls[0];

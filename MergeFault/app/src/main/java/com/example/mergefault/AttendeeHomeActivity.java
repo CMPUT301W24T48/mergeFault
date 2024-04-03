@@ -10,8 +10,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -39,6 +40,12 @@ public class AttendeeHomeActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
+    ActivityResultLauncher<Intent> profileEditLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            (result) -> {
+
+            }
+    );
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +64,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         profileImageView = findViewById(R.id.profileImageView);
 
         // Load the profile image at the top of the screen
+
         loadProfileImage();
 
         // Set click listener for the profile image to navigate to the edit/view profile screen
@@ -64,7 +72,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeEditProfileActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, 0);
             }
         });
 
@@ -97,16 +105,12 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Loads the profile image from the saved user profile.
-     * If no image is found in the user profile, a default image is set.
-     */
     private void loadProfileImage() {
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                for(QueryDocumentSnapshot doc: value){
-                    if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))){
+                for (QueryDocumentSnapshot doc : value) {
+                    if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
                             new AttendeeHomeActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.profileImageView)).execute(doc.getString("AttendeeProfile"));
                         }
@@ -120,7 +124,6 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         ImageView imageView;
         public DownloadImageFromInternet(ImageView imageView) {
             this.imageView=imageView;
-            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
         }
         protected Bitmap doInBackground(String... urls) {
             String imageURL=urls[0];
@@ -136,6 +139,18 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         }
         protected void onPostExecute(Bitmap result) {
             imageView.setImageBitmap(result);
+        }
+    }
+    /**
+     * Handles the result when returning from another activity.
+     * If changes were made to the profile image, reload it.
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            // Reload the profile image if changes were made
+            loadProfileImage();
         }
     }
 }
