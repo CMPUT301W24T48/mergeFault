@@ -102,7 +102,7 @@ public class AdminManageProfiles extends AppCompatActivity{
                                         QuerySnapshot querySnapshot = task.getResult();
                                         if (querySnapshot != null){
                                             for (QueryDocumentSnapshot document : querySnapshot){
-                                                if (doc.getString("AttendeeID") == attendees.get(position).getPhoneNum().toString()){
+                                                if (document.getString("AttendeeID") == attendees.get(position).getPhoneNum().toString()){
                                                     db.collection("events").document(attendees.get(position).getPhoneNum().toString()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                                                         @Override
                                                         public void onSuccess(Void unused) {
