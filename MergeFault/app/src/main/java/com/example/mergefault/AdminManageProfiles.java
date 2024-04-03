@@ -1,4 +1,5 @@
 package com.example.mergefault;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,8 +19,6 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import org.checkerframework.checker.units.qual.A;
-
 import java.util.ArrayList;
 
 public class AdminManageProfiles extends AppCompatActivity{
@@ -33,6 +32,7 @@ public class AdminManageProfiles extends AppCompatActivity{
     private Boolean notificationPref;
     private Boolean geolocationPref;
     private String profImageURL;
+    private String attendeeId;
     private ArrayList<Attendee> attendees;
     private AttendeeArrayAdapter attendeeArrayAdapter;
     private ListView attendeeList;
@@ -63,8 +63,11 @@ public class AdminManageProfiles extends AppCompatActivity{
                         phoneNum = Integer.parseInt(doc.getString("AttendeePhoneNumber"));
                         emailId = doc.getString("AttendeeEmail");
                         profImageURL = doc.getString("AttendeeProfile");
+                        geolocationPref = doc.getBoolean("geoLocChecked");
+                        notificationPref = doc.getBoolean("notifChecked");
+                        attendeeId = doc.getId();
 
-                        attendees.add(new Attendee(name, phoneNum, emailId, false, false, profImageURL, 0));
+                        attendees.add(new Attendee(name, phoneNum, emailId, notificationPref, geolocationPref, profImageURL, attendeeId));
                     }
                     attendeeArrayAdapter.notifyDataSetChanged();
                 }

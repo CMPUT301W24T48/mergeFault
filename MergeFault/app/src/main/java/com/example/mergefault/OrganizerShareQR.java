@@ -109,6 +109,7 @@ public class OrganizerShareQR extends AppCompatActivity {
 
                     Intent defaultIntent = new Intent(OrganizerShareQR.this, OrganizerHomeActivity.class);
                     startActivity(defaultIntent);
+                    finish();
                 }
                 // Finish the current activity
                 finish();
@@ -117,7 +118,7 @@ public class OrganizerShareQR extends AppCompatActivity {
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OrganizerShareQR.this, MainActivity.class);
+                Intent intent = new Intent(OrganizerShareQR.this, OrganizerHomeActivity.class);
                 startActivity(intent);
                 finish();
             }

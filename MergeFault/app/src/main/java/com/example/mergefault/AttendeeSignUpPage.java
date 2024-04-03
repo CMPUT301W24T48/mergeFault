@@ -159,7 +159,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
     public void AddAttendee() {
         HashMap<String, Object> data = new HashMap<>();
         data.put("CheckedIn", false);
-        data.put("CheckedInCount", "0");
+        data.put("CheckedInCount", 0);
         //data.put("AttendeeNotificationPref", attendee.getNotificationPref());
         //data.put("AttendeeGeolocationPref", attendee.getGeolocationPref());
         eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).set(data).addOnSuccessListener(new OnSuccessListener<Void>() {

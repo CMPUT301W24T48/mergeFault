@@ -39,6 +39,7 @@ public class OrganizerHomeActivity extends AppCompatActivity {
                 String organizerIDString = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
                 intent.putExtra("OrganizerID", organizerIDString);
                 startActivity(intent);
+                finish();
             }
         });
         homeButton.setOnClickListener(new View.OnClickListener() {

@@ -1,14 +1,17 @@
 package com.example.mergefault;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.content.SharedPreferences;
 import android.widget.ListView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -21,8 +24,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.squareup.picasso.Picasso;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,13 +36,14 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private ImageView homeButton;
     private SharedPreferences sharedPreferences;
-    private ListView signedUpEventsList;
+    private ListView createdEventsList;
     private Button cancelButton;
     private EventArrayAdapter eventArrayAdapter;
 
-    private ArrayList<Event> signedUpEventDataList;
+    private ArrayList<Event> createdEvents;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
+    private CollectionReference attendeeRef;
 
     private Event selectedEvent;
     private String eventName;
@@ -66,34 +70,35 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
         profileImageView = findViewById(R.id.pfpImageView);
         homeButton = findViewById(R.id.imageView);
         cancelButton = findViewById(R.id.cancelButton);
-        signedUpEventsList = findViewById(R.id.myEventListView);
+        createdEventsList = findViewById(R.id.myEventListView);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
-        loadProfileImage();
-
-        signedUpEventDataList = new ArrayList<Event>();
-        eventArrayAdapter = new EventArrayAdapter(this, signedUpEventDataList);
-        signedUpEventsList.setAdapter(eventArrayAdapter);
+        createdEvents = new ArrayList<Event>();
+        eventArrayAdapter = new EventArrayAdapter(this, createdEvents);
+        createdEventsList.setAdapter(eventArrayAdapter);
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
+        attendeeRef = db.collection("attendees");
 
         eventArrayAdapter.notifyDataSetChanged();
         Intent recieverIntent = getIntent();
         organizerId = recieverIntent.getStringExtra("OrganizerID");
 
+        loadProfileImage();
+
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OrganizerViewEventsActivity.this, MainActivity.class);
+                Intent intent = new Intent(OrganizerViewEventsActivity.this, OrganizerHomeActivity.class);
                 startActivity(intent);
                 finish();
             }
         });
-        signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        createdEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Event selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+                Event selectedEvent = (Event) createdEventsList.getItemAtPosition(position);
                 Intent intent = new Intent(OrganizerViewEventsActivity.this, OrganizerEventOptions.class);
                 intent.putExtra("EventId", selectedEvent.getEventID());
                 intent.putExtra("OrganizerID", organizerId);
@@ -110,7 +115,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
                     return;
                 }
                 if (value != null){
-                    signedUpEventDataList.clear();
+                    createdEvents.clear();
                     for(QueryDocumentSnapshot doc: value){
                         if(Objects.equals(doc.getString("OrganizerID"), organizerId)){
                             eventName = doc.getString("EventName");
@@ -132,7 +137,7 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
                             date = Calendar.getInstance();
                             date.setTime(dateTime);
 
-                            signedUpEventDataList.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL,description,geoLocOn,eventID, placeId));
+                            createdEvents.add(new Event(eventName, orgName, location, date, attendeeLimit, imageURL,description,geoLocOn,eventID, placeId));
                         }
                     }
                     eventArrayAdapter.notifyDataSetChanged();
@@ -170,19 +175,50 @@ public class OrganizerViewEventsActivity extends AppCompatActivity {
     // imageuri references the link or source of where the image originates from such as it could originate from the device or the api call. However it is treated as empty if there is the generic pfp image there.
     // picasso is an external api that helps cache in images and load them to the imageview works on urls as well as internal images
     private void loadProfileImage() {
-        String imageUri = sharedPreferences.getString("imageUri", "");
-        if (!imageUri.isEmpty()) {
-            Picasso.get().load(imageUri).into(profileImageView);
-        } else {
-            profileImageView.setImageResource(R.drawable.pfp);
+        attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for (QueryDocumentSnapshot doc : value) {
+                    if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
+                        if (doc.getString("AttendeeProfile") != null) {
+                            new OrganizerViewEventsActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.pfpImageView)).execute(doc.getString("AttendeeProfile"));
+                        }
+                    }
+                }
+            }
+        });
+    }
+    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
+        ImageView imageView;
+
+        public DownloadImageFromInternet(ImageView imageView) {
+            this.imageView = imageView;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String imageURL = urls[0];
+            Bitmap bimage = null;
+            try {
+                InputStream in = new java.net.URL(imageURL).openStream();
+                bimage = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error Message", e.getMessage());
+                e.printStackTrace();
+            }
+            return bimage;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            imageView.setImageBitmap(result);
         }
     }
 
     // this is when we return to the activity from another one, essentially the cancel button. When we return to this activity, load the profile image depending upon any changes made to the Uri in the AttendeeEditProfileActivity.
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK) {
+            // Reload the profile image if changes were made
             loadProfileImage();
         }
     }

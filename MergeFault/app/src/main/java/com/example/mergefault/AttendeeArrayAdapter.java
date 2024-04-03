@@ -1,6 +1,6 @@
 package com.example.mergefault;
+
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,13 +8,14 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.lang.reflect.Array;
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
+import java.util.Objects;
+
 public class AttendeeArrayAdapter extends ArrayAdapter<Attendee>{
     private ArrayList<Attendee> attendees;
     private Context context;
@@ -40,10 +41,15 @@ public class AttendeeArrayAdapter extends ArrayAdapter<Attendee>{
         ImageView attendeePFP = view.findViewById(R.id.pfpImageView);
         attendeeName.setText(attendee.getName());
         Picasso.get().load(attendee.getProfImageURL()).into(attendeePFP);
-        if (user.equals("organizer")){
+        if (Objects.equals(user, "organizer")){
             TextView checkInCounter = view.findViewById(R.id.checkInCountText);
             TextView checkedInStatus = view.findViewById(R.id.checkedInText);
             checkInCounter.setText(attendee.getCheckInCount().toString());
+            if (attendee.getCheckedIn()) {
+                checkedInStatus.setText("Yes");
+            } else {
+                checkedInStatus.setText("No");
+            }
         }
         return view;
     }
