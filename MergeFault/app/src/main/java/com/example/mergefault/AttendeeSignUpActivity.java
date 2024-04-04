@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -159,12 +160,13 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
     public void AddAttendee() {
         HashMap<String, Object> data = new HashMap<>();
         data.put("CheckedIn", false);
-        data.put("CheckedInCount", "0");
+        data.put("CheckedInCount", 0);
         //data.put("AttendeeNotificationPref", attendee.getNotificationPref());
         //data.put("AttendeeGeolocationPref", attendee.getGeolocationPref());
         eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).set(data).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
+                attendeeRef.document(sharedPreferences.getString("attendeeId", null)).update("signedInEvents", FieldValue.arrayUnion(eventId));
                 Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
                 switchActivities();
             }
