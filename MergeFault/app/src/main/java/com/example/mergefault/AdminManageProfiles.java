@@ -1,18 +1,23 @@
 package com.example.mergefault;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -20,14 +25,16 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class AdminManageProfiles extends AppCompatActivity{
 
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
     private CollectionReference eventAttendeeRef;
+    private CollectionReference eventRef;
     private String name;
-    private Integer phoneNum;
+    private String phoneNum;
     private String emailId;
     private Boolean notificationPref;
     private Boolean geolocationPref;
@@ -36,14 +43,21 @@ public class AdminManageProfiles extends AppCompatActivity{
     private ArrayList<Attendee> attendees;
     private AttendeeArrayAdapter attendeeArrayAdapter;
     private ListView attendeeList;
+    private Button cancelButton;
+    private ImageView homeButton;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_manage_profiles);
         attendeeList = findViewById(R.id.profileLinearLayout);
+        cancelButton = findViewById(R.id.cancelButton);
+        homeButton = findViewById(R.id.imageView);
+
 
         db = FirebaseFirestore.getInstance();
         attendeeRef = db.collection("attendees");
+        eventRef = db.collection("events");
+
         attendees = new ArrayList<Attendee>();
         String user = "admin";
         attendeeArrayAdapter = new AttendeeArrayAdapter(this,attendees,user);
@@ -60,7 +74,7 @@ public class AdminManageProfiles extends AppCompatActivity{
                     attendees.clear();
                     for (QueryDocumentSnapshot doc : value){
                         name = doc.getString("AttendeeName");
-                        phoneNum = Integer.parseInt(doc.getString("AttendeePhoneNumber"));
+                        phoneNum = doc.getString("AttendeePhoneNumber");
                         emailId = doc.getString("AttendeeEmail");
                         profImageURL = doc.getString("AttendeeProfile");
                         geolocationPref = doc.getBoolean("geoLocChecked");
@@ -75,59 +89,61 @@ public class AdminManageProfiles extends AppCompatActivity{
         });
 
         attendeeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("Position", "position: " + position +" size: " + attendees.size());
                 if (attendees.size() != 0){
-                    db.collection("attendees").document(attendees.get(position).getPhoneNum().toString()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    DocumentReference attendeeDocRef = db.collection("attendees").document(attendees.get(position).getAttendeeId());
+                    attendeeDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
-                        public void onSuccess(Void unused) {
-                            Log.d("","profile deleted successfully");
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w("","failed to delete profile");
-                        }
-                    });
-                    attendeeArrayAdapter.notifyDataSetChanged();
-
-                    eventAttendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                            if (error != null) {
-                                Log.e("Firestore", error.toString());
-                                return;
-                            }
-                            if (value != null){
-                                for (QueryDocumentSnapshot doc : value){
-                                    eventAttendeeRef = db.collection("events").document(doc.getId()).collection("attendees");
-                                    eventAttendeeRef.get().addOnCompleteListener(task -> {
-                                        QuerySnapshot querySnapshot = task.getResult();
-                                        if (querySnapshot != null){
-                                            for (QueryDocumentSnapshot document : querySnapshot){
-                                                if (document.getString("AttendeeID") == attendees.get(position).getPhoneNum().toString()){
-                                                    db.collection("events").document(attendees.get(position).getPhoneNum().toString()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                        @Override
-                                                        public void onSuccess(Void unused) {
-                                                            Log.d("","deleted profile from all events");
-                                                        }
-                                                    }).addOnFailureListener(new OnFailureListener() {
-                                                        @Override
-                                                        public void onFailure(@NonNull Exception e) {
-                                                            Log.w("", "failed to delete profile from all events");
-                                                        }
-                                                    });
-                                                }
-                                            }
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            if (documentSnapshot.get("signedInEvents") != null){
+                                List<String> signedInEvents = (List<String>) documentSnapshot.get("signedInEvents");
+                                for (int i = 0; i < signedInEvents.size(); i++) {
+                                    db.collection("events").document(signedInEvents.get(i)).collection("attendees").document(attendees.get(position).getAttendeeId()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void unused) {
+                                            Log.d("","deleted profile from all events");
                                         }
                                     });
                                 }
                             }
+                            attendeeDocRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void unused) {
+                                    Toast.makeText(getApplicationContext(), "profile deleted successfully", Toast.LENGTH_SHORT);
+                                    Log.d("","profile deleted successfully");
+                                    Log.d("Position", "position: " + position +" size: " + attendees.size());
+                                }
+                            });
                         }
                     });
-                    attendees.remove(position);
-                    attendeeArrayAdapter.notifyDataSetChanged();
                 }
+            }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminManageProfiles.this, AdminHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AdminManageProfiles.this, AdminHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminManageProfiles.this, AdminHomeActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
     }

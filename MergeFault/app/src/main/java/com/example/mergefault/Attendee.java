@@ -7,7 +7,7 @@ package com.example.mergefault;
 public class Attendee {
 
     private String name;
-    private Integer phoneNum;
+    private String phoneNum;
     private String emailId;
     private Boolean notificationPref;
     private Boolean geolocationPref;
@@ -26,7 +26,7 @@ public class Attendee {
      * @param geolocationPref   The geolocation preference of the attendee.
      * @param profImageURL      The URL of the profile image.
      */
-    public Attendee(String name, Integer phoneNum, String emailId, Boolean notificationPref, Boolean geolocationPref, String profImageURL, Integer checkInCount, Boolean checkedIn, String attendeeId) {
+    public Attendee(String name, String phoneNum, String emailId, Boolean notificationPref, Boolean geolocationPref, String profImageURL, Integer checkInCount, Boolean checkedIn, String attendeeId) {
         this.name = name;
         this.phoneNum = phoneNum;
         this.emailId = emailId;
@@ -37,7 +37,7 @@ public class Attendee {
         this.checkedIn = checkedIn;
         this.attendeeId = attendeeId;
     }
-    public Attendee(String name, Integer phoneNum, String emailId, Boolean notificationPref, Boolean geolocationPref, String profImageURL, String attendeeId) {
+    public Attendee(String name, String phoneNum, String emailId, Boolean notificationPref, Boolean geolocationPref, String profImageURL, String attendeeId) {
         this.name = name;
         this.phoneNum = phoneNum;
         this.emailId = emailId;
@@ -61,7 +61,7 @@ public class Attendee {
      *
      * @return The phone number of the attendee.
      */
-    public Integer getPhoneNum() {
+    public String getPhoneNum() {
         return phoneNum;
     }
 
@@ -131,7 +131,7 @@ public class Attendee {
      *
      * @param phoneNum The phone number of the attendee.
      */
-    public void setPhoneNum(Integer phoneNum) {
+    public void setPhoneNum(String phoneNum) {
         this.phoneNum = phoneNum;
     }
 

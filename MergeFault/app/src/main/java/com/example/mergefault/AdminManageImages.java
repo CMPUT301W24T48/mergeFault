@@ -1,10 +1,15 @@
 package com.example.mergefault;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,16 +19,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import org.checkerframework.checker.units.qual.A;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +38,8 @@ public class AdminManageImages extends AppCompatActivity{
     private ArrayList<String> attendeeIDS;
     private ArrayList<String> Images;
     private com.example.mergefault.ImagesArrayAdapter ImagesArrayAdapter;
+    private Button cancelButton;
+    private ImageView homeButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState){
@@ -44,6 +47,8 @@ public class AdminManageImages extends AppCompatActivity{
         setContentView(R.layout.admin_browse_images);
 
         imagesListView = findViewById(R.id.imageListView);
+        cancelButton = findViewById(R.id.cancelButton);
+        homeButton = findViewById(R.id.imageView);
         eventIDs = new ArrayList<String>();
         attendeeIDS = new ArrayList<String>();
         Images = new ArrayList<String>();
@@ -69,7 +74,7 @@ public class AdminManageImages extends AppCompatActivity{
                         if (doc.getString("AttendeeProfile") !=null) {
                             imageURL = doc.getString("AttendeeProfile");
                             Images.add(imageURL);
-                            attendeeIDS.add(doc.getString("AttendeePhoneNumber"));
+                            attendeeIDS.add(doc.getId());
                         }
                     }
                     ImagesArrayAdapter.notifyDataSetChanged();
@@ -123,6 +128,30 @@ public class AdminManageImages extends AppCompatActivity{
                     Images.remove(position);
                     ImagesArrayAdapter.notifyDataSetChanged();
                 }
+            }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminManageImages.this, AdminHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AdminManageImages.this, AdminHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminManageImages.this, AdminHomeActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
     }

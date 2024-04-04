@@ -33,7 +33,7 @@ public class OrganizerAttendeeList extends AppCompatActivity{
     private CollectionReference attendeeRef;
     private CollectionReference eventAttendeeRef;
     private String name;
-    private Integer phoneNum;
+    private String phoneNum;
     private String emailId;
     private String eventId;
     private String organizerId;
@@ -91,7 +91,7 @@ public class OrganizerAttendeeList extends AppCompatActivity{
                             @Override
                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                 name = documentSnapshot.getString("AttendeeName");
-                                phoneNum = Integer.parseInt(documentSnapshot.getString("AttendeePhoneNumber"));
+                                phoneNum = documentSnapshot.getString("AttendeePhoneNumber");
                                 emailId = documentSnapshot.getString("AttendeeEmail");
                                 profImageURL = documentSnapshot.getString("AttendeeProfile");
                                 geolocationPref = documentSnapshot.getBoolean("geoLocChecked");
