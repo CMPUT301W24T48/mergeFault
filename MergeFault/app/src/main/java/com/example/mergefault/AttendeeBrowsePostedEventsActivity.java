@@ -13,7 +13,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
@@ -115,11 +114,12 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedEvent = (Event) eventsList.getItemAtPosition(position);
-                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpPage.class);
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("0", selectedEvent.getEventID());
                 intent.putExtras(bundle);
                 startActivity(intent);
+                finish();
             }
         });
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -161,7 +161,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeEditProfileActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, 0);
             }
         });
     }
@@ -189,7 +189,6 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
 
         public DownloadImageFromInternet(ImageView imageView) {
             this.imageView = imageView;
-            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
         }
 
         protected Bitmap doInBackground(String... urls) {
@@ -207,6 +206,14 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
 
         protected void onPostExecute(Bitmap result) {
             imageView.setImageBitmap(result);
+        }
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            // Reload the profile image if changes were made
+            loadProfileImage();
         }
     }
 }

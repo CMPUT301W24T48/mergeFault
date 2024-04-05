@@ -101,6 +101,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
                 intent.putExtra("EventId", eventId);
                 intent.putExtra("OrganizerID", organizerId);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -132,6 +133,8 @@ public class OrganizerEventOptions extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerEventOptions.this, OrganizerEventNotification.class);
+                intent.putExtra("EventId", eventId);
+                intent.putExtra("OrganizerID", organizerId);
                 startActivity(intent);
             }
         });
@@ -193,7 +196,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OrganizerEventOptions.this, MainActivity.class);
+                Intent intent = new Intent(OrganizerEventOptions.this, OrganizerHomeActivity.class);
                 startActivity(intent);
                 finish();
             }

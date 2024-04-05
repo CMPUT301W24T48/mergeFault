@@ -7,12 +7,14 @@ package com.example.mergefault;
 public class Attendee {
 
     private String name;
-    private Integer phoneNum;
+    private String phoneNum;
     private String emailId;
     private Boolean notificationPref;
     private Boolean geolocationPref;
     private String profImageURL;
     private Integer checkInCount;
+    private Boolean checkedIn;
+    private String attendeeId;
 
     /**
      * Constructs an Attendee object with the specified information.
@@ -24,7 +26,7 @@ public class Attendee {
      * @param geolocationPref   The geolocation preference of the attendee.
      * @param profImageURL      The URL of the profile image.
      */
-    public Attendee(String name, Integer phoneNum, String emailId, Boolean notificationPref, Boolean geolocationPref, String profImageURL, Integer checkInCount) {
+    public Attendee(String name, String phoneNum, String emailId, Boolean notificationPref, Boolean geolocationPref, String profImageURL, Integer checkInCount, Boolean checkedIn, String attendeeId) {
         this.name = name;
         this.phoneNum = phoneNum;
         this.emailId = emailId;
@@ -32,6 +34,17 @@ public class Attendee {
         this.geolocationPref = geolocationPref;
         this.profImageURL = profImageURL;
         this.checkInCount = checkInCount;
+        this.checkedIn = checkedIn;
+        this.attendeeId = attendeeId;
+    }
+    public Attendee(String name, String phoneNum, String emailId, Boolean notificationPref, Boolean geolocationPref, String profImageURL, String attendeeId) {
+        this.name = name;
+        this.phoneNum = phoneNum;
+        this.emailId = emailId;
+        this.notificationPref = notificationPref;
+        this.geolocationPref = geolocationPref;
+        this.profImageURL = profImageURL;
+        this.attendeeId = attendeeId;
     }
 
     /**
@@ -48,7 +61,7 @@ public class Attendee {
      *
      * @return The phone number of the attendee.
      */
-    public Integer getPhoneNum() {
+    public String getPhoneNum() {
         return phoneNum;
     }
 
@@ -94,11 +107,21 @@ public class Attendee {
     public Integer getCheckInCount(){
         return checkInCount;
     }
+
+    public Boolean getCheckedIn() {
+        return checkedIn;
+    }
+
+    public String getAttendeeId() {
+        return attendeeId;
+    }
+
     /**
      * Sets the name of the attendee.
      *
      * @param name The name of the attendee.
      */
+
     public void setName(String name) {
         this.name = name;
     }
@@ -108,7 +131,7 @@ public class Attendee {
      *
      * @param phoneNum The phone number of the attendee.
      */
-    public void setPhoneNum(Integer phoneNum) {
+    public void setPhoneNum(String phoneNum) {
         this.phoneNum = phoneNum;
     }
 
@@ -140,6 +163,18 @@ public class Attendee {
     }
     public void setProfImageURL(String profImageURL){
         this.profImageURL = profImageURL;
+    }
+
+    public void setCheckInCount(Integer checkInCount) {
+        this.checkInCount = checkInCount;
+    }
+
+    public void setCheckedIn(Boolean checkedIn) {
+        this.checkedIn = checkedIn;
+    }
+
+    public void setAttendeeId(String attendeeId) {
+        this.attendeeId = attendeeId;
     }
 }
 

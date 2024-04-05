@@ -17,7 +17,7 @@
         tools:layout_editor_absoluteY="100dp" />
 
     <Button
-        android:id="@+id/eventDetailsButton"
+        android:id="@+id/editPhoneNumber"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"

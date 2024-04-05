@@ -1,6 +1,5 @@
 package com.example.mergefault;
 
-import androidx.annotation.NonNull;
 import androidx.test.espresso.assertion.ViewAssertions;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -27,11 +26,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.assertEquals;
 
 import android.util.Log;
-import android.view.View;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -61,7 +56,7 @@ public class AttendeeTest {
     @Test
     public void testProfileImageClick() {
         onView(withId(R.id.profileImageView)).perform(click());
-        onView(withId(R.id.editEventPosterText)).check(matches(ViewMatchers.isDisplayed()));
+        onView(withId(R.id.editProfilePictureButton)).check(matches(ViewMatchers.isDisplayed()));
     }
 
     @Test
@@ -128,9 +123,9 @@ public class AttendeeTest {
         onView(withId(R.id.profileImageView)).perform(click());
 
         // Perform UI actions to fill profile data
-        onView(withId(R.id.manageProfilesButton)).perform(click()).perform(ViewActions.typeText(email));
-        onView(withId(R.id.attendeeListButton)).perform(click()).perform(ViewActions.typeText(name));
-        onView(withId(R.id.eventDetailsButton)).perform(click()).perform(ViewActions.typeText(phoneNumber));
+        onView(withId(R.id.editEmailText)).perform(click()).perform(ViewActions.typeText(email));
+        onView(withId(R.id.editAttendeeName)).perform(click()).perform(ViewActions.typeText(name));
+        onView(withId(R.id.editPhoneNumber)).perform(click()).perform(ViewActions.typeText(phoneNumber));
         closeSoftKeyboard();
         onView(withId(R.id.cancelButton)).perform(click());
 

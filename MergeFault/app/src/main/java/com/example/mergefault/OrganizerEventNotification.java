@@ -3,10 +3,12 @@ package com.example.mergefault;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -25,39 +27,73 @@ import java.io.IOException;
 
 public class OrganizerEventNotification extends AppCompatActivity {
     private FirebaseFirestore db;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_event_notification);
-        Bundle extras = getIntent().getExtras();
-        String eventID = extras.getString("eventID");
-        String eventName = extras.getString("eventName");
-        EditText input = findViewById(R.id.eventNameEditText);
-        findViewById(R.id.sendNotifButton).setOnClickListener(new View.OnClickListener() {
+        Intent receiverIntent = getIntent();
+        String eventID = receiverIntent.getStringExtra("EventId");
+        String organizerID = receiverIntent.getStringExtra("OrganizerID");
+
+        findViewById(R.id.sendButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String message = input.getText().toString().trim();
+                EditText msgInput = findViewById(R.id.eventEditText);
+                EditText titleInput = findViewById(R.id.titleEditText);
+                String message = msgInput.getText().toString().trim();
+                String title = titleInput.getText().toString().trim();
+                boolean valid = false;
                 if (!message.equals("")) {
-                    sendNotification(message, eventName, eventID);
+                    if (!title.equals("")) {
+                        sendNotification(message, title, eventID);
+                        msgInput.setText("");
+                        titleInput.setText("");
+                        valid = true;
+                    }
                 }
+                if (!valid){
+                        runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Please enter all required fields.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+
+            }
+        });
+        findViewById(R.id.cancelButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerEventNotification.this, OrganizerEventOptions.class);
+                intent.putExtra("EventId", eventID);
+                intent.putExtra("OrganizerID", organizerID);
+                startActivity(intent);
+                finish();
+
             }
         });
     }
 
 
-    public void sendNotification(String message, String eventName, String eventID){
+    public void sendNotification(String message, String title, String eventID){
         OkHttpClient client = new OkHttpClient();
         JSONObject json = new JSONObject();
         try {
             json.put("to", "/topics/" + eventID);
             JSONObject notification = new JSONObject();
-            notification.put("title", eventName);
+            notification.put("title", title);
             notification.put("body", message);
             json.put("notification", notification);
         } catch (JSONException e) {
-            throw new RuntimeException(e);
+                runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Notification did not send.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
         }
 
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json.toString());
@@ -75,9 +111,22 @@ public class OrganizerEventNotification extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
                     Log.d("FCM_RESPONSE", "Response: " + responseBody);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Notification sent", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
                 } else {
-                    String errorResponse = response.body().string(); // Read the response body for error details
-                    String status = response.code() + " " + response.message(); // HTTP status code and message
+                    String errorResponse = response.body().string();
+                    String status = response.code() + " " + response.message();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Notification did not send.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     Log.e("FCM_RESPONSE", "Unsuccessful response: " + status);
                     Log.e("FCM_RESPONSE", "Error Body: " + errorResponse);
                 }
