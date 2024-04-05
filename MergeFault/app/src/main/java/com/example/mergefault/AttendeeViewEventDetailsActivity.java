@@ -88,7 +88,9 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                             location.setText(doc.getString("Location"));
                             description.setText(doc.getString("Description"));
                             time.setText(doc.getDate("DateTime").toString());
-                            Picasso.get().load(doc.getString("EventPoster")).into(eventPosterImageView);
+                            if (doc.getString("EventPoster") != null) {
+                                Picasso.get().load(doc.getString("EventPoster")).into(eventPosterImageView);
+                            }
                         }
                     }
                 }

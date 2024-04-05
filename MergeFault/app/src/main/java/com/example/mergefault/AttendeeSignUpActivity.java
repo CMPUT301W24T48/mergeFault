@@ -96,7 +96,9 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy MMM dd hh:mm a z");
                             String dateString = simpleDateFormat.format(doc.getDate("DateTime"));
                             time.setText(dateString);
-                            Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
+                            if (doc.getString("EventPoster") != null) {
+                                Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
+                            }
                         }
                     }
                 }
