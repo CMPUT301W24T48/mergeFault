@@ -267,7 +267,7 @@ public class OrganizerShareQR extends AppCompatActivity {
         startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
     }
     public void getDownloadUrl(String eventId, Uri QRUri, String type){
-        StorageReference QRCode = storageRef.child( "QRCodes/" + eventId + type + ".jpg");
+        StorageReference QRCode = storageRef.child( "QRCodes/" + eventId + type + ".png");
         UploadTask uploadTask = QRCode.putFile(QRUri);
 
         Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {

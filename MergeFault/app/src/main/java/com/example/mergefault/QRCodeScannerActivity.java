@@ -94,7 +94,6 @@ public class QRCodeScannerActivity extends AppCompatActivity {
                 }
             }
         } else {
-            finish();
             super.onActivityResult(requestCode, resultCode, data);
         }
     }

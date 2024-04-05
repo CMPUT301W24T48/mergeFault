@@ -17,6 +17,7 @@ import androidx.appcompat.widget.SwitchCompat;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -34,8 +35,9 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     // Event ID
     private String eventId;
     private FirebaseFirestore db;
-    private CollectionReference events;
+    private CollectionReference eventRef;
     private CollectionReference eventAttendeeRef;
+    private CollectionReference attendeeRef;
     private TextView location;
     private TextView description;
     private TextView time;
@@ -68,11 +70,12 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
         eventId = intent.getStringExtra("eventId");
 
         db = FirebaseFirestore.getInstance();
-        events = db.collection("events");
+        eventRef = db.collection("events");
+        attendeeRef = db.collection("attendees");
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
         eventAttendeeRef = db.collection("events").document(eventId).collection("attendees");
 
-        events.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if (error != null) {
@@ -112,6 +115,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 eventAttendeeRef.document(sharedPreferences.getString("attendeeId", "")).delete();
+                attendeeRef.document(sharedPreferences.getString("attendeeId", "")).update("signedInEvents", FieldValue.arrayRemove(eventId));
                 Toast.makeText(getApplicationContext(), "Withdrew sign up", Toast.LENGTH_SHORT);
                 Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
                 startActivity(intent);

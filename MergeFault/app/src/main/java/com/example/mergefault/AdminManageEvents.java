@@ -56,6 +56,8 @@ public class AdminManageEvents extends AppCompatActivity{
     private ImageView homeButton;
     private FirebaseStorage firebaseStorage;
     private StorageReference eventPosterRef;
+    private StorageReference eventCheckInQRRef;
+    private StorageReference eventPromotionQRRef;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -65,6 +67,8 @@ public class AdminManageEvents extends AppCompatActivity{
         homeButton = findViewById(R.id.imageView);
 
         db = FirebaseFirestore.getInstance();
+        firebaseStorage = FirebaseStorage.getInstance();
+
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
         eventDataList = new ArrayList<Event>();
@@ -125,10 +129,27 @@ public class AdminManageEvents extends AppCompatActivity{
                                                                 @Override
                                                                 public void onSuccess(Void unused) {
                                                                     eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + eventDataList.get(position).getEventID() + ".jpg");
+                                                                    eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventDataList.get(position).getEventID() + "CheckIn.jpg");
+                                                                    eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventDataList.get(position).getEventID() + "Promotion.jpg");
                                                                     eventPosterRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                                                                         @Override
                                                                         public void onSuccess(Void unused) {
-                                                                            Log.d("", "event deleted successfully");
+                                                                            eventRef.document(eventDataList.get(position).getEventID()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                @Override
+                                                                                public void onSuccess(Void unused) {
+                                                                                    eventCheckInQRRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                        @Override
+                                                                                        public void onSuccess(Void unused) {
+                                                                                            eventPromotionQRRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                                @Override
+                                                                                                public void onSuccess(Void unused) {
+                                                                                                    Log.d("", "event deleted successfully");
+                                                                                                }
+                                                                                            });
+                                                                                        }
+                                                                                    });
+                                                                                }
+                                                                            });
                                                                         }
                                                                     });
                                                                 }

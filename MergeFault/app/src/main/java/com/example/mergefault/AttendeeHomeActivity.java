@@ -61,6 +61,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         browseAllEvents = findViewById(R.id.browseEventsButton);
         homeIcon = findViewById(R.id.imageView);
         openCamera = findViewById(R.id.openCamera);
+        profileImageView = findViewById(R.id.profileImageView);
 
         db = FirebaseFirestore.getInstance();
         attendeeRef = db.collection("attendees");
@@ -68,7 +69,8 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         // Start recording user information
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
-        if (sharedPreferences.contains("attendeeId")) {
+        if (sharedPreferences.getString("attendeeId", null) != null) {
+            Log.d("Shared preferences", "containts id");
             attendeeRef.document(sharedPreferences.getString("attendeeId", null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -85,8 +87,6 @@ public class AttendeeHomeActivity extends AppCompatActivity {
                 }
             });
         }
-
-        profileImageView = findViewById(R.id.profileImageView);
 
         // Load the profile image at the top of the screen
 
@@ -183,13 +183,17 @@ public class AttendeeHomeActivity extends AppCompatActivity {
                     finish();
                 }
             } else if (requestCode == 1) {
-                loadProfileImage();
+                Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
             }
         } else if (resultCode == RESULT_CANCELED) {
             Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeHomeActivity.class);
             startActivity(intent);
             finish();
         } else if (resultCode == 2) {
+            Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeHomeActivity.class);
+            startActivity(intent);
             finish();
         } else {
             Toast.makeText(getApplicationContext(), "Scan failed", Toast.LENGTH_SHORT);
