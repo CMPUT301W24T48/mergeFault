@@ -105,7 +105,7 @@ public class AdminManageImages extends AppCompatActivity{
                 if (eventIDs.size() != 0 && Images.size() != 0) {
                     DocumentReference tempRef = db.collection("events").document(eventIDs.get(position));
                     Map<String, Object> updates = new HashMap<>();
-                    updates.put("EventPoster", "");
+                    updates.put("EventPoster", null);
                     tempRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -118,7 +118,7 @@ public class AdminManageImages extends AppCompatActivity{
                 if (attendeeIDS.size() != 0 && Images.size() != 0){
                     DocumentReference tempRef = db.collection("attendees").document(attendeeIDS.get(position));
                     Map<String, Object> updates = new HashMap<>();
-                    updates.put("AttendeeProfile", "");
+                    updates.put("AttendeeProfile", null);
                     tempRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {

@@ -153,7 +153,11 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                                         } else {
                                             attendeeLimit = null;
                                         }
-                                        imageURL = Uri.parse(doc.getString("EventPoster"));
+                                        if (doc.getString("EventPoster") != null) {
+                                            imageURL = Uri.parse(doc.getString("EventPoster"));
+                                        } else {
+                                            imageURL = null;
+                                        }
                                         description = doc.getString("Description");
                                         geoLocOn = doc.getBoolean("GeoLocOn");
                                         eventID = doc.getId();
