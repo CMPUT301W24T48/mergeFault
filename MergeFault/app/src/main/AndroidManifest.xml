@@ -10,11 +10,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
+        android:name="android.hardware.camera" />
     <uses-feature
-        android:name="android.hardware.camera.autofocus"
-        android:required="false" />
+        android:name="android.hardware.camera.autofocus" />
 
     <application
         android:allowBackup="true"
@@ -27,7 +25,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MergeFault"
         tools:targetApi="31">
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.mergefault.fileprovider"
@@ -45,19 +42,7 @@
             android:value="@integer/google_play_services_version" />
         <activity
             android:name=".AttendeeCheckInScreenActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data
-                    android:host="www.lotuseventscheckin.com"
-                    android:scheme="myapp" />
-            </intent-filter>
-        </activity>
-
+            android:exported="false"/>
         <activity
             android:name=".OrganizerEventNotification"
             android:exported="false" />
@@ -71,19 +56,12 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:host="www.lotuseventsadminpermission.com"
-                    android:scheme="myapp" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".OrganizerAddEventActivity"
             android:exported="false" />
-        <activity android:name=".OrganizerEditEventActivity"
+        <activity
+            android:name=".OrganizerEditEventActivity"
             android:exported="false"/>
         <activity
             android:name=".AttendeeHomeActivity"
@@ -104,6 +82,9 @@
             android:name=".OrganizerNewOrReuseQR"
             android:exported="false" />
         <activity
+            android:name=".QRCodeScannerActivity"
+            android:exported="false" />
+        <activity
             android:name=".OrganizerGeneratedQR"
             android:exported="false" />
         <activity
@@ -120,8 +101,7 @@
             android:exported="false" />
         <activity
             android:name=".AdminManageImages"
-            android:exported="false">
-        </activity>
+            android:exported="false"/>
         <activity
             android:name=".OrganizerAttendeeList"
             android:exported="false" />
@@ -129,19 +109,8 @@
             android:name=".MapActivity"
             android:exported="false" />
         <activity
-            android:name=".AttendeeSignUpPage"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data
-                    android:host="www.lotuseventspromotions.com"
-                    android:scheme="myapp" />
-            </intent-filter>
-        </activity>
+            android:name=".AttendeeSignUpActivity"
+            android:exported="false"/>
         <activity
             android:name=".OrganizerViewEventsActivity"
             android:exported="false" />

@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -40,7 +41,7 @@ import java.util.Objects;
 /**
  * Activity for attendee sign-up for an event.
  */
-public class AttendeeSignUpPage extends AppCompatActivity {
+public class AttendeeSignUpActivity extends AppCompatActivity {
 
     // Event ID
     private String eventId;
@@ -109,7 +110,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
                             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy MMM dd hh:mm a z");
                             String dateString = simpleDateFormat.format(doc.getDate("DateTime"));
                             time.setText(dateString);
-                            new AttendeeSignUpPage.DownloadImageFromInternet((ImageView) findViewById(R.id.eventPoster)).execute(doc.getString("EventPoster"));
+                            new AttendeeSignUpActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.eventPoster)).execute(doc.getString("EventPoster"));
                         }
                     }
                 }
@@ -130,7 +131,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeHomeActivity.class);
+                Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
                 finish();
             }
@@ -146,8 +147,8 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeEditProfileActivity.class);
-                startActivity(intent);
+                Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeEditProfileActivity.class);
+                startActivityForResult(intent, 0);
             }
         });
 
@@ -158,19 +159,14 @@ public class AttendeeSignUpPage extends AppCompatActivity {
      */
     public void AddAttendee() {
         HashMap<String, Object> data = new HashMap<>();
-        data.put("AttendeeName", sharedPreferences.getString("name", ""));
-        data.put("AttendeePhoneNumber", sharedPreferences.getString("phonenumber", ""));;
-        data.put("AttendeeEmail", sharedPreferences.getString("email", ""));
-        data.put("AttendeeProfile", sharedPreferences.getString("imageUri", ""));
-        data.put("geoLocChecked", sharedPreferences.getBoolean("geoLocChecked", false));
-        data.put("notifChecked", sharedPreferences.getBoolean("notifSwitchChecked", false));
         data.put("CheckedIn", false);
-        data.put("CheckedInCount", "0");
+        data.put("CheckedInCount", 0);
         //data.put("AttendeeNotificationPref", attendee.getNotificationPref());
         //data.put("AttendeeGeolocationPref", attendee.getGeolocationPref());
         eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).set(data).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
+                attendeeRef.document(sharedPreferences.getString("attendeeId", null)).update("signedInEvents", FieldValue.arrayUnion(eventId));
                 Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
                 switchActivities();
             }
@@ -204,7 +200,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
                 for (QueryDocumentSnapshot doc : value) {
                     if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
-                            new AttendeeSignUpPage.DownloadImageFromInternet((ImageView) findViewById(R.id.ProfilePicture)).execute(doc.getString("AttendeeProfile"));
+                            new AttendeeSignUpActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.ProfilePicture)).execute(doc.getString("AttendeeProfile"));
                         }
                     }
                 }
@@ -215,7 +211,6 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         ImageView imageView;
         public DownloadImageFromInternet(ImageView imageView) {
             this.imageView=imageView;
-            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
         }
         protected Bitmap doInBackground(String... urls) {
             String imageURL=urls[0];
@@ -234,9 +229,17 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         }
     }
     public void switchActivities() {
-        Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeBrowsePostedEventsActivity.class);
+        Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeBrowsePostedEventsActivity.class);
         startActivity(intent);
         finish();
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            // Reload the profile image if changes were made
+            loadProfileImage();
+        }
     }
 
 }

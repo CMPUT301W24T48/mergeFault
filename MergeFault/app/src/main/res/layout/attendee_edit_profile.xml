@@ -42,7 +42,7 @@
         app:layout_constraintTop_toTopOf="@+id/imageView" />
 
     <TextView
-        android:id="@+id/editEventPosterText"
+        android:id="@+id/editProfilePictureButton"
         android:layout_width="130sp"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -55,7 +55,7 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
     <EditText
-        android:id="@+id/eventDetailsButton"
+        android:id="@+id/editPhoneNumber"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
@@ -63,12 +63,13 @@
         android:textColor="@color/black"
         android:textSize="25sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="@+id/manageProfilesButton"
+        android:inputType="number"
+        app:layout_constraintBottom_toBottomOf="@+id/editEmailText"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editEventPosterText" />
+        app:layout_constraintTop_toBottomOf="@+id/editProfilePictureButton" />
 
     <EditText
-        android:id="@+id/manageProfilesButton"
+        android:id="@+id/editEmailText"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
@@ -78,10 +79,10 @@
         android:textStyle="bold|italic"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editEventPosterText" />
+        app:layout_constraintTop_toBottomOf="@+id/editProfilePictureButton" />
 
     <EditText
-        android:id="@+id/attendeeListButton"
+        android:id="@+id/editAttendeeName"
         android:layout_width="250sp"
         android:layout_height="70sp"
         android:backgroundTint="#9A8FBF"
@@ -90,7 +91,7 @@
         android:textSize="25sp"
         android:textStyle="bold|italic"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editEventPosterText" />
+        app:layout_constraintTop_toBottomOf="@+id/editProfilePictureButton" />
 
     <Button
         android:id="@+id/cancelButton"
@@ -112,7 +113,7 @@
         android:textSize="20sp"
         android:textStyle="bold|italic"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/manageProfilesButton" />
+        app:layout_constraintTop_toBottomOf="@+id/editEmailText" />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/notifSwitch"
@@ -124,6 +125,6 @@
         android:textStyle="bold|italic"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/manageProfilesButton" />
+        app:layout_constraintTop_toBottomOf="@+id/editEmailText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

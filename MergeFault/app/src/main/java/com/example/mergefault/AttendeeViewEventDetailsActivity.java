@@ -44,6 +44,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     private TextView time;
     private Button withdrawButton;
     private Button cancelButton;
+    private Button openCamera;
     private SwitchCompat notifySwitch;
     private ImageView homeButton;
     private SharedPreferences sharedPreferences;
@@ -63,6 +64,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.imageView);
         notifySwitch = findViewById(R.id.notifSwitch);
+        openCamera = findViewById(R.id.openCamera);
 
         // Get the intent that started this activity
         Intent intent = getIntent();
@@ -118,6 +120,14 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                 finish();
             }
         });
+        openCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, QRCodeScannerActivity.class);
+                intent.putExtra("parentActivity", "AttendeeViewEventDetailsActivity");
+                startActivityForResult(intent,0);
+            }
+        });
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -134,7 +144,6 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
 
         public DownloadImageFromInternet(ImageView imageView) {
             this.imageView = imageView;
-            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
         }
 
         protected Bitmap doInBackground(String... urls) {
@@ -152,6 +161,22 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
 
         protected void onPostExecute(Bitmap result) {
             imageView.setImageBitmap(result);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        String action = data.getStringExtra("action");
+        if (resultCode == RESULT_OK && Objects.equals(action, "CheckIn")) {
+            String eventId = data.getStringExtra("eventId");
+            Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeCheckInScreenActivity.class);
+            intent.putExtra("eventId", eventId);
+            Log.d("Scanned stuff", eventId);
+            startActivity(intent);
+            finish();
+        } else {
+            Toast.makeText(getApplicationContext(),"Scan failed", Toast.LENGTH_SHORT);
         }
     }
 }
