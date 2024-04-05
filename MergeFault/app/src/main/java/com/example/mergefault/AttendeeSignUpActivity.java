@@ -37,7 +37,7 @@ import java.util.Objects;
 /**
  * Activity for attendee sign-up for an event.
  */
-public class AttendeeSignUpPage extends AppCompatActivity {
+public class AttendeeSignUpActivity extends AppCompatActivity {
 
     // Event ID
     private String eventId;
@@ -114,12 +114,12 @@ public class AttendeeSignUpPage extends AppCompatActivity {
                 switchActivities();
             }
         };
-        AttendeeSignUpPage.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        AttendeeSignUpActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeHomeActivity.class);
+                Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
                 finish();
             }
@@ -135,7 +135,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeEditProfileActivity.class);
+                Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeEditProfileActivity.class);
                 startActivityForResult(intent, 0);
             }
         });
@@ -196,7 +196,7 @@ public class AttendeeSignUpPage extends AppCompatActivity {
         });
     }
     public void switchActivities() {
-        Intent intent = new Intent(AttendeeSignUpPage.this, AttendeeBrowsePostedEventsActivity.class);
+        Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeBrowsePostedEventsActivity.class);
         startActivity(intent);
         finish();
     }

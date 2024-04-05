@@ -112,7 +112,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String selectedEventId = eventDataList.get(position).getEventID();
-                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpPage.class);
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpActivity.class);
                 Log.d("eventId", "eventId: " + selectedEventId);
                 intent.putExtra("eventId", selectedEventId);
                 startActivity(intent);
