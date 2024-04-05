@@ -4,20 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -25,7 +20,6 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class AdminManageProfiles extends AppCompatActivity{
 
@@ -87,11 +81,16 @@ public class AdminManageProfiles extends AppCompatActivity{
 
                         attendees.add(new Attendee(name, phoneNum, emailId, notificationPref, geolocationPref, profImageURL, attendeeId));
                     }
-                    attendeeArrayAdapter.notifyDataSetChanged();
+                } else if (value.isEmpty()) {
+                    attendees.clear();
                 }
+                attendeeArrayAdapter.notifyDataSetChanged();
             }
         });
 
+
+
+        /*
         attendeeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -126,6 +125,8 @@ public class AdminManageProfiles extends AppCompatActivity{
                 }
             }
         });
+
+         */
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

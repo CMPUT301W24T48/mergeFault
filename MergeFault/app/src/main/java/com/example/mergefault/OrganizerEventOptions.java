@@ -164,8 +164,8 @@ public class OrganizerEventOptions extends AppCompatActivity {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + event.getEventID() + ".jpg");
-                                eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventId + "CheckIn.jpg");
-                                eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventId + "Promotion.jpg");
+                                eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventId + "CheckIn.png");
+                                eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventId + "Promotion.png");
                                 eventPosterRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void unused) {
