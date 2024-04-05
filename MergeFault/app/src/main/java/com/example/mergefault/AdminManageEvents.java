@@ -26,6 +26,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,6 +54,8 @@ public class AdminManageEvents extends AppCompatActivity{
     private ListView eventsList;
     private Button cancelButton;
     private ImageView homeButton;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference eventPosterRef;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -120,7 +124,13 @@ public class AdminManageEvents extends AppCompatActivity{
                                                             eventRef.document(eventDataList.get(position).getEventID()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                                                                 @Override
                                                                 public void onSuccess(Void unused) {
-                                                                    Log.d("", "event deleted successfully");
+                                                                    eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + eventDataList.get(position).getEventID() + ".jpg");
+                                                                    eventPosterRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                        @Override
+                                                                        public void onSuccess(Void unused) {
+                                                                            Log.d("", "event deleted successfully");
+                                                                        }
+                                                                    });
                                                                 }
                                                             });
                                                         }
@@ -159,6 +169,8 @@ public class AdminManageEvents extends AppCompatActivity{
                 finish();
             }
         };
+        AdminManageEvents.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

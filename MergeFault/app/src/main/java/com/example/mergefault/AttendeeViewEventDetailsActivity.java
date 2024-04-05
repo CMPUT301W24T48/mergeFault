@@ -3,9 +3,6 @@ package com.example.mergefault;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,8 +21,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.Objects;
 
 
@@ -44,9 +41,9 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     private TextView time;
     private Button withdrawButton;
     private Button cancelButton;
-    private Button openCamera;
     private SwitchCompat notifySwitch;
     private ImageView homeButton;
+    private ImageView eventPosterImageView;
     private SharedPreferences sharedPreferences;
 
     /**
@@ -63,16 +60,16 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
         withdrawButton = findViewById(R.id.withdrawButton);
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.imageView);
+        eventPosterImageView = findViewById(R.id.eventPoster);
         notifySwitch = findViewById(R.id.notifSwitch);
-        openCamera = findViewById(R.id.openCamera);
 
         // Get the intent that started this activity
         Intent intent = getIntent();
+        eventId = intent.getStringExtra("eventId");
+
         db = FirebaseFirestore.getInstance();
         events = db.collection("events");
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
-        Bundle bundle = intent.getExtras();
-        eventId = bundle.getString("0");
         eventAttendeeRef = db.collection("events").document(eventId).collection("attendees");
 
         events.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -88,7 +85,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                             location.setText(doc.getString("Location"));
                             description.setText(doc.getString("Description"));
                             time.setText(doc.getDate("DateTime").toString());
-                            new AttendeeViewEventDetailsActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.eventPoster)).execute(doc.getString("EventPoster"));
+                            Picasso.get().load(doc.getString("EventPoster")).into(eventPosterImageView);
                         }
                     }
                 }
@@ -115,17 +112,10 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 eventAttendeeRef.document(sharedPreferences.getString("attendeeId", "")).delete();
+                Toast.makeText(getApplicationContext(), "Withdrew sign up", Toast.LENGTH_SHORT);
                 Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
                 startActivity(intent);
                 finish();
-            }
-        });
-        openCamera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, QRCodeScannerActivity.class);
-                intent.putExtra("parentActivity", "AttendeeViewEventDetailsActivity");
-                startActivityForResult(intent,0);
             }
         });
         homeButton.setOnClickListener(new View.OnClickListener() {
@@ -139,45 +129,6 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
 
     }
 
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView = imageView;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        String action = data.getStringExtra("action");
-        if (resultCode == RESULT_OK && Objects.equals(action, "CheckIn")) {
-            String eventId = data.getStringExtra("eventId");
-            Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeCheckInScreenActivity.class);
-            intent.putExtra("eventId", eventId);
-            Log.d("Scanned stuff", eventId);
-            startActivity(intent);
-            finish();
-        } else {
-            Toast.makeText(getApplicationContext(),"Scan failed", Toast.LENGTH_SHORT);
-        }
-    }
 }
+
 

@@ -2,10 +2,7 @@ package com.example.mergefault;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,8 +21,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -47,7 +44,6 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private CollectionReference eventRef;
     private CollectionReference attendeeRef;
 
-    private Event selectedEvent;
     private String eventName;
     private String organizerId;
     private String location;
@@ -58,7 +54,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private Calendar date;
     private String description;
     private Boolean geoLocOn;
-    private String eventID;
+    private String eventId;
     private Button cancelButton;
 
 
@@ -110,14 +106,15 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                 finish();
             }
         };
+        AttendeeBrowsePostedEventsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         eventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedEvent = (Event) eventsList.getItemAtPosition(position);
+                String selectedEventId = eventDataList.get(position).getEventID();
                 Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("0", selectedEvent.getEventID());
-                intent.putExtras(bundle);
+                Log.d("eventId", "eventId: " + selectedEventId);
+                intent.putExtra("eventId", selectedEventId);
                 startActivity(intent);
                 finish();
             }
@@ -133,7 +130,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                     eventDataList.clear();
                     for (QueryDocumentSnapshot doc : value) {
                         eventName = doc.getString("EventName");//doc.getID();
-                        eventID = doc.getString("EventID");
+                        eventId = doc.getString("EventID");
                         organizerId = doc.getString("OrganizerID");
                         location = doc.getString("Location");
                         placeId = doc.getString("PlaceID");
@@ -150,7 +147,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                         date = Calendar.getInstance();
                         date.setTime(dateTime);
 
-                        eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
+                        eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventId, placeId));
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }
@@ -176,37 +173,12 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                 for (QueryDocumentSnapshot doc : value) {
                     if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
-                            new AttendeeBrowsePostedEventsActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.pfpImageView)).execute(doc.getString("AttendeeProfile"));
+                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
                         }
                     }
                 }
             }
         });
-    }
-
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView = imageView;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

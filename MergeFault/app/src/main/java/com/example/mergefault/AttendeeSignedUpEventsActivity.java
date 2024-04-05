@@ -2,10 +2,7 @@ package com.example.mergefault;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -29,8 +26,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,7 +49,6 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private DocumentReference eventAttendeeRef;
     private CollectionReference attendeeRef;
 
-    private Event selectedEvent;
     private String eventID;
     private String eventName;
     private String organizerId;
@@ -76,6 +72,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         profileImageView = findViewById(R.id.pfpImageView);
         signedUpEventsList = findViewById(R.id.myEventListView);
         homeIcon = findViewById(R.id.imageView);
+        profileImageView = findViewById(R.id.pfpImageView);
         cancelButton = findViewById(R.id.cancelButton);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
@@ -116,14 +113,14 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 finish();
             }
         };
+        AttendeeSignedUpEventsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+                String selectedEventId = signedUpEventDataList.get(position).getEventID();
                 Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeViewEventDetailsActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("0", selectedEvent.getEventID());
-                intent.putExtras(bundle);
+                intent.putExtra("eventId", selectedEventId);
                 startActivity(intent);
                 finish();
             }
@@ -197,37 +194,13 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 for (QueryDocumentSnapshot doc : value) {
                     if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
-                            new AttendeeSignedUpEventsActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.pfpImageView)).execute(doc.getString("AttendeeProfile"));
+                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+
                         }
                     }
                 }
             }
         });
-    }
-
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView = imageView;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
 
     @Override

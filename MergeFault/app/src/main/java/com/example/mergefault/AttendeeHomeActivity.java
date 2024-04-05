@@ -2,14 +2,12 @@ package com.example.mergefault;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -26,8 +24,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * This activity serves as the home screen for attendees.
@@ -40,10 +39,12 @@ public class AttendeeHomeActivity extends AppCompatActivity {
 
     private Button viewMyEvents;
     private Button browseAllEvents;
+    private Button openCamera;
     private SharedPreferences sharedPreferences;
 
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
+    private Boolean hasProfile = false;
     ActivityResultLauncher<Intent> profileEditLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             (result) -> {
 
@@ -59,24 +60,32 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         viewMyEvents = findViewById(R.id.viewMyEventsButton);
         browseAllEvents = findViewById(R.id.browseEventsButton);
         homeIcon = findViewById(R.id.imageView);
+        openCamera = findViewById(R.id.openCamera);
 
         db = FirebaseFirestore.getInstance();
         attendeeRef = db.collection("attendees");
 
         // Start recording user information
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
-        attendeeRef.document(sharedPreferences.getString("attendeeId", null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot doc = task.getResult();
-                    if (!doc.exists()) {
-                        Log.d("clear", "cleared preferences");
-                        sharedPreferences.edit().clear().apply();
+
+        if (sharedPreferences.contains("attendeeId")) {
+            attendeeRef.document(sharedPreferences.getString("attendeeId", null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot doc = task.getResult();
+                        if (!doc.exists()) {
+                            Log.d("clear", "cleared preferences");
+                            sharedPreferences.edit().clear().apply();
+                            hasProfile = false;
+                        } else {
+                            hasProfile = true;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
+
         profileImageView = findViewById(R.id.profileImageView);
 
         // Load the profile image at the top of the screen
@@ -88,7 +97,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeEditProfileActivity.class);
-                startActivityForResult(intent, 0);
+                startActivityForResult(intent, 1);
             }
         });
 
@@ -96,9 +105,13 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         viewMyEvents.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeSignedUpEventsActivity.class);
-                startActivity(intent);
-                finish();
+                if (hasProfile) {
+                    Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeSignedUpEventsActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(getApplicationContext(),"You have no profile", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -106,9 +119,13 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         browseAllEvents.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeBrowsePostedEventsActivity.class);
-                startActivity(intent);
-                finish();
+                if (hasProfile) {
+                    Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeBrowsePostedEventsActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(getApplicationContext(),"You have no profile", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         homeIcon.setOnClickListener(new View.OnClickListener() {
@@ -117,6 +134,18 @@ public class AttendeeHomeActivity extends AppCompatActivity {
                 Intent intent = new Intent(AttendeeHomeActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
+            }
+        });
+        openCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (hasProfile) {
+                    Intent intent = new Intent(AttendeeHomeActivity.this, QRCodeScannerActivity.class);
+                    intent.putExtra("parentActivity", "AttendeeHome");
+                    startActivityForResult(intent, 0);
+                } else {
+                    Toast.makeText(getApplicationContext(),"You have no profile", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -128,34 +157,12 @@ public class AttendeeHomeActivity extends AppCompatActivity {
                 for (QueryDocumentSnapshot doc : value) {
                     if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
-                            new AttendeeHomeActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.profileImageView)).execute(doc.getString("AttendeeProfile"));
+                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
                         }
                     }
                 }
             }
         });
-    }
-
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView=imageView;
-        }
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL=urls[0];
-            Bitmap bimage=null;
-            try {
-                InputStream in=new java.net.URL(imageURL).openStream();
-                bimage= BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
     /**
      * Handles the result when returning from another activity.
@@ -165,8 +172,30 @@ public class AttendeeHomeActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            // Reload the profile image if changes were made
-            loadProfileImage();
+            if (requestCode == 0) {
+                String action = data.getStringExtra("action");
+                if (Objects.equals(action, "CheckIn")) {
+                    String eventId = data.getStringExtra("eventId");
+                    Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeCheckInScreenActivity.class);
+                    intent.putExtra("eventId", eventId);
+                    Log.d("Scanned stuff", eventId);
+                    startActivity(intent);
+                    finish();
+                }
+            } else if (requestCode == 1) {
+                loadProfileImage();
+            }
+        } else if (resultCode == RESULT_CANCELED) {
+            Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeHomeActivity.class);
+            startActivity(intent);
+            finish();
+        } else if (resultCode == 2) {
+            finish();
+        } else {
+            Toast.makeText(getApplicationContext(), "Scan failed", Toast.LENGTH_SHORT);
+            Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeHomeActivity.class);
+            startActivity(intent);
+            finish();
         }
     }
 }
