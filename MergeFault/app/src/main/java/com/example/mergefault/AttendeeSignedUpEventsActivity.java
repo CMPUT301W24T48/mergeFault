@@ -26,6 +26,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -46,9 +48,11 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private ArrayList<Event> signedUpEventDataList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
-    private DocumentReference eventAttendeeRef;
+    private CollectionReference eventAttendeeRef;
+    private DocumentReference eventAttendeeDocRef;
     private CollectionReference attendeeRef;
-
+    private FirebaseStorage firebaseStorage;
+    private StorageReference eventPosterRef;
     private String eventID;
     private String eventName;
     private String organizerId;
@@ -79,6 +83,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
+        firebaseStorage = FirebaseStorage.getInstance();
 
         loadProfileImage();
 
@@ -136,44 +141,66 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 if (value != null) {
                     signedUpEventDataList.clear();
                     for (QueryDocumentSnapshot doc : value) {
-                        eventAttendeeRef = db.collection("events").document(doc.getId()).collection("attendees").document(sharedPreferences.getString("attendeeId", null));
-                        eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                if (task.isSuccessful()) {
-                                    DocumentSnapshot documentSnapshot = task.getResult();
-                                    if (documentSnapshot.exists()) {
-                                        eventName = doc.getString("EventName");
-                                        organizerId = doc.getString("OrganizerID");
-                                        location = doc.getString("Location");
-                                        placeId = doc.getString("PlaceID");
-                                        dateTime = doc.getDate("DateTime");
-                                        if (doc.getString("AttendeeLimit") != null) {
-                                            attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
-                                        } else {
-                                            attendeeLimit = null;
-                                        }
-                                        if (doc.getString("EventPoster") != null) {
-                                            imageURL = Uri.parse(doc.getString("EventPoster"));
-                                        } else {
-                                            imageURL = null;
-                                        }
-                                        description = doc.getString("Description");
-                                        geoLocOn = doc.getBoolean("GeoLocOn");
-                                        eventID = doc.getId();
+                        Date currentTime = Calendar.getInstance().getTime();
+                        if (currentTime.before(doc.getDate("DateTime"))) {
+                            eventAttendeeDocRef = db.collection("events").document(doc.getId()).collection("attendees").document(sharedPreferences.getString("attendeeId", null));
+                            eventAttendeeDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        DocumentSnapshot documentSnapshot = task.getResult();
+                                        if (documentSnapshot.exists()) {
+                                            eventName = doc.getString("EventName");
+                                            organizerId = doc.getString("OrganizerID");
+                                            location = doc.getString("Location");
+                                            placeId = doc.getString("PlaceID");
+                                            dateTime = doc.getDate("DateTime");
+                                            if (doc.getString("AttendeeLimit") != null) {
+                                                attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                                            } else {
+                                                attendeeLimit = null;
+                                            }
+                                            if (doc.getString("EventPoster") != null) {
+                                                imageURL = Uri.parse(doc.getString("EventPoster"));
+                                            } else {
+                                                imageURL = null;
+                                            }
+                                            description = doc.getString("Description");
+                                            geoLocOn = doc.getBoolean("GeoLocOn");
+                                            eventID = doc.getId();
 
-                                        Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+                                            Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
 
-                                        date = Calendar.getInstance();
-                                        date.setTime(dateTime);
-                                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
-                                    } else {
-                                        Log.d("TAG", "No such document");
+                                            date = Calendar.getInstance();
+                                            date.setTime(dateTime);
+                                            signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
+                                        } else {
+                                            Log.d("TAG", "No such document");
+                                        }
+                                        eventArrayAdapter.notifyDataSetChanged();
                                     }
-                                    eventArrayAdapter.notifyDataSetChanged();
                                 }
-                            }
-                        });
+                            });
+                        } else {
+                            eventAttendeeRef = eventRef.document(doc.getId()).collection("attendees");
+                            eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        for (QueryDocumentSnapshot document : task.getResult()) {
+                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    eventRef.document(doc.getId()).delete();
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                            eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                            eventPosterRef.delete();
+                        }
                     }
                 }
             }

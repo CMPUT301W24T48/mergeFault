@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultCallback;
@@ -175,7 +176,11 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                         } else {
                             attendeeLimit = null;
                         }
-                        downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        if (doc.getString("EventPoster") != null) {
+                            downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        } else {
+                            downloadUrl = null;
+                        }
                         location = doc.getString("Location");
                         dateTime.setTime(doc.getDate("DateTime"));
                         eventName = doc.getString("EventName");
@@ -313,17 +318,33 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
              */
             @Override
             public void onClick(View v) {
+                if (downloadUrl == null) {
+                    if (selectedImage != null) {
+                        eventName = eventNameEditText.getText().toString();
+                        event.setEventName(eventName);
+                        event.setLocation(location);
+                        event.setDateTime(dateTime);
+                        event.setAttendeeLimit(attendeeLimit);
+                        event.setEventPoster(selectedImage);
+                        event.setDescription(description);
+                        event.setGeoLocOn(geoLocSwitch.isChecked());
+                        event.setPlaceId(placeId);
+                        editEvent();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    eventName = eventNameEditText.getText().toString();
+                    event.setEventName(eventName);
+                    event.setLocation(location);
+                    event.setDateTime(dateTime);
+                    event.setAttendeeLimit(attendeeLimit);
+                    event.setEventPoster(selectedImage);
+                    event.setDescription(description);
+                    event.setGeoLocOn(geoLocSwitch.isChecked());
+                    event.setPlaceId(placeId);
+                }
 
-                eventName = eventNameEditText.getText().toString();
-                event.setEventName(eventName);
-                event.setLocation(location);
-                event.setDateTime(dateTime);
-                event.setAttendeeLimit(attendeeLimit);
-                event.setEventPoster(selectedImage);
-                event.setDescription(description);
-                event.setGeoLocOn(geoLocSwitch.isChecked());
-                event.setPlaceId(placeId);
-                editEvent();
             }
         });
     }
