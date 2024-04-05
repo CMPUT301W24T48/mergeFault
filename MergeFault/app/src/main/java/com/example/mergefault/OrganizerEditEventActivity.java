@@ -175,7 +175,11 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                         } else {
                             attendeeLimit = null;
                         }
-                        downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        if (doc.getString("EventPoster") != null) {
+                            downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        } else {
+                            downloadUrl = null;
+                        }
                         location = doc.getString("Location");
                         dateTime.setTime(doc.getDate("DateTime"));
                         eventName = doc.getString("EventName");
