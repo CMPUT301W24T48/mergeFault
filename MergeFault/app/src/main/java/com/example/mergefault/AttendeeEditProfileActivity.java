@@ -2,7 +2,6 @@ package com.example.mergefault;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -92,8 +91,6 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeEditProfileActivity.this, AttendeeHomeActivity.class);
-                startActivity(intent);
                 setResult(2);
                 finish();
             }

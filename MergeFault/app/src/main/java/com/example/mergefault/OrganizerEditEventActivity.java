@@ -402,7 +402,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
     }
 
     /**
-     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.jpg) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
+     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.png) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
      * This is the event passed by the addEvent method
      * This is the documentReference to event on the firebase
      */
