@@ -1,6 +1,7 @@
 package com.example.mergefault;
 
 import android.content.Context;
+import android.icu.text.SimpleDateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,10 +38,12 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
         Event event = getItem(position);
 
         TextView eventName = view.findViewById(R.id.eventNameTextView);
-        TextView orgName = view.findViewById(R.id.organizerText);
+        TextView date = view.findViewById(R.id.organizerText);
 
         eventName.setText(event.getEventName());
-        orgName.setText(event.getOrganizerId());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy MMM dd hh:mm a z");
+        String dateString = simpleDateFormat.format(event.getDateTime().getTime());
+        date.setText(dateString);
 
         return view;
 

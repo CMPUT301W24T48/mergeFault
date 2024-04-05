@@ -4,11 +4,8 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.icu.text.DateFormat;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +15,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultCallback;
@@ -45,8 +41,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -187,13 +183,13 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                         placeId = doc.getString("PlaceID");
                         geoLocOn = doc.getBoolean("GeoLocOn");
 
-                        new DownloadImageFromInternet((ImageView) findViewById(R.id.eventPosterImageView)).execute(downloadUrl.toString());
+                        Picasso.get().load(downloadUrl).into(eventPosterImageView);
 
                         addressText.setText("Address: " + location);
                         dayText.setText("Day: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
                         timeText.setText("Time: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
                         if (attendeeLimit != null) {
-                            limitText.setText("Limit: " + attendeeLimit.toString());
+                            limitText.setText("Limit: " + attendeeLimit);
                         } else {
                             limitText.setText("Attendee Limit: Null");
                         }
@@ -217,6 +213,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                 switchActivities();
             }
         };
+        OrganizerEditEventActivity.this.getOnBackPressedDispatcher().addCallback(this, callback);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -329,28 +326,6 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                 editEvent();
             }
         });
-    }
-    private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView=imageView;
-            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
-        }
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL=urls[0];
-            Bitmap bimage=null;
-            try {
-                InputStream in=new java.net.URL(imageURL).openStream();
-                bimage= BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
 
     public void switchActivities(){
@@ -478,7 +453,11 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
         eventRef.update("Location", event.getLocation());
         eventRef.update("PlaceID", event.getPlaceId());
         eventRef.update("DateTime", event.getDateTime().getTime());
-        eventRef.update("AttendeeLimit", event.getAttendeeLimit().toString());
+        if (event.getAttendeeLimit() != null) {
+            eventRef.update("AttendeeLimit", event.getAttendeeLimit().toString());
+        } else {
+            eventRef.update("AttendeeLimit", null);
+        }
         eventRef.update("EventName", event.getEventName());
         eventRef.update("Description", event.getDescription());
         eventRef.update("GeoLocOn",event.getGeoLocOn());

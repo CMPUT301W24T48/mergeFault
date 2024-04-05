@@ -166,6 +166,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                 finish();
             }
         };
+        OrganizerAddEventActivity.this.getOnBackPressedDispatcher().addCallback(this, callback);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override

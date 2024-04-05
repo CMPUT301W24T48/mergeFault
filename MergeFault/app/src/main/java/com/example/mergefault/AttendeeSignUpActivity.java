@@ -3,11 +3,7 @@ package com.example.mergefault;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,8 +28,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -56,6 +52,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
     private Button cancelButton;
     private ImageView homeButton;
     private ImageView profileImageView;
+    private ImageView eventPoster;
     private SharedPreferences sharedPreferences;
     /**
      * this Activity displays event details and a button that signs up attendees to the event
@@ -71,30 +68,19 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.imageView);
         profileImageView = findViewById(R.id.ProfilePicture);
+        eventPoster = findViewById(R.id.eventPoster);
         // Get the intent that started this activity
         Intent intent = getIntent();
-
-        // Get the data URI from the intent
-        Uri uri = intent.getData();
+        eventId = intent.getStringExtra("eventId");
+        Log.d("eventId", "eventId: " + eventId);
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
+        eventAttendeeRef = eventRef.document(eventId).collection("attendees");
 
         loadProfileImage();
-        /*
-        if (("myapp".equals(uri.getScheme()) && "www.lotuseventspromotions.com".equals(uri.getHost()))) {
-            eventId = uri.getQueryParameter("eventId");
-        }
-        else {
-
-         */
-            Bundle bundle = intent.getExtras();
-            eventId = bundle.getString("0");
-        //}
-        eventAttendeeRef = db.collection("events").document(eventId).collection("attendees");
-
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -104,13 +90,13 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 }
                 if (value != null){
                     for(QueryDocumentSnapshot doc: value) {
-                        if(Objects.equals(doc.getString("EventID"), eventId)){
+                        if(Objects.equals(doc.getString("EventID"), eventId)) {
                             location.setText(doc.getString("Location"));
                             description.setText(doc.getString("Description"));
                             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy MMM dd hh:mm a z");
                             String dateString = simpleDateFormat.format(doc.getDate("DateTime"));
                             time.setText(dateString);
-                            new AttendeeSignUpActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.eventPoster)).execute(doc.getString("EventPoster"));
+                            Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
                         }
                     }
                 }
@@ -128,6 +114,8 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 switchActivities();
             }
         };
+        AttendeeSignUpActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -200,33 +188,12 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 for (QueryDocumentSnapshot doc : value) {
                     if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
-                            new AttendeeSignUpActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.ProfilePicture)).execute(doc.getString("AttendeeProfile"));
+                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
                         }
                     }
                 }
             }
         });
-    }
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView=imageView;
-        }
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL=urls[0];
-            Bitmap bimage=null;
-            try {
-                InputStream in=new java.net.URL(imageURL).openStream();
-                bimage= BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
     public void switchActivities() {
         Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeBrowsePostedEventsActivity.class);

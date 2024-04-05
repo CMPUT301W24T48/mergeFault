@@ -5,10 +5,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -16,14 +17,19 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.net.FetchPlaceRequest;
-import com.google.android.libraries.places.api.net.FetchPlaceResponse;
-import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.Place.Field;
-import com.squareup.picasso.Picasso;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,14 +37,21 @@ import java.util.List;
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private String placeId;
+    private String eventId;
+    private FirebaseFirestore db;
+    private CollectionReference eventRef;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        db = FirebaseFirestore.getInstance();
+        eventRef = db.collection("events");
+
         Intent intent = getIntent();
         placeId = intent.getStringExtra("placeID");
+        eventId = intent.getStringExtra("eventId");
         String eventPosterUri = intent.getStringExtra("eventPosterUri");
 
 
@@ -54,6 +67,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
 
         mapFragment.getMapAsync(this);
+
+        eventRef.document(eventId).collection("attendees").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        eventRef.document(eventId).collection("attendees").document(document.getId()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                if (documentSnapshot.get("CheckInLocation") != null) {
+                                    documentSnapshot.get("CheckInLocation");
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
     }
 
     @Override

@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 /**
  * This activity allows organizers to choose whether to generate a new QR code or reuse an existing one.
@@ -26,6 +28,7 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
     private String eventId;
     private FirebaseFirestore db;
     private DocumentReference eventRef;
+    private FirebaseStorage firebaseStorage;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,12 +41,14 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
         reuseQR = findViewById(R.id.continueButton);
 
         db = FirebaseFirestore.getInstance();
+        firebaseStorage = FirebaseStorage.getInstance();
 
         // Retrieve the eventId from the intent
         Intent receiverIntent = getIntent();
         eventId = receiverIntent.getStringExtra("EventId");
         Log.d("eventIdAfter", "eventid:" + eventId);
         eventRef = db.collection("events").document(eventId);
+        StorageReference eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + eventId + ".jpg");
 
         // Set click listener for generate new QR code button
         generateNewQR.setOnClickListener(new View.OnClickListener() {
@@ -68,6 +73,7 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                eventPosterRef.delete();
                 eventRef.delete();
                 Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerAddEventActivity.class);
                 startActivity(intent);
@@ -77,6 +83,7 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
+                eventPosterRef.delete();
                 eventRef.delete();
                 Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerAddEventActivity.class);
                 startActivity(intent);
@@ -88,6 +95,7 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                eventPosterRef.delete();
                 eventRef.delete();
                 Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerHomeActivity.class);
                 startActivity(intent);
