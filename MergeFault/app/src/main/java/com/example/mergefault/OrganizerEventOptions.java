@@ -71,7 +71,10 @@ public class OrganizerEventOptions extends AppCompatActivity {
                         if (doc.getString("AttendeeLimit") != null) {
                             attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                         }
-                        Uri downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        Uri downloadUrl = null;
+                        if(doc.getString("EventPoster") != null){
+                            downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        }
                         event = new Event(doc.getString("EventName"),
                                 doc.getString("OrganizerID"),
                                 doc.getString("Location"),

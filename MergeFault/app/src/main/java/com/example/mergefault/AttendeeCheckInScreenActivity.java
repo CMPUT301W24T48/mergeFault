@@ -101,7 +101,9 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                         locationText.setText(doc.getString("Location"));
                         descriptionText.setText(doc.getString("Description"));
                         timeText.setText(doc.getDate("DateTime").toString());
-                        Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
+                        if (doc.getString("EventPoster") != null) {
+                            Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
+                        }
                     }
                 }
             }

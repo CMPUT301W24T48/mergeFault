@@ -74,7 +74,11 @@ public class AdminManageProfiles extends AppCompatActivity{
                             phoneNum = null;
                         }
                         emailId = doc.getString("AttendeeEmail");
-                        profImageURL = doc.getString("AttendeeProfile");
+                        if (doc.getString("AttendeeProfile") != null) {
+                            profImageURL = doc.getString("AttendeeProfile");
+                        } else {
+                            profImageURL = null;
+                        }
                         geolocationPref = doc.getBoolean("geoLocChecked");
                         notificationPref = doc.getBoolean("notifChecked");
                         attendeeId = doc.getId();
