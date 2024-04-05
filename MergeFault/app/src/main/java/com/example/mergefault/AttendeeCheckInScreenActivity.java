@@ -5,10 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,8 +29,8 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.HashMap;
 
 /**
@@ -80,6 +77,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         locationText = findViewById(R.id.CheckInLocationText);
         descriptionText = findViewById(R.id.CheckInDescriptionText);
         timeText = findViewById(R.id.CheckInTimeText);
+        eventPoster = findViewById(R.id.eventPoster);
 
 
         // Initialize FusedLocationProviderClient
@@ -87,7 +85,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
 
         // Handle incoming intent data
         Intent intent = getIntent();
-        eventId = intent.getExtras().get("eventId").toString();
+        eventId = intent.getStringExtra("eventId");
 
         Log.d("checkineventid", "eventId: " + eventId);
 
@@ -103,7 +101,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                         locationText.setText(doc.getString("Location"));
                         descriptionText.setText(doc.getString("Description"));
                         timeText.setText(doc.getDate("DateTime").toString());
-                        new AttendeeCheckInScreenActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.eventPoster)).execute(doc.getString("EventPoster"));
+                        Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
                     }
                 }
             }
@@ -221,30 +219,5 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             }
         });
     }
-
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView = imageView;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
-    }
-    }
+}
 

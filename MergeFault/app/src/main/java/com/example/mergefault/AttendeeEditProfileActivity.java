@@ -5,10 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,7 +36,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.HashMap;
 
 /**
@@ -47,8 +43,6 @@ import java.util.HashMap;
  * They can edit their name, email, phone number, and profile picture.
  */
 public class AttendeeEditProfileActivity extends AppCompatActivity {
-
-    private static final int PICK_IMAGE_REQUEST = 1;
 
     private ImageView imageViewProfile;
     private TextView textEditImage;
@@ -100,22 +94,38 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeEditProfileActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
+                setResult(2);
                 finish();
             }
         });
-
-
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (editTextName.getText() != null && editTextEmail.getText() != null) {
+                if (!editTextName.getText().toString().equals("") && !editTextEmail.getText().toString().equals("")) {
                     saveProfile();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Did not enter all required info, Profile not saved", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_CANCELED);
+                    switchActivities();
                 }
             }
         };
+        AttendeeEditProfileActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 
+        // Set click listener for cancel button
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!editTextName.getText().toString().equals("") && !editTextEmail.getText().toString().equals("")) {
+                    saveProfile();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Did not enter all required info, Profile not saved", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_CANCELED);
+                    switchActivities();
+                }
+
+            }
+        });
         // Set click listener for editing profile picture
         textEditImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -123,29 +133,11 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 startPickingImage.launch("image/*");
             }
         });
-
-        // Set click listener for cancel button
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (editTextName.getText() != null && editTextEmail.getText() != null) {
-                    saveProfile();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
-
         // Set click listener for delete image button
         deleteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (editTextName.getText() != null && editTextEmail.getText() != null) {
-                    saveProfile();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
-                }
+                deleteProfilePicture();
             }
         });
 
@@ -164,13 +156,9 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
      * Deletes the profile picture.
      */
     private void deleteProfilePicture() {
+        //imageViewProfile.setImageResource(R.id.d);
         imageViewProfile.setImageResource(R.drawable.pfp);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("imageUri", null);
-        editor.apply();
-        if (attendeeId != null) {
-            attendeesRef.document(attendeeId).update("AttendeeProfile", null);
-        }
+        imageUri = null;
         Toast.makeText(this, "Profile picture deleted", Toast.LENGTH_SHORT).show();
 
     }
@@ -234,10 +222,9 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         }
         if (imageUriString != null) {
             imageUri = Uri.parse(imageUriString);
-            new AttendeeEditProfileActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.imageView)).execute(imageUri.toString());
+            Picasso.get().load(imageUri).into(imageViewProfile);
         }
         if (phonenumber != null) {
-
             editTextPhoneNumber.setText(phonenumber);
         }
         geoLocSwitch.setChecked(geoLocChecked);
@@ -264,7 +251,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             Picasso.get().load(url + name).into(imageViewProfile);
             imageUri = Uri.parse(url + name);
         }
-        new AttendeeEditProfileActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.imageView)).execute(imageUri.toString());
+        Picasso.get().load(imageUri).into(imageViewProfile);
 
         if (attendeeId != null) {
             DocumentReference doc = attendeesRef.document(attendeeId);
@@ -329,30 +316,9 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         editor.putBoolean("notifSwitchChecked", notifSwitchChecked);
 
         editor.apply();
-        Toast.makeText(context, "Profile created and saved successfully", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Profile saved successfully", Toast.LENGTH_SHORT).show();
         setResult(RESULT_OK);
         switchActivities();
-    }
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView=imageView;
-        }
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL=urls[0];
-            Bitmap bimage=null;
-            try {
-                InputStream in=new java.net.URL(imageURL).openStream();
-                bimage= BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
 
     private void switchActivities(){

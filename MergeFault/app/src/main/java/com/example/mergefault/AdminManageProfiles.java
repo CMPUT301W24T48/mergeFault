@@ -74,7 +74,11 @@ public class AdminManageProfiles extends AppCompatActivity{
                     attendees.clear();
                     for (QueryDocumentSnapshot doc : value){
                         name = doc.getString("AttendeeName");
-                        phoneNum = doc.getString("AttendeePhoneNumber");
+                        if (doc.getString("AttendeePhoneNumber") != null) {
+                            phoneNum = doc.getString("AttendeePhoneNumber");
+                        } else {
+                            phoneNum = null;
+                        }
                         emailId = doc.getString("AttendeeEmail");
                         profImageURL = doc.getString("AttendeeProfile");
                         geolocationPref = doc.getBoolean("geoLocChecked");
@@ -138,6 +142,8 @@ public class AdminManageProfiles extends AppCompatActivity{
                 finish();
             }
         };
+        AdminManageProfiles.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

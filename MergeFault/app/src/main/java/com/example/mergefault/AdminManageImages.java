@@ -146,6 +146,8 @@ public class AdminManageImages extends AppCompatActivity{
                 finish();
             }
         };
+        AdminManageImages.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
