@@ -2,6 +2,9 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="OrganizerShareQRTest">
+        <State />
+      </entry>
       <entry key="app">
         <State>
           <targetSelectedWithDropDown>
@@ -10,16 +13,13 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\shiva\.android\avd\Pixel_6_API_33.avd" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_34.avd" />
                 </Key>
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-31T20:36:19.954469800Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-04-02T06:45:00.564444Z" />
         </State>
-      </entry>
-      <entry key="testAdminButton()">
-        <State />
       </entry>
     </value>
   </component>

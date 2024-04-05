@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="30dp"
-        android:paddingEnd="75dp"
+        android:paddingEnd="35dp"
         android:text="Event Name"
         android:textColor="#575656"
         android:textSize="20sp"
@@ -21,11 +21,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="30dp"
-        android:paddingEnd="75dp"
+        android:paddingEnd="35dp"
         android:text="Organizer"
         android:textColor="#575656"
         android:textSize="20sp"
         android:textStyle="bold|italic" />
+
+    <Button
+        android:id="@+id/removeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#00FFFFFF"
+        android:text="Remove"
+        android:textColor="@color/red"
+        android:textSize="11sp" />
 </LinearLayout>
 
 

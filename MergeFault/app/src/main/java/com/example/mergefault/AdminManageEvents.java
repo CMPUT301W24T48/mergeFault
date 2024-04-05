@@ -1,20 +1,27 @@
 package com.example.mergefault;
+
+import android.content.Intent;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -23,10 +30,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class AdminManageEvents extends AppCompatActivity{
     private FirebaseFirestore db;
     private CollectionReference eventRef;
+    private CollectionReference attendeeRef;
     private String eventName;
     private String organizerId;
     private String placeId;
@@ -41,14 +50,19 @@ public class AdminManageEvents extends AppCompatActivity{
     private ArrayList<Event> eventDataList;
     private EventArrayAdapter eventArrayAdapter;
     private ListView eventsList;
+    private Button cancelButton;
+    private ImageView homeButton;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_manage_events);
         eventsList = findViewById(R.id.myEventListView);
+        cancelButton = findViewById(R.id.cancelButton);
+        homeButton = findViewById(R.id.imageView);
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
+        attendeeRef = db.collection("attendees");
         eventDataList = new ArrayList<Event>();
         eventArrayAdapter = new EventArrayAdapter(this, eventDataList);
         eventsList.setAdapter(eventArrayAdapter);
@@ -68,7 +82,11 @@ public class AdminManageEvents extends AppCompatActivity{
                         location = doc.getString("Location");
                         placeId = doc.getString("PlaceID");
                         dateTime = doc.getDate("DateTime");
-                        attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                        if (doc.getString("AttendeeLimit") != null) {
+                            attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                        } else {
+                            attendeeLimit = null;
+                        }
                         imageURL = Uri.parse(doc.getString("EventPoster"));
                         description = doc.getString("Description");
                         geoLocOn = doc.getBoolean("GeoLocOn");
@@ -90,21 +108,63 @@ public class AdminManageEvents extends AppCompatActivity{
         eventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (eventDataList.size() != 0){
-                    db.collection("events").document(eventDataList.get(position).getEventID()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void unused) {
-                            Log.d("","event deleted successfully");
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w("","failed to delete event");
-                        }
-                    });
-                    eventDataList.remove(position);
-                    eventArrayAdapter.notifyDataSetChanged();
-                }
+                            eventRef.document(eventDataList.get(position).getEventID()).collection("attendees").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                            if (task.isSuccessful()) {
+                                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                                    Log.d("attendeeId", document.getId());
+                                                    eventRef.document(eventDataList.get(position).getEventID()).collection("attendees").document(document.getId()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void unused) {
+                                                            eventRef.document(eventDataList.get(position).getEventID()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void unused) {
+                                                                    Log.d("", "event deleted successfully");
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    });
+                            attendeeRef.whereArrayContains("signedInEvents", eventDataList.get(position).getEventID()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                @Override
+                                public void onSuccess(QuerySnapshot querySnapshot) {
+                                    if (!querySnapshot.isEmpty()) {
+                                        List<DocumentSnapshot> attendeesThatSignedUp =  querySnapshot.getDocuments();
+                                        for (int i = 0; i < attendeesThatSignedUp.size(); i++) {
+                                            DocumentSnapshot attendee = attendeesThatSignedUp.get(i);
+                                            attendeeRef.document(attendee.getId()).update("signedInEvents", FieldValue.arrayRemove(eventDataList.get(position).getEventID()));
+                                        }
+                                    }
+                                }
+                            });
+            }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminManageEvents.this, AdminHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AdminManageEvents.this, AdminHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminManageEvents.this, AdminHomeActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
     }

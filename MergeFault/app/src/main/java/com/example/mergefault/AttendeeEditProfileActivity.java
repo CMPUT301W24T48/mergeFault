@@ -1,9 +1,5 @@
 package com.example.mergefault;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -12,8 +8,10 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,11 +20,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
@@ -44,13 +56,22 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private EditText editTextEmail;
     private EditText editTextPhoneNumber;
     private Button cancelButton;
+    private ImageView homeButton;
     private ImageButton deleteImageButton;
-
+    private SwitchCompat geoLocSwitch;
+    private SwitchCompat notifSwitch;
     private SharedPreferences sharedPreferences;
-    private String imageUri;
+    private Uri imageUri;
     private FirebaseFirestore db;
     private CollectionReference attendeesRef;
+    private String name;
+    private String phonenumber;
+    private String email;
+    private Boolean geoLocChecked;
+    private Boolean notifChecked;
+    private String attendeeId;
 
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,20 +80,47 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         attendeesRef = db.collection("attendees");
 
         imageViewProfile = findViewById(R.id.imageView);
-        textEditImage = findViewById(R.id.editEventPosterText);
-        editTextName = findViewById(R.id.attendeeListButton);
-        editTextEmail = findViewById(R.id.manageProfilesButton);
-        editTextPhoneNumber = findViewById(R.id.eventDetailsButton);
+        textEditImage = findViewById(R.id.editProfilePictureButton);
+        editTextName = findViewById(R.id.editAttendeeName);
+        editTextEmail = findViewById(R.id.editEmailText);
+        editTextPhoneNumber = findViewById(R.id.editPhoneNumber);
         cancelButton = findViewById(R.id.cancelButton);
         deleteImageButton = findViewById(R.id.deleteImageButton);
+        homeButton = findViewById(R.id.imageView2);
+        geoLocSwitch = findViewById(R.id.geolocationTrackSwitch);
+        notifSwitch = findViewById(R.id.notifSwitch);
 
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
+
+        // Load profile data when activity is created
+        loadProfileData();
+
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeEditProfileActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (editTextName.getText() != null && editTextEmail.getText() != null) {
+                    saveProfile();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
 
         // Set click listener for editing profile picture
         textEditImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkAndOpenGallery();
+                startPickingImage.launch("image/*");
             }
         });
 
@@ -80,7 +128,12 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                saveProfile();
+                if (editTextName.getText() != null && editTextEmail.getText() != null) {
+                    saveProfile();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 
@@ -88,12 +141,23 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         deleteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                deleteProfilePicture();
+                if (editTextName.getText() != null && editTextEmail.getText() != null) {
+                    saveProfile();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
-        // Load profile data when activity is created
-        loadProfileData();
+        geoLocSwitch = findViewById(R.id.geolocationTrackSwitch);
+        geoLocSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                requestLocationPermission();
+            } else {
+                geoLocSwitch.setChecked(false);
+                Toast.makeText(this, "No permission please manage in settings", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
@@ -102,65 +166,82 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private void deleteProfilePicture() {
         imageViewProfile.setImageResource(R.drawable.pfp);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("imageUri", "");
+        editor.putString("imageUri", null);
         editor.apply();
-        imageUri = "";
+        if (attendeeId != null) {
+            attendeesRef.document(attendeeId).update("AttendeeProfile", null);
+        }
         Toast.makeText(this, "Profile picture deleted", Toast.LENGTH_SHORT).show();
 
     }
 
-    /**
-     * Opens the gallery to select a profile picture.
-     */
-    private void checkAndOpenGallery() {
+    private void requestLocationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PICK_IMAGE_REQUEST);
-            } else {
-                openGallery();
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        LOCATION_PERMISSION_REQUEST_CODE);
             }
         }
     }
 
-    /**
-     * Opens the gallery.
-     */
-    private void openGallery() {
-        Intent galleryIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        galleryIntent.addCategory(Intent.CATEGORY_OPENABLE);
-        galleryIntent.setType("image/*");
-        startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST);
-    }
-
-    /**
-     * Handles permission requests for accessing the gallery.
-     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PICK_IMAGE_REQUEST) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openGallery();
+                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Permission denied. Cannot access images.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                geoLocSwitch.setChecked(false);
             }
         }
     }
+
+    private final ActivityResultLauncher<String> startPickingImage = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            new ActivityResultCallback<Uri>() {
+                @Override
+                public void onActivityResult(Uri uri) {
+                    if (uri != null) {
+                        imageUri = uri;
+                        imageViewProfile.setImageURI(imageUri);
+                    }
+                }
+            }
+    );
 
     /**
      * Loads profile data from SharedPreferences.
      */
     private void loadProfileData() {
-        String name = sharedPreferences.getString("name", "");
-        String email = sharedPreferences.getString("email", "");
-        String phonenumber = sharedPreferences.getString("phonenumber", "");
-        imageUri = sharedPreferences.getString("imageUri", "");
-        editTextName.setText(name);
-        editTextEmail.setText(email);
-        editTextPhoneNumber.setText(phonenumber);
-        if (!imageUri.isEmpty()) {
-            Picasso.get().load(imageUri).into(imageViewProfile);
+
+        name = sharedPreferences.getString("name", null);
+        email = sharedPreferences.getString("email", null);
+        String imageUriString = sharedPreferences.getString("imageUri", null);
+        attendeeId = sharedPreferences.getString("attendeeId", null);
+        phonenumber = sharedPreferences.getString("phonenumber", null);
+        geoLocChecked = sharedPreferences.getBoolean("geoLocChecked", false);
+        notifChecked = sharedPreferences.getBoolean("notifSwitchChecked", false);
+        Log.d("Checked", "Geo: " + geoLocChecked + " Notif: " + notifChecked);
+
+        if (name != null) {
+            editTextName.setText(name);
         }
+        if (email != null) {
+            editTextEmail.setText(email);
+        }
+        if (imageUriString != null) {
+            imageUri = Uri.parse(imageUriString);
+            new AttendeeEditProfileActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.imageView)).execute(imageUri.toString());
+        }
+        if (phonenumber != null) {
+
+            editTextPhoneNumber.setText(phonenumber);
+        }
+        geoLocSwitch.setChecked(geoLocChecked);
+        notifSwitch.setChecked(notifChecked);
 
     }
 
@@ -169,26 +250,60 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
      */
     private void saveProfile() {
         String url = "https://api.dicebear.com/5.x/pixel-art/png?seed=";
-        String name = editTextName.getText().toString().trim();
-        String email = editTextEmail.getText().toString().trim();
-        String phonenum = editTextPhoneNumber.getText().toString().trim();
-        if (imageUri == null || imageUri.isEmpty()) {
+        name = editTextName.getText().toString().trim();
+        email = editTextEmail.getText().toString().trim();
+        if (!editTextPhoneNumber.getText().toString().equals("")) {
+            phonenumber = editTextPhoneNumber.getText().toString().trim();
+        } else {
+            phonenumber = null;
+        }
+        geoLocChecked = geoLocSwitch.isChecked();
+        notifChecked = notifSwitch.isChecked();
+
+        if (imageUri == null) {
             Picasso.get().load(url + name).into(imageViewProfile);
-            imageUri = url + name;
+            imageUri = Uri.parse(url + name);
         }
-        saveProfileData(getApplicationContext(), name, email, imageUri, phonenum);
-        Intent intent = new Intent();
-        if (!imageUri.isEmpty()) {
-            intent.putExtra("updatedImageUri", imageUri);
+        new AttendeeEditProfileActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.imageView)).execute(imageUri.toString());
+
+        if (attendeeId != null) {
+            DocumentReference doc = attendeesRef.document(attendeeId);
+            doc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            Log.d("LoadProfile", "attendee in firebase");
+                            doc.update("AttendeeProfile", imageUri);
+                            doc.update("AttendeeName", name);
+                            doc.update("AttendeePhoneNumber", phonenumber);
+                            doc.update("AttendeeEmail", email);
+                            doc.update("geoLocChecked", geoLocChecked);
+                            doc.update("notifChecked", notifChecked);
+                            saveProfileData(getApplicationContext(), name, email, imageUri, phonenumber, geoLocChecked, notifChecked, attendeeId);
+                        }
+                    }
+                }
+            });
         }
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("AttendeeProfile", imageUri);
-        data.put("AttendeeName", name);
-        data.put("AttendeePhoneNumber", phonenum);
-        data.put("AttendeeEmail", email);
-        attendeesRef.document(phonenum).set(data);
-        setResult(RESULT_OK, intent);
-        finish();
+        else {
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("AttendeeProfile", imageUri);
+            data.put("AttendeeName", name);
+            data.put("AttendeePhoneNumber", phonenumber);
+            data.put("AttendeeEmail", email);
+            data.put("geoLocChecked", geoLocChecked);
+            data.put("notifChecked", notifChecked);
+            attendeesRef.add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+                    attendeeId = documentReference.getId();
+                    saveProfileData(getApplicationContext(), name, email, imageUri, phonenumber, geoLocChecked, notifChecked,attendeeId);
+                }
+            });
+        }
+
     }
 
     /**
@@ -199,49 +314,48 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
      * @param email
      * @param imageUri
      * @param phonenum
+     * @param geoLocChecked
+     * @param notifSwitchChecked
+     * @param attendeeId
      */
-    private void saveProfileData(Context context, String name, String email, String imageUri, String phonenum) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("UserProfile", MODE_PRIVATE);
+    private void saveProfileData(Context context, String name, String email, Uri imageUri, String phonenum, Boolean geoLocChecked, Boolean notifSwitchChecked, String attendeeId) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("name", name);
         editor.putString("email", email);
-        editor.putString("imageUri", imageUri);
+        editor.putString("imageUri", imageUri.toString());
         editor.putString("phonenumber", phonenum);
+        editor.putString("attendeeId", attendeeId);
+        editor.putBoolean("geoLocChecked", geoLocChecked);
+        editor.putBoolean("notifSwitchChecked", notifSwitchChecked);
+
         editor.apply();
         Toast.makeText(context, "Profile created and saved successfully", Toast.LENGTH_SHORT).show();
+        setResult(RESULT_OK);
+        switchActivities();
+    }
+    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
+        ImageView imageView;
+        public DownloadImageFromInternet(ImageView imageView) {
+            this.imageView=imageView;
+        }
+        protected Bitmap doInBackground(String... urls) {
+            String imageURL=urls[0];
+            Bitmap bimage=null;
+            try {
+                InputStream in=new java.net.URL(imageURL).openStream();
+                bimage= BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error Message", e.getMessage());
+                e.printStackTrace();
+            }
+            return bimage;
+        }
+        protected void onPostExecute(Bitmap result) {
+            imageView.setImageBitmap(result);
+        }
     }
 
-    /**
-     * Handles the result of selecting an image from the gallery.
-     *
-     * @param requestCode The integer request code originally supplied to
-     *                    startActivityForResult(), allowing you to identify who this
-     *                    result came from.
-     * @param resultCode The integer result code returned by the child activity
-     *                   through its setResult().
-     * @param data An Intent, which can return result data to the caller
-     *               (various data can be attached to Intent "extras").
-     *
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == PICK_IMAGE_REQUEST) {
-                if (data != null && data.getData() != null) {
-                    Uri selectedImageUri = data.getData();
-                    try {
-                        InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
-                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                        imageViewProfile.setImageBitmap(bitmap);
-                        imageViewProfile.setTag(selectedImageUri.toString());
-                        imageUri = selectedImageUri.toString();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        }
+    private void switchActivities(){
+        finish();
     }
 }

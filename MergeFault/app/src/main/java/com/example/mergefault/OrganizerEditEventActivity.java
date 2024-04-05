@@ -176,6 +176,8 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                     if (doc.exists()) {
                         if (doc.getString("AttendeeLimit") != null) {
                             attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                        } else {
+                            attendeeLimit = null;
                         }
                         downloadUrl = Uri.parse(doc.getString("EventPoster"));
                         location = doc.getString("Location");
@@ -190,7 +192,11 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                         addressText.setText("Address: " + location);
                         dayText.setText("Day: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
                         timeText.setText("Time: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
-                        limitText.setText("Limit: " + attendeeLimit.toString());
+                        if (attendeeLimit != null) {
+                            limitText.setText("Limit: " + attendeeLimit.toString());
+                        } else {
+                            limitText.setText("Attendee Limit: Null");
+                        }
                         descriptionText.setText("Description: " + description);
                         eventNameEditText.setText(eventName);
                         geoLocSwitch.setChecked(geoLocOn);
@@ -221,7 +227,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OrganizerEditEventActivity.this, MainActivity.class);
+                Intent intent = new Intent(OrganizerEditEventActivity.this, OrganizerHomeActivity.class);
                 startActivity(intent);
                 finish();
             }
@@ -271,8 +277,10 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
             @Override
             public void onClick(View v) {
                 Bundle bundle = new Bundle();
-                bundle.putString("attendeeLimit", attendeeLimit.toString());
                 EditLimitFragment fragInfo = new EditLimitFragment();
+                if (attendeeLimit != null) {
+                    bundle.putString("attendeeLimit", attendeeLimit.toString());
+                }
                 fragInfo.setArguments(bundle);
                 fragInfo.show(getSupportFragmentManager(), "Edit Limit");
             }

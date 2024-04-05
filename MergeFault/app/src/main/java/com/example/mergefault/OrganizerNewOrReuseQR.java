@@ -20,6 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class OrganizerNewOrReuseQR extends AppCompatActivity {
 
     private Button generateNewQR;
+    private Button reuseQR;
     private Button cancelButton;
     private ImageView homeButton;
     private String eventId;
@@ -34,6 +35,7 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
         generateNewQR = findViewById(R.id.generateNewButton);
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.logoImgView);
+        reuseQR = findViewById(R.id.continueButton);
 
         db = FirebaseFirestore.getInstance();
 
@@ -53,10 +55,22 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        reuseQR.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start OrganizerShareQR activity to generate a new QR code
+                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerReuseQR.class);
+                intent.putExtra("EventId", eventId);
+                startActivity(intent);
+            }
+        });
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 eventRef.delete();
+                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerAddEventActivity.class);
+                startActivity(intent);
                 finish();
             }
         });
@@ -64,6 +78,8 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
             @Override
             public void handleOnBackPressed() {
                 eventRef.delete();
+                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerAddEventActivity.class);
+                startActivity(intent);
                 finish();
             }
         };
@@ -72,7 +88,8 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OrganizerNewOrReuseQR.this, MainActivity.class);
+                eventRef.delete();
+                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerHomeActivity.class);
                 startActivity(intent);
                 finish();
             }

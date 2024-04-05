@@ -1,28 +1,36 @@
 package com.example.mergefault;
 
-import static com.squareup.okhttp.internal.http.HttpDate.format;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.squareup.picasso.Picasso;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -41,8 +49,8 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private ArrayList<Event> signedUpEventDataList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
+    private DocumentReference eventAttendeeRef;
     private CollectionReference attendeeRef;
-    private CollectionReference attendeeImageRef;
 
     private Event selectedEvent;
     private String eventID;
@@ -57,6 +65,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private String description;
     private Boolean geoLocOn;
     private ImageView homeIcon;
+    private Button cancelButton;
 
 
     @Override
@@ -67,11 +76,12 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         profileImageView = findViewById(R.id.pfpImageView);
         signedUpEventsList = findViewById(R.id.myEventListView);
         homeIcon = findViewById(R.id.imageView);
+        cancelButton = findViewById(R.id.cancelButton);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
-        attendeeImageRef = db.collection("attendees");
+        attendeeRef = db.collection("attendees");
 
         loadProfileImage();
 
@@ -85,10 +95,27 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         homeIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, MainActivity.class);
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
         signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -96,12 +123,9 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeViewEventDetailsActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("0", selectedEvent.getEventID());
-                bundle.putString("1", selectedEvent.getEventName());
-                bundle.putString("2", selectedEvent.getLocation());
-                //bundle.putString("4", selectedEvent.getDescription());
                 intent.putExtras(bundle);
                 startActivity(intent);
-
+                finish();
             }
         });
 
@@ -112,42 +136,40 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                     Log.e("Firestore", error.toString());
                     return;
                 }
-                if (value != null){
+                if (value != null) {
                     signedUpEventDataList.clear();
-                    for(QueryDocumentSnapshot doc: value){
-                        attendeeRef = db.collection("events").document(doc.getId()).collection("attendees");
-                        attendeeRef.get().addOnCompleteListener(task -> {
-                            if(task.isSuccessful()) {
-                                QuerySnapshot querySnapshot = task.getResult();
-                                if (querySnapshot != null) {
-                                    for(QueryDocumentSnapshot document : querySnapshot) {
-                                        String documentID = document.getId();
-                                        if(documentID.equals(sharedPreferences.getString("phonenumber", ""))){
-                                            eventName = doc.getString("EventName");
-                                            organizerId = doc.getString("OrganizerID");
-                                            location = doc.getString("Location");
-                                            placeId = doc.getString("PlaceID");
-                                            dateTime = doc.getDate("DateTime");
+                    for (QueryDocumentSnapshot doc : value) {
+                        eventAttendeeRef = db.collection("events").document(doc.getId()).collection("attendees").document(sharedPreferences.getString("attendeeId", null));
+                        eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    DocumentSnapshot documentSnapshot = task.getResult();
+                                    if (documentSnapshot.exists()) {
+                                        eventName = doc.getString("EventName");
+                                        organizerId = doc.getString("OrganizerID");
+                                        location = doc.getString("Location");
+                                        placeId = doc.getString("PlaceID");
+                                        dateTime = doc.getDate("DateTime");
+                                        if (doc.getString("AttendeeLimit") != null) {
                                             attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
-                                            imageURL = Uri.parse(doc.getString("EventPoster"));
-                                            description = doc.getString("Description");
-                                            geoLocOn = doc.getBoolean("GeoLocOn");
-                                            eventID = doc.getId();
-
-                                            Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
-
-                                            date = Calendar.getInstance();
-                                            date.setTime(dateTime);
-                                            signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
+                                        } else {
+                                            attendeeLimit = null;
                                         }
+                                        imageURL = Uri.parse(doc.getString("EventPoster"));
+                                        description = doc.getString("Description");
+                                        geoLocOn = doc.getBoolean("GeoLocOn");
+                                        eventID = doc.getId();
+
+                                        Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+
+                                        date = Calendar.getInstance();
+                                        date.setTime(dateTime);
+                                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
+                                    } else {
+                                        Log.d("TAG", "No such document");
                                     }
                                     eventArrayAdapter.notifyDataSetChanged();
-                                }
-                            }
-                            else{
-                                Exception e = task.getException();
-                                if (e != null) {
-                                    e.printStackTrace();
                                 }
                             }
                         });
@@ -160,7 +182,7 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeEditProfileActivity.class);
-                startActivityForResult(intent, 1);
+                startActivityForResult(intent,0);
             }
         });
     }
@@ -169,26 +191,50 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     // imageuri references the link or source of where the image originates from such as it could originate from the device or the api call. However it is treated as empty if there is the generic pfp image there.
     // picasso is an external api that helps cache in images and load them to the imageview works on urls as well as internal images
     private void loadProfileImage() {
-        attendeeImageRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                for(QueryDocumentSnapshot  doc: value){
-                    if (doc.getId().equals(sharedPreferences.getString("phonenumber", ""))){
-                        if (!doc.getString("AttendeeProfile").isEmpty()) {
-                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+                for (QueryDocumentSnapshot doc : value) {
+                    if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
+                        if (doc.getString("AttendeeProfile") != null) {
+                            new AttendeeSignedUpEventsActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.pfpImageView)).execute(doc.getString("AttendeeProfile"));
                         }
-                        break;
                     }
                 }
             }
         });
     }
 
-    // this is when we return to the activity from another one, essentially the cancel button. When we return to this activity, load the profile image depending upon any changes made to the Uri in the AttendeeEditProfileActivity.
+    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
+        ImageView imageView;
+
+        public DownloadImageFromInternet(ImageView imageView) {
+            this.imageView = imageView;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String imageURL = urls[0];
+            Bitmap bimage = null;
+            try {
+                InputStream in = new java.net.URL(imageURL).openStream();
+                bimage = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error Message", e.getMessage());
+                e.printStackTrace();
+            }
+            return bimage;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            imageView.setImageBitmap(result);
+        }
+    }
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK) {
+            // Reload the profile image if changes were made
             loadProfileImage();
         }
     }
