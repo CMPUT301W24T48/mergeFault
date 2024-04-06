@@ -23,6 +23,7 @@
 ## Testing
 - [Espresso](https://developer.android.com/training/testing/espresso)
 
-## Images
+## Icons
 - [Event Marker by hervv](https://www.flaticon.com/authors/hervv)
 - [Attndee Marker by vector stall](https://www.flaticon.com/authors/vector-stall)
+- [Delete Icon](https://android.googlesource.com/platform/packages/apps/Settings/+/master/res/drawable/ic_delete.xml)
