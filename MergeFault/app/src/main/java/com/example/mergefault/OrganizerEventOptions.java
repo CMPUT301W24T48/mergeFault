@@ -27,6 +27,10 @@ import com.squareup.picasso.Picasso;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Organizer page for modifying events
+ * TODO: add javadocs for this class
+ */
 public class OrganizerEventOptions extends AppCompatActivity {
 
     private String eventId;
