@@ -28,6 +28,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * An Activity which allows admins to view and delete images
+ */
 public class AdminManageImages extends AppCompatActivity{
     private FirebaseFirestore db;
     private CollectionReference eventRef;

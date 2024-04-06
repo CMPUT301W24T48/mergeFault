@@ -52,7 +52,9 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     private ImageView notificationButton;
 
     /**
-     * This Activity displays event details and allows users to sign up for notifications or withdraw
+     * @see AttendeeSignedUpEventsActivity
+     * This activity displays the event details of the signed up activity
+     * and allows users to sign up for notifications or withdraw
      */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
