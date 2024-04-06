@@ -280,8 +280,9 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
      * @param eventId
      * This is the event id given by a randomly generated firestore id
      */
-    public void switchActivities(String eventId){
-        Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class);
+    public void switchActivities(String eventId, Uri selectedImage){
+        getApplicationContext().grantUriPermission(getPackageName(), selectedImage, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class).setData(selectedImage).setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra("EventId", eventId);
         startActivity(intent);
         finish();
@@ -393,7 +394,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                         public void onSuccess(Void unused) {
                             Log.d("eventIdBefore", "eventid: " + event.getEventID());
                             Log.d("eventPoster", "eventPoster: " + event.getEventPoster());
-                            switchActivities(eventId);
+                            switchActivities(eventId, selectedImage);
                         }
                     });
                 }
