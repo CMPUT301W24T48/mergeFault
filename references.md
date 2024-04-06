@@ -21,3 +21,8 @@
 - [ZXing](https://github.com/zxing/zxing)
 
 ## Testing
+- [Espresso](https://developer.android.com/training/testing/espresso)
+
+## Images
+- [Event Marker by hervv](https://www.flaticon.com/authors/hervv)
+- [Attndee Marker by vector stall](https://www.flaticon.com/authors/vector-stall)
