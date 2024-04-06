@@ -150,6 +150,10 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Checks Database if the attendee profile is saved
+     * if it exists it loads the profile image
+     */
     private void loadProfileImage() {
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
