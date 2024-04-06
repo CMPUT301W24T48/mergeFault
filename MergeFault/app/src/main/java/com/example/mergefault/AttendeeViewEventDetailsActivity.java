@@ -49,8 +49,12 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     private ImageView eventPosterImageView;
     private SharedPreferences sharedPreferences;
 
+    private ImageView notificationButton;
+
     /**
-     * This Activity displays event details and allows users to sign up for notifications or withdraw
+     * @see AttendeeSignedUpEventsActivity
+     * This activity displays the event details of the signed up activity
+     * and allows users to sign up for notifications or withdraw
      */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,6 +69,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
         homeButton = findViewById(R.id.imageView);
         eventPosterImageView = findViewById(R.id.eventPoster);
         notifySwitch = findViewById(R.id.notifSwitch);
+        notificationButton = findViewById(R.id.notifBellImageView);
 
         // Get the intent that started this activity
         Intent intent = getIntent();
@@ -75,6 +80,15 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
         attendeeRef = db.collection("attendees");
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
         eventAttendeeRef = db.collection("events").document(eventId).collection("attendees");
+
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+
+            }
+        });
 
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override

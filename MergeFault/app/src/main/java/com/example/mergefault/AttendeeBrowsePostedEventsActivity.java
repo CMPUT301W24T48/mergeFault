@@ -33,7 +33,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * @see AttendeeCheckInScreenActivity
+ * @see AttendeeViewEventDetailsActivity
  * This activity displays the current list of all events posted on the app
  * Attendees can view all event details and sign up to any event
  */
@@ -51,18 +51,13 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private CollectionReference eventAttendeeRef;
     private FirebaseStorage firebaseStorage;
     private StorageReference eventPosterRef;
-    private String eventName;
-    private String organizerId;
-    private String location;
-    private String placeId;
+
     private Date dateTime;
-    private Uri imageURL;
-    private Integer attendeeLimit;
     private Calendar date;
-    private String description;
-    private Boolean geoLocOn;
-    private String eventId;
+    private Event event;
+
     private Button cancelButton;
+    private ImageView notificationButton;
 
 
     @Override
@@ -74,6 +69,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
         eventsList = findViewById(R.id.myEventListView);
         homeIcon = findViewById(R.id.imageView);
         cancelButton = findViewById(R.id.cancelButton);
+        notificationButton = findViewById(R.id.notifBellImageView);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
         db = FirebaseFirestore.getInstance();
@@ -96,6 +92,14 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                 Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
                 finish();
+            }
+        });
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+
             }
         });
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -139,29 +143,31 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                     for (QueryDocumentSnapshot doc : value) {
                         Date currentDate = Calendar.getInstance().getTime();
                         if (currentDate.before(doc.getDate("DateTime"))) {
-                            eventName = doc.getString("EventName");//doc.getID();
-                            eventId = doc.getString("EventID");
-                            organizerId = doc.getString("OrganizerID");
-                            location = doc.getString("Location");
-                            placeId = doc.getString("PlaceID");
+                            event = new Event(null,null,null,null,null,null,null,null,null,null);
+                            event.setEventName(doc.getString("EventName"));
+                            event.setOrganizerId(doc.getString("OrganizerID"));
+                            event.setLocation(doc.getString("Location"));
+                            event.setPlaceId(doc.getString("PlaceID"));
                             dateTime = doc.getDate("DateTime");
                             if (doc.getString("AttendeeLimit") != null) {
-                                attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                                event.setAttendeeLimit(Integer.parseInt(doc.getString("AttendeeLimit")));
                             } else {
-                                attendeeLimit = null;
+                                event.setAttendeeLimit(null);
                             }
                             if (doc.getString("EventPoster") != null) {
-                                imageURL = Uri.parse(doc.getString("EventPoster"));
+                                event.setEventPoster(Uri.parse(doc.getString("EventPoster")));
                             } else {
-                                imageURL = null;
+                                event.setEventPoster(null);
                             }
-                            description = doc.getString("Description");
-                            geoLocOn = doc.getBoolean("GeoLocOn");
-                            Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+                            event.setDescription(doc.getString("Description"));
+                            event.setGeoLocOn(doc.getBoolean("GeoLocOn"));
+                            event.setEventID(doc.getId());
+
+                            Log.d("Firestore", String.format("Event(%s, $s) fetched", event.getEventName(), event.getOrganizerId()));
+
                             date = Calendar.getInstance();
                             date.setTime(dateTime);
-
-                            eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventId, placeId));
+                            eventDataList.add(new Event(event.getEventName(), event.getOrganizerId(), event.getLocation(), date, event.getAttendeeLimit(), event.getEventPoster(), event.getDescription(), event.getGeoLocOn(), event.getEventID(), event.getPlaceId()));
                         } else {
                             eventAttendeeRef = eventRef.document(doc.getId()).collection("attendees");
                             eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

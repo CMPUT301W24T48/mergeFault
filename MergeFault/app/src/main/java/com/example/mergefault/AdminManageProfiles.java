@@ -21,6 +21,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
+/**
+ * An Activity which allows admins to view and delete profiles
+ */
 public class AdminManageProfiles extends AppCompatActivity{
 
     private FirebaseFirestore db;

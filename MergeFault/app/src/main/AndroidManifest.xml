@@ -50,6 +50,10 @@
             android:name=".OrganizerEventOptions"
             android:exported="false" />
         <activity
+            android:name=".AttendeeNotifications"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
