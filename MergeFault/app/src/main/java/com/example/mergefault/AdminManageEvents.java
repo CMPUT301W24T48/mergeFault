@@ -120,18 +120,18 @@ public class AdminManageEvents extends AppCompatActivity{
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
                                         for (QueryDocumentSnapshot document : task.getResult()) {
-                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    eventRef.document(doc.getId()).delete();
-                                                }
-                                            });
+                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete();
                                         }
+                                        eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                                        eventPosterRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                eventRef.document(doc.getId()).delete();
+                                            }
+                                        });
                                     }
                                 }
                             });
-                            eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
-                            eventPosterRef.delete();
                         }
                     }
                     eventArrayAdapter.notifyDataSetChanged();
@@ -155,8 +155,8 @@ public class AdminManageEvents extends AppCompatActivity{
                                                                 @Override
                                                                 public void onSuccess(Void unused) {
                                                                     eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + eventDataList.get(position).getEventID() + ".jpg");
-                                                                    eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventDataList.get(position).getEventID() + "CheckIn.jpg");
-                                                                    eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventDataList.get(position).getEventID() + "Promotion.jpg");
+                                                                    eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes").child("CheckIn/" + eventDataList.get(position).getEventID() + ".png");
+                                                                    eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes").child("Promotion/" + eventDataList.get(position).getEventID() + ".png");
                                                                     eventPosterRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                                                                         @Override
                                                                         public void onSuccess(Void unused) {

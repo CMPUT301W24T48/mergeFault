@@ -169,13 +169,15 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
                                         for (QueryDocumentSnapshot document : task.getResult()) {
-                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    eventRef.document(doc.getId()).delete();
-                                                }
-                                            });
+                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete();
                                         }
+                                        eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                                        eventPosterRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                eventRef.document(doc.getId()).delete();
+                                            }
+                                        });
                                     }
                                 }
                             });

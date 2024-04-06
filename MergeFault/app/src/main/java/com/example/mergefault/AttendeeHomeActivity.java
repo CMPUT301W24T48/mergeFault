@@ -181,6 +181,14 @@ public class AttendeeHomeActivity extends AppCompatActivity {
                     Log.d("Scanned stuff", eventId);
                     startActivity(intent);
                     finish();
+                } else if (Objects.equals(action, "Promotion")) {
+                    String eventId = data.getStringExtra("eventId");
+                    Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeSignUpActivity.class);
+                    intent.putExtra("eventId", eventId);
+                    intent.putExtra("parentActivity", "AttendeeHome");
+                    Log.d("Scanned stuff", eventId);
+                    startActivity(intent);
+                    finish();
                 }
             } else if (requestCode == 1) {
                 Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeHomeActivity.class);

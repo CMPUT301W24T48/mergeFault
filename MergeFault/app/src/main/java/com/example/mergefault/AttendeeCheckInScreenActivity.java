@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -157,6 +158,15 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                 finish();
             }
         });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        AttendeeCheckInScreenActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     /**
