@@ -67,6 +67,8 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private ImageView homeIcon;
     private Button cancelButton;
 
+    private ImageView notificationButton;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,7 +80,9 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         homeIcon = findViewById(R.id.imageView);
         profileImageView = findViewById(R.id.pfpImageView);
         cancelButton = findViewById(R.id.cancelButton);
+        notificationButton = findViewById(R.id.notifBellImageView);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
+
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
@@ -93,6 +97,15 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
 
 
         eventArrayAdapter.notifyDataSetChanged();
+
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+
+            }
+        });
 
         homeIcon.setOnClickListener(new View.OnClickListener() {
             @Override
