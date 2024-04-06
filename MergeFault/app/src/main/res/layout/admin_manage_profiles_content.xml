@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="#EEECDE">
+    android:background="#EEECDE"
+    android:descendantFocusability="blocksDescendants">
     <ImageView
         android:id="@+id/pfpImageView"
         android:layout_width="116dp"
@@ -19,12 +20,13 @@
 
     <TextView
         android:id="@+id/nameText"
-        android:layout_width="wrap_content"
+        android:layout_width="198dp"
         android:layout_height="95dp"
         android:padding="30dp"
         android:paddingStart="80dp"
         android:paddingEnd="74dp"
         android:text="Name"
+        android:autoSizeTextType="uniform"
         android:textColor="#575656"
         android:textSize="20sp"
         android:textStyle="bold|italic" />

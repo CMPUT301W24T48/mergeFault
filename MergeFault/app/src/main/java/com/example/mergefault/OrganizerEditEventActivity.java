@@ -4,11 +4,8 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.icu.text.DateFormat;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -45,8 +42,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -179,7 +176,11 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                         } else {
                             attendeeLimit = null;
                         }
-                        downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        if (doc.getString("EventPoster") != null) {
+                            downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        } else {
+                            downloadUrl = null;
+                        }
                         location = doc.getString("Location");
                         dateTime.setTime(doc.getDate("DateTime"));
                         eventName = doc.getString("EventName");
@@ -187,13 +188,13 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                         placeId = doc.getString("PlaceID");
                         geoLocOn = doc.getBoolean("GeoLocOn");
 
-                        new DownloadImageFromInternet((ImageView) findViewById(R.id.eventPosterImageView)).execute(downloadUrl.toString());
+                        Picasso.get().load(downloadUrl).into(eventPosterImageView);
 
                         addressText.setText("Address: " + location);
                         dayText.setText("Day: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
                         timeText.setText("Time: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
                         if (attendeeLimit != null) {
-                            limitText.setText("Limit: " + attendeeLimit.toString());
+                            limitText.setText("Limit: " + attendeeLimit);
                         } else {
                             limitText.setText("Attendee Limit: Null");
                         }
@@ -217,6 +218,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                 switchActivities();
             }
         };
+        OrganizerEditEventActivity.this.getOnBackPressedDispatcher().addCallback(this, callback);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -316,41 +318,35 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
              */
             @Override
             public void onClick(View v) {
+                if (downloadUrl == null) {
+                    if (selectedImage != null) {
+                        eventName = eventNameEditText.getText().toString();
+                        event.setEventName(eventName);
+                        event.setLocation(location);
+                        event.setDateTime(dateTime);
+                        event.setAttendeeLimit(attendeeLimit);
+                        event.setEventPoster(selectedImage);
+                        event.setDescription(description);
+                        event.setGeoLocOn(geoLocSwitch.isChecked());
+                        event.setPlaceId(placeId);
+                        editEvent();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    eventName = eventNameEditText.getText().toString();
+                    event.setEventName(eventName);
+                    event.setLocation(location);
+                    event.setDateTime(dateTime);
+                    event.setAttendeeLimit(attendeeLimit);
+                    event.setEventPoster(selectedImage);
+                    event.setDescription(description);
+                    event.setGeoLocOn(geoLocSwitch.isChecked());
+                    event.setPlaceId(placeId);
+                }
 
-                eventName = eventNameEditText.getText().toString();
-                event.setEventName(eventName);
-                event.setLocation(location);
-                event.setDateTime(dateTime);
-                event.setAttendeeLimit(attendeeLimit);
-                event.setEventPoster(selectedImage);
-                event.setDescription(description);
-                event.setGeoLocOn(geoLocSwitch.isChecked());
-                event.setPlaceId(placeId);
-                editEvent();
             }
         });
-    }
-    private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView=imageView;
-            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
-        }
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL=urls[0];
-            Bitmap bimage=null;
-            try {
-                InputStream in=new java.net.URL(imageURL).openStream();
-                bimage= BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
 
     public void switchActivities(){
@@ -427,7 +423,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
     }
 
     /**
-     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.jpg) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
+     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.png) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
      * This is the event passed by the addEvent method
      * This is the documentReference to event on the firebase
      */
@@ -478,7 +474,11 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
         eventRef.update("Location", event.getLocation());
         eventRef.update("PlaceID", event.getPlaceId());
         eventRef.update("DateTime", event.getDateTime().getTime());
-        eventRef.update("AttendeeLimit", event.getAttendeeLimit().toString());
+        if (event.getAttendeeLimit() != null) {
+            eventRef.update("AttendeeLimit", event.getAttendeeLimit().toString());
+        } else {
+            eventRef.update("AttendeeLimit", null);
+        }
         eventRef.update("EventName", event.getEventName());
         eventRef.update("Description", event.getDescription());
         eventRef.update("GeoLocOn",event.getGeoLocOn());

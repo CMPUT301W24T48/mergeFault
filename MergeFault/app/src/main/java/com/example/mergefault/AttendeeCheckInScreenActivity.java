@@ -5,10 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,8 +29,14 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -58,8 +61,10 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     private TextView descriptionText;
     private SharedPreferences sharedPreferences;
     private FirebaseFirestore db;
-    private CollectionReference eventsRef;
+    private CollectionReference eventRef;
     private CollectionReference eventAttendeeRef;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference eventPosterRef;
     private Integer checkedInCount;
     private Boolean attendeeCheckedIn = false;
     private String locationInfo = null;
@@ -73,13 +78,16 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancelButton);
 
         db = FirebaseFirestore.getInstance();
-        eventsRef = db.collection("events");
+        eventRef = db.collection("events");
+        firebaseStorage = FirebaseStorage.getInstance();
+
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
 
         // Initialize location text view
         locationText = findViewById(R.id.CheckInLocationText);
         descriptionText = findViewById(R.id.CheckInDescriptionText);
         timeText = findViewById(R.id.CheckInTimeText);
+        eventPoster = findViewById(R.id.eventPoster);
 
 
         // Initialize FusedLocationProviderClient
@@ -87,23 +95,50 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
 
         // Handle incoming intent data
         Intent intent = getIntent();
-        eventId = intent.getExtras().get("eventId").toString();
+        eventId = intent.getStringExtra("eventId");
 
         Log.d("checkineventid", "eventId: " + eventId);
 
 
-        eventAttendeeRef = eventsRef.document(eventId).collection("attendees");
+        eventAttendeeRef = eventRef.document(eventId).collection("attendees");
 
-        eventsRef.document(eventId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        eventRef.document(eventId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot doc = task.getResult();
                     if (doc.exists()) {
-                        locationText.setText(doc.getString("Location"));
-                        descriptionText.setText(doc.getString("Description"));
-                        timeText.setText(doc.getDate("DateTime").toString());
-                        new AttendeeCheckInScreenActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.eventPoster)).execute(doc.getString("EventPoster"));
+                        Date currentTime = Calendar.getInstance().getTime();
+                        if (currentTime.before(doc.getDate("DateTime"))) {
+                            locationText.setText(doc.getString("Location"));
+                            descriptionText.setText(doc.getString("Description"));
+                            timeText.setText(doc.getDate("DateTime").toString());
+                            if (doc.getString("EventPoster") != null) {
+                                Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
+                            }
+                        } else {
+                            eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        for (QueryDocumentSnapshot document : task.getResult()) {
+                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    eventRef.document(doc.getId()).delete();
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                            eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                            eventPosterRef.delete();
+                            Toast.makeText(getApplicationContext(), "This event expired", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
                     }
                 }
             }
@@ -119,6 +154,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
     }
@@ -221,30 +257,5 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             }
         });
     }
-
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView = imageView;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
-    }
-    }
+}
 

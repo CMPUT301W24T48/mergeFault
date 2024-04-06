@@ -45,6 +45,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -166,6 +167,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                 finish();
             }
         };
+        OrganizerAddEventActivity.this.getOnBackPressedDispatcher().addCallback(this, callback);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -259,9 +261,14 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             @Override
             public void onClick(View v) {
                 eventName = eventNameEditText.getText().toString();
+                Date currentTime = Calendar.getInstance().getTime();
                 if (location != null && day != null && time != null && !eventName.equals("") && selectedImage != null && description != null) {
-                    eventName = eventNameEditText.getText().toString();
-                    addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(),eventId, placeId));
+                    if (currentTime.before(dateTime.getTime())) {
+                        eventName = eventNameEditText.getText().toString();
+                        addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(),eventId, placeId));
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Selected time has passed", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
                 }
@@ -324,6 +331,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         timeText = findViewById(R.id.timeText);
         dateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
         dateTime.set(Calendar.MINUTE, minute);
+        dateTime.set(Calendar.SECOND, 0);
         time = DateFormat.getPatternInstance(DateFormat.HOUR24_MINUTE).format(dateTime.getTime());
         timeText.setText("Time: " + time);
     }
@@ -348,7 +356,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     }
 
     /**
-     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.jpg) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
+     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.png) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
      * @param event
      * This is the event passed by the addEvent method
      * @param documentReference

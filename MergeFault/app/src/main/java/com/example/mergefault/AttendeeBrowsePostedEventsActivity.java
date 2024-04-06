@@ -2,10 +2,7 @@ package com.example.mergefault;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,17 +12,22 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,8 +48,9 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private CollectionReference attendeeRef;
-
-    private Event selectedEvent;
+    private CollectionReference eventAttendeeRef;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference eventPosterRef;
     private String eventName;
     private String organizerId;
     private String location;
@@ -58,7 +61,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private Calendar date;
     private String description;
     private Boolean geoLocOn;
-    private String eventID;
+    private String eventId;
     private Button cancelButton;
 
 
@@ -76,6 +79,7 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
+        firebaseStorage = FirebaseStorage.getInstance();
 
         loadProfileImage();
 
@@ -110,14 +114,15 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                 finish();
             }
         };
+        AttendeeBrowsePostedEventsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         eventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedEvent = (Event) eventsList.getItemAtPosition(position);
+                String selectedEventId = eventDataList.get(position).getEventID();
                 Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("0", selectedEvent.getEventID());
-                intent.putExtras(bundle);
+                Log.d("eventId", "eventId: " + selectedEventId);
+                intent.putExtra("eventId", selectedEventId);
                 startActivity(intent);
                 finish();
             }
@@ -132,25 +137,51 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                 if (value != null) {
                     eventDataList.clear();
                     for (QueryDocumentSnapshot doc : value) {
-                        eventName = doc.getString("EventName");//doc.getID();
-                        eventID = doc.getString("EventID");
-                        organizerId = doc.getString("OrganizerID");
-                        location = doc.getString("Location");
-                        placeId = doc.getString("PlaceID");
-                        dateTime = doc.getDate("DateTime");
-                        if (doc.getString("AttendeeLimit") != null) {
-                            attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
-                        } else {
-                            attendeeLimit = null;
-                        }
-                        imageURL = Uri.parse(doc.getString("EventPoster"));
-                        description = doc.getString("Description");
-                        geoLocOn = doc.getBoolean("GeoLocOn");
-                        Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
-                        date = Calendar.getInstance();
-                        date.setTime(dateTime);
+                        Date currentDate = Calendar.getInstance().getTime();
+                        if (currentDate.before(doc.getDate("DateTime"))) {
+                            eventName = doc.getString("EventName");//doc.getID();
+                            eventId = doc.getString("EventID");
+                            organizerId = doc.getString("OrganizerID");
+                            location = doc.getString("Location");
+                            placeId = doc.getString("PlaceID");
+                            dateTime = doc.getDate("DateTime");
+                            if (doc.getString("AttendeeLimit") != null) {
+                                attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                            } else {
+                                attendeeLimit = null;
+                            }
+                            if (doc.getString("EventPoster") != null) {
+                                imageURL = Uri.parse(doc.getString("EventPoster"));
+                            } else {
+                                imageURL = null;
+                            }
+                            description = doc.getString("Description");
+                            geoLocOn = doc.getBoolean("GeoLocOn");
+                            Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+                            date = Calendar.getInstance();
+                            date.setTime(dateTime);
 
-                        eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
+                            eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventId, placeId));
+                        } else {
+                            eventAttendeeRef = eventRef.document(doc.getId()).collection("attendees");
+                            eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        for (QueryDocumentSnapshot document : task.getResult()) {
+                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    eventRef.document(doc.getId()).delete();
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                            eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                            eventPosterRef.delete();
+                        }
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }
@@ -176,37 +207,12 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                 for (QueryDocumentSnapshot doc : value) {
                     if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
-                            new AttendeeBrowsePostedEventsActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.pfpImageView)).execute(doc.getString("AttendeeProfile"));
+                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
                         }
                     }
                 }
             }
         });
-    }
-
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView = imageView;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

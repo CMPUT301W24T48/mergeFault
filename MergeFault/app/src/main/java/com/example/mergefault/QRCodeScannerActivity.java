@@ -58,6 +58,7 @@ public class QRCodeScannerActivity extends AppCompatActivity {
                 initQRCodeScanner();
             } else {
                 Toast.makeText(this, "Camera permission is required", Toast.LENGTH_LONG).show();
+                setResult(RESULT_CANCELED);
                 finish();
             }
         }
@@ -68,6 +69,8 @@ public class QRCodeScannerActivity extends AppCompatActivity {
         if (result != null) {
             if (result.getContents() == null) {
                 Toast.makeText(this, "Scan cancelled", Toast.LENGTH_LONG).show();
+                setResult(RESULT_CANCELED);
+                finish();
             } else {
                 if (!Objects.equals(callerActivity, "Main")) {
                     //Log.d("result", result.getContents());

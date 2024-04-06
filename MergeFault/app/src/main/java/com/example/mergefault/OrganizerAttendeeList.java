@@ -91,9 +91,17 @@ public class OrganizerAttendeeList extends AppCompatActivity{
                             @Override
                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                 name = documentSnapshot.getString("AttendeeName");
-                                phoneNum = documentSnapshot.getString("AttendeePhoneNumber");
+                                if (documentSnapshot.getString("AttendeePhoneNumber") != null) {
+                                    phoneNum = documentSnapshot.getString("AttendeePhoneNumber");
+                                } else {
+                                    phoneNum = null;
+                                }
                                 emailId = documentSnapshot.getString("AttendeeEmail");
-                                profImageURL = documentSnapshot.getString("AttendeeProfile");
+                                if (documentSnapshot.getString("AttendeeProfile") != null) {
+                                    profImageURL = documentSnapshot.getString("AttendeeProfile");
+                                } else {
+                                    profImageURL = null;
+                                }
                                 geolocationPref = documentSnapshot.getBoolean("geoLocChecked");
                                 notificationPref = documentSnapshot.getBoolean("notifChecked");
                                 checkInCount = doc.getLong("CheckedInCount").intValue();
@@ -135,6 +143,8 @@ public class OrganizerAttendeeList extends AppCompatActivity{
                 finish();
             }
         };
+        OrganizerAttendeeList.this.getOnBackPressedDispatcher().addCallback(this, callback);
+
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

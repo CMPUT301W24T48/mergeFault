@@ -2,10 +2,7 @@ package com.example.mergefault;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -29,8 +26,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -49,10 +48,11 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private ArrayList<Event> signedUpEventDataList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
-    private DocumentReference eventAttendeeRef;
+    private CollectionReference eventAttendeeRef;
+    private DocumentReference eventAttendeeDocRef;
     private CollectionReference attendeeRef;
-
-    private Event selectedEvent;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference eventPosterRef;
     private String eventID;
     private String eventName;
     private String organizerId;
@@ -76,12 +76,14 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         profileImageView = findViewById(R.id.pfpImageView);
         signedUpEventsList = findViewById(R.id.myEventListView);
         homeIcon = findViewById(R.id.imageView);
+        profileImageView = findViewById(R.id.pfpImageView);
         cancelButton = findViewById(R.id.cancelButton);
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
+        firebaseStorage = FirebaseStorage.getInstance();
 
         loadProfileImage();
 
@@ -116,14 +118,14 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 finish();
             }
         };
+        AttendeeSignedUpEventsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedEvent = (Event) signedUpEventsList.getItemAtPosition(position);
+                String selectedEventId = signedUpEventDataList.get(position).getEventID();
                 Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeViewEventDetailsActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("0", selectedEvent.getEventID());
-                intent.putExtras(bundle);
+                intent.putExtra("eventId", selectedEventId);
                 startActivity(intent);
                 finish();
             }
@@ -139,40 +141,66 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 if (value != null) {
                     signedUpEventDataList.clear();
                     for (QueryDocumentSnapshot doc : value) {
-                        eventAttendeeRef = db.collection("events").document(doc.getId()).collection("attendees").document(sharedPreferences.getString("attendeeId", null));
-                        eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                if (task.isSuccessful()) {
-                                    DocumentSnapshot documentSnapshot = task.getResult();
-                                    if (documentSnapshot.exists()) {
-                                        eventName = doc.getString("EventName");
-                                        organizerId = doc.getString("OrganizerID");
-                                        location = doc.getString("Location");
-                                        placeId = doc.getString("PlaceID");
-                                        dateTime = doc.getDate("DateTime");
-                                        if (doc.getString("AttendeeLimit") != null) {
-                                            attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                        Date currentTime = Calendar.getInstance().getTime();
+                        if (currentTime.before(doc.getDate("DateTime"))) {
+                            eventAttendeeDocRef = db.collection("events").document(doc.getId()).collection("attendees").document(sharedPreferences.getString("attendeeId", null));
+                            eventAttendeeDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        DocumentSnapshot documentSnapshot = task.getResult();
+                                        if (documentSnapshot.exists()) {
+                                            eventName = doc.getString("EventName");
+                                            organizerId = doc.getString("OrganizerID");
+                                            location = doc.getString("Location");
+                                            placeId = doc.getString("PlaceID");
+                                            dateTime = doc.getDate("DateTime");
+                                            if (doc.getString("AttendeeLimit") != null) {
+                                                attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                                            } else {
+                                                attendeeLimit = null;
+                                            }
+                                            if (doc.getString("EventPoster") != null) {
+                                                imageURL = Uri.parse(doc.getString("EventPoster"));
+                                            } else {
+                                                imageURL = null;
+                                            }
+                                            description = doc.getString("Description");
+                                            geoLocOn = doc.getBoolean("GeoLocOn");
+                                            eventID = doc.getId();
+
+                                            Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+
+                                            date = Calendar.getInstance();
+                                            date.setTime(dateTime);
+                                            signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
                                         } else {
-                                            attendeeLimit = null;
+                                            Log.d("TAG", "No such document");
                                         }
-                                        imageURL = Uri.parse(doc.getString("EventPoster"));
-                                        description = doc.getString("Description");
-                                        geoLocOn = doc.getBoolean("GeoLocOn");
-                                        eventID = doc.getId();
-
-                                        Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
-
-                                        date = Calendar.getInstance();
-                                        date.setTime(dateTime);
-                                        signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
-                                    } else {
-                                        Log.d("TAG", "No such document");
+                                        eventArrayAdapter.notifyDataSetChanged();
                                     }
-                                    eventArrayAdapter.notifyDataSetChanged();
                                 }
-                            }
-                        });
+                            });
+                        } else {
+                            eventAttendeeRef = eventRef.document(doc.getId()).collection("attendees");
+                            eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        for (QueryDocumentSnapshot document : task.getResult()) {
+                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    eventRef.document(doc.getId()).delete();
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                            eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                            eventPosterRef.delete();
+                        }
                     }
                 }
             }
@@ -197,37 +225,13 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 for (QueryDocumentSnapshot doc : value) {
                     if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
-                            new AttendeeSignedUpEventsActivity.DownloadImageFromInternet((ImageView) findViewById(R.id.pfpImageView)).execute(doc.getString("AttendeeProfile"));
+                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+
                         }
                     }
                 }
             }
         });
-    }
-
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView = imageView;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
 
     @Override

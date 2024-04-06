@@ -60,6 +60,8 @@ public class AdminHomeActivity extends AppCompatActivity{
                 finish();
             }
         };
+        AdminHomeActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

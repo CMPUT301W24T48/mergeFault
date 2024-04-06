@@ -41,6 +41,7 @@ public class AdminManageImages extends AppCompatActivity{
     private Button cancelButton;
     private ImageView homeButton;
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -102,10 +103,10 @@ public class AdminManageImages extends AppCompatActivity{
         imagesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (eventIDs.size() != 0 && Images.size() != 0) {
+                if (eventIDs.size() != 0 && Images.size() != 0 && position > attendeeIDS.size() || attendeeIDS.size() == 0) {
                     DocumentReference tempRef = db.collection("events").document(eventIDs.get(position));
                     Map<String, Object> updates = new HashMap<>();
-                    updates.put("EventPoster", "");
+                    updates.put("EventPoster", null);
                     tempRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -115,10 +116,10 @@ public class AdminManageImages extends AppCompatActivity{
                     Images.remove(position);
                     ImagesArrayAdapter.notifyDataSetChanged();
                 }
-                if (attendeeIDS.size() != 0 && Images.size() != 0){
+                if (attendeeIDS.size() != 0 && Images.size() != 0 && position <= attendeeIDS.size()){
                     DocumentReference tempRef = db.collection("attendees").document(attendeeIDS.get(position));
                     Map<String, Object> updates = new HashMap<>();
-                    updates.put("AttendeeProfile", "");
+                    updates.put("AttendeeProfile", null);
                     tempRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -146,6 +147,8 @@ public class AdminManageImages extends AppCompatActivity{
                 finish();
             }
         };
+        AdminManageImages.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

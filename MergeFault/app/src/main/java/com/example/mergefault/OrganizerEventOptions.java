@@ -1,10 +1,7 @@
 package com.example.mergefault;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,8 +20,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -36,12 +35,18 @@ public class OrganizerEventOptions extends AppCompatActivity {
     private DocumentReference eventRef;
     private Event event;
     private String organizerId;
+    private ImageView eventPosterImageView;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference eventPosterRef;
+    private StorageReference eventCheckInQRRef;
+    private StorageReference eventPromotionQRRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_edit_event);
+        eventPosterImageView = findViewById(R.id.eventPosterImageView);
 
         Intent receiverIntent = getIntent();
         eventId = receiverIntent.getStringExtra("EventId");
@@ -50,6 +55,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
         Log.d("eventId", "eventid: " + eventId);
 
         db = FirebaseFirestore.getInstance();
+        firebaseStorage = FirebaseStorage.getInstance();
         eventRef = db.collection("events").document(eventId);
 
         eventRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -65,7 +71,10 @@ public class OrganizerEventOptions extends AppCompatActivity {
                         if (doc.getString("AttendeeLimit") != null) {
                             attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
                         }
-                        Uri downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        Uri downloadUrl = null;
+                        if(doc.getString("EventPoster") != null){
+                            downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        }
                         event = new Event(doc.getString("EventName"),
                                 doc.getString("OrganizerID"),
                                 doc.getString("Location"),
@@ -76,7 +85,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
                                 doc.getBoolean("GeoLocOn"),
                                 doc.getId(),
                                 doc.getString("PlaceID"));
-                        new DownloadImageFromInternet((ImageView) findViewById(R.id.eventPosterImageView)).execute(downloadUrl.toString());
+                        Picasso.get().load(downloadUrl).into(eventPosterImageView);
                     }
                 }
             }
@@ -145,6 +154,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
 
                 Intent intent = new Intent(OrganizerEventOptions.this, MapActivity.class);
                 intent.putExtra("placeID", event.getPlaceId());
+                intent.putExtra("eventId", event.getEventID());
                 intent.putExtra("eventPosterUri", event.getEventPoster().toString());
                 startActivity(intent);
             }
@@ -156,11 +166,29 @@ public class OrganizerEventOptions extends AppCompatActivity {
                 eventRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                Toast.makeText(getApplicationContext(),"Event Deleted",Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(OrganizerEventOptions.this, OrganizerViewEventsActivity.class);
-                                intent.putExtra("OrganizerID", organizerId);
-                                startActivity(intent);
-                                finish();
+                                eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + event.getEventID() + ".jpg");
+                                eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventId + "CheckIn.png");
+                                eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventId + "Promotion.png");
+                                eventPosterRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void unused) {
+                                        eventCheckInQRRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                eventPromotionQRRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void unused) {
+                                                        Toast.makeText(getApplicationContext(),"Event Deleted",Toast.LENGTH_SHORT).show();
+                                                        Intent intent = new Intent(OrganizerEventOptions.this, OrganizerViewEventsActivity.class);
+                                                        intent.putExtra("OrganizerID", organizerId);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {
@@ -201,34 +229,6 @@ public class OrganizerEventOptions extends AppCompatActivity {
                 finish();
             }
         });
-
-
-    }
-
-    private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView = imageView;
-            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...", Toast.LENGTH_SHORT).show();
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
 }
 
