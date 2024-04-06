@@ -4,20 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -25,7 +20,6 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class AdminManageProfiles extends AppCompatActivity{
 
@@ -80,52 +74,24 @@ public class AdminManageProfiles extends AppCompatActivity{
                             phoneNum = null;
                         }
                         emailId = doc.getString("AttendeeEmail");
-                        profImageURL = doc.getString("AttendeeProfile");
+                        if (doc.getString("AttendeeProfile") != null) {
+                            profImageURL = doc.getString("AttendeeProfile");
+                        } else {
+                            profImageURL = null;
+                        }
                         geolocationPref = doc.getBoolean("geoLocChecked");
                         notificationPref = doc.getBoolean("notifChecked");
                         attendeeId = doc.getId();
 
                         attendees.add(new Attendee(name, phoneNum, emailId, notificationPref, geolocationPref, profImageURL, attendeeId));
                     }
-                    attendeeArrayAdapter.notifyDataSetChanged();
+                } else if (value.isEmpty()) {
+                    attendees.clear();
                 }
+                attendeeArrayAdapter.notifyDataSetChanged();
             }
         });
 
-        attendeeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("Position", "position: " + position +" size: " + attendees.size());
-                if (attendees.size() != 0){
-                    DocumentReference attendeeDocRef = db.collection("attendees").document(attendees.get(position).getAttendeeId());
-                    attendeeDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                        @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            if (documentSnapshot.get("signedInEvents") != null){
-                                List<String> signedInEvents = (List<String>) documentSnapshot.get("signedInEvents");
-                                for (int i = 0; i < signedInEvents.size(); i++) {
-                                    db.collection("events").document(signedInEvents.get(i)).collection("attendees").document(attendees.get(position).getAttendeeId()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void unused) {
-                                            Log.d("","deleted profile from all events");
-                                        }
-                                    });
-                                }
-                            }
-                            attendeeDocRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    Toast.makeText(getApplicationContext(), "profile deleted successfully", Toast.LENGTH_SHORT);
-                                    Log.d("","profile deleted successfully");
-                                    Log.d("Position", "position: " + position +" size: " + attendees.size());
-                                }
-                            });
-                        }
-                    });
-                }
-            }
-        });
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

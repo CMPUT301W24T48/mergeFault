@@ -6,7 +6,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.example.mergefault.OrganizerShareQR;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.RGBLuminanceSource;
@@ -20,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.junit.Assert.assertEquals;
@@ -28,10 +26,10 @@ import static org.junit.Assert.assertNotNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 @RunWith(AndroidJUnit4.class)
-public class OrganizerShareQRTest {
+public class OrganizerGenerateAndShareQRTest {
 
     @Rule
-    public IntentsTestRule<OrganizerShareQR> activityRule = new IntentsTestRule<>(OrganizerShareQR.class, true, false);
+    public IntentsTestRule<OrganizerGenerateAndShareQR> activityRule = new IntentsTestRule<>(OrganizerGenerateAndShareQR.class, true, false);
 
     @Test
     public void testCheckInQRWithEventId() {

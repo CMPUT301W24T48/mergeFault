@@ -6,9 +6,22 @@
     android:orientation="horizontal"
     android:background="#EEECDE">
     <ImageView
-        android:id="@+id/qrImageView"
-        android:layout_width="116dp"
-        android:layout_height="96dp"
+        android:id="@+id/qrCheckInView"
+        android:layout_width="95dp"
+        android:layout_height="95dp"
+        android:contentDescription="pfp"
+        android:padding="30dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/qr"
+        android:textColor="#575656"
+        android:textSize="20sp"
+        android:textStyle="bold|italic" />
+
+    <ImageView
+        android:id="@+id/qrPromotionView"
+        android:layout_width="95dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
         android:contentDescription="pfp"
         android:padding="30dp"
         android:scaleType="fitXY"
@@ -18,12 +31,12 @@
         android:textStyle="bold|italic" />
 
     <TextView
-        android:id="@+id/eventNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="95dp"
+        android:id="@+id/eventIdView"
+        android:layout_width="220dp"
+        android:layout_height="match_parent"
         android:padding="30dp"
         android:paddingStart="80dp"
-        android:paddingEnd="116dp"
+        android:paddingEnd="20dp"
         android:text="Event"
         android:textColor="#575656"
         android:textSize="23sp"

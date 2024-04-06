@@ -16,45 +16,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/eventPostersButton"
-        android:layout_width="120sp"
-        android:layout_height="70sp"
-        android:backgroundTint="#9A8FBF"
-        android:text="Event Posters"
-        android:textColor="@color/white"
-        android:textSize="17sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toTopOf="@+id/imageListView"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/pfpButton"
-        android:layout_width="120sp"
-        android:layout_height="70sp"
-        android:backgroundTint="#9A8FBF"
-        android:text="Profile Pictures"
-        android:textColor="@color/white"
-        android:textSize="17sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toTopOf="@+id/imageListView"
-        app:layout_constraintEnd_toStartOf="@+id/bothButton"
-        app:layout_constraintStart_toEndOf="@+id/eventPostersButton" />
-
-    <Button
-        android:id="@+id/bothButton"
-        android:layout_width="120sp"
-        android:layout_height="70sp"
-        android:backgroundTint="#9A8FBF"
-        android:text="Both"
-        android:textColor="@color/white"
-        android:textSize="17sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toTopOf="@+id/imageListView"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-
-
      <TextView
         android:id="@+id/browseImageText"
         android:layout_width="170sp"

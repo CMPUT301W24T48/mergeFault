@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,8 +30,14 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -55,8 +62,10 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     private TextView descriptionText;
     private SharedPreferences sharedPreferences;
     private FirebaseFirestore db;
-    private CollectionReference eventsRef;
+    private CollectionReference eventRef;
     private CollectionReference eventAttendeeRef;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference eventPosterRef;
     private Integer checkedInCount;
     private Boolean attendeeCheckedIn = false;
     private String locationInfo = null;
@@ -70,7 +79,9 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancelButton);
 
         db = FirebaseFirestore.getInstance();
-        eventsRef = db.collection("events");
+        eventRef = db.collection("events");
+        firebaseStorage = FirebaseStorage.getInstance();
+
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
 
         // Initialize location text view
@@ -90,18 +101,45 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         Log.d("checkineventid", "eventId: " + eventId);
 
 
-        eventAttendeeRef = eventsRef.document(eventId).collection("attendees");
+        eventAttendeeRef = eventRef.document(eventId).collection("attendees");
 
-        eventsRef.document(eventId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        eventRef.document(eventId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot doc = task.getResult();
                     if (doc.exists()) {
-                        locationText.setText(doc.getString("Location"));
-                        descriptionText.setText(doc.getString("Description"));
-                        timeText.setText(doc.getDate("DateTime").toString());
-                        Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
+                        Date currentTime = Calendar.getInstance().getTime();
+                        if (currentTime.before(doc.getDate("DateTime"))) {
+                            locationText.setText(doc.getString("Location"));
+                            descriptionText.setText(doc.getString("Description"));
+                            timeText.setText(doc.getDate("DateTime").toString());
+                            if (doc.getString("EventPoster") != null) {
+                                Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
+                            }
+                        } else {
+                            eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        for (QueryDocumentSnapshot document : task.getResult()) {
+                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    eventRef.document(doc.getId()).delete();
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                            eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                            eventPosterRef.delete();
+                            Toast.makeText(getApplicationContext(), "This event expired", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
                     }
                 }
             }
@@ -117,8 +155,18 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        AttendeeCheckInScreenActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     /**

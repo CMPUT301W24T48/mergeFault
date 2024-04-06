@@ -97,7 +97,11 @@ public class OrganizerAttendeeList extends AppCompatActivity{
                                     phoneNum = null;
                                 }
                                 emailId = documentSnapshot.getString("AttendeeEmail");
-                                profImageURL = documentSnapshot.getString("AttendeeProfile");
+                                if (documentSnapshot.getString("AttendeeProfile") != null) {
+                                    profImageURL = documentSnapshot.getString("AttendeeProfile");
+                                } else {
+                                    profImageURL = null;
+                                }
                                 geolocationPref = documentSnapshot.getBoolean("geoLocChecked");
                                 notificationPref = documentSnapshot.getBoolean("notifChecked");
                                 checkInCount = doc.getLong("CheckedInCount").intValue();

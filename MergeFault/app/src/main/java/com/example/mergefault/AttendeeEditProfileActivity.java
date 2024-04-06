@@ -65,6 +65,8 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private Boolean notifChecked;
     private String attendeeId;
 
+    private ImageView notificationButton;
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,17 +85,25 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         homeButton = findViewById(R.id.imageView2);
         geoLocSwitch = findViewById(R.id.geolocationTrackSwitch);
         notifSwitch = findViewById(R.id.notifSwitch);
+        notificationButton = findViewById(R.id.notifBellImageView);
 
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
         // Load profile data when activity is created
         loadProfileData();
 
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeEditProfileActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+
+            }
+        });
+
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AttendeeEditProfileActivity.this, AttendeeHomeActivity.class);
-                startActivity(intent);
                 setResult(2);
                 finish();
             }

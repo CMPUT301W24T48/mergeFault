@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultCallback;
@@ -164,6 +165,8 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
 
+        placesClient = Places.createClient(this);
+
         eventRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -175,7 +178,11 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                         } else {
                             attendeeLimit = null;
                         }
-                        downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        if (doc.getString("EventPoster") != null) {
+                            downloadUrl = Uri.parse(doc.getString("EventPoster"));
+                        } else {
+                            downloadUrl = null;
+                        }
                         location = doc.getString("Location");
                         dateTime.setTime(doc.getDate("DateTime"));
                         eventName = doc.getString("EventName");
@@ -187,7 +194,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
 
                         addressText.setText("Address: " + location);
                         dayText.setText("Day: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
-                        timeText.setText("Time: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
+                        timeText.setText("Time: " + DateFormat.getPatternInstance(DateFormat.HOUR24_MINUTE).format(dateTime.getTime()));
                         if (attendeeLimit != null) {
                             limitText.setText("Limit: " + attendeeLimit);
                         } else {
@@ -202,11 +209,6 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                 }
             }
         });
-
-
-
-        placesClient = Places.createClient(this);
-
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -313,17 +315,33 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
              */
             @Override
             public void onClick(View v) {
+                if (downloadUrl == null) {
+                    if (selectedImage != null) {
+                        eventName = eventNameEditText.getText().toString();
+                        event.setEventName(eventName);
+                        event.setLocation(location);
+                        event.setDateTime(dateTime);
+                        event.setAttendeeLimit(attendeeLimit);
+                        event.setEventPoster(selectedImage);
+                        event.setDescription(description);
+                        event.setGeoLocOn(geoLocSwitch.isChecked());
+                        event.setPlaceId(placeId);
+                        editEvent();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    eventName = eventNameEditText.getText().toString();
+                    event.setEventName(eventName);
+                    event.setLocation(location);
+                    event.setDateTime(dateTime);
+                    event.setAttendeeLimit(attendeeLimit);
+                    event.setEventPoster(selectedImage);
+                    event.setDescription(description);
+                    event.setGeoLocOn(geoLocSwitch.isChecked());
+                    event.setPlaceId(placeId);
+                }
 
-                eventName = eventNameEditText.getText().toString();
-                event.setEventName(eventName);
-                event.setLocation(location);
-                event.setDateTime(dateTime);
-                event.setAttendeeLimit(attendeeLimit);
-                event.setEventPoster(selectedImage);
-                event.setDescription(description);
-                event.setGeoLocOn(geoLocSwitch.isChecked());
-                event.setPlaceId(placeId);
-                editEvent();
             }
         });
     }
@@ -402,7 +420,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
     }
 
     /**
-     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.jpg) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
+     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.png) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
      * This is the event passed by the addEvent method
      * This is the documentReference to event on the firebase
      */

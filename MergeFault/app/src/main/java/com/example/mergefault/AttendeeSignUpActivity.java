@@ -41,6 +41,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
 
     // Event ID
     private String eventId;
+    private String parentActivity;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private CollectionReference eventAttendeeRef;
@@ -54,6 +55,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private ImageView eventPoster;
     private SharedPreferences sharedPreferences;
+    private ImageView notificationButton;
     /**
      * this Activity displays event details and a button that signs up attendees to the event
      */
@@ -69,9 +71,11 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
         homeButton = findViewById(R.id.imageView);
         profileImageView = findViewById(R.id.ProfilePicture);
         eventPoster = findViewById(R.id.eventPoster);
+        notificationButton = findViewById(R.id.notifBellImageView);
         // Get the intent that started this activity
         Intent intent = getIntent();
         eventId = intent.getStringExtra("eventId");
+        parentActivity = intent.getStringExtra("parentActivity");
         Log.d("eventId", "eventId: " + eventId);
 
         db = FirebaseFirestore.getInstance();
@@ -96,7 +100,9 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy MMM dd hh:mm a z");
                             String dateString = simpleDateFormat.format(doc.getDate("DateTime"));
                             time.setText(dateString);
-                            Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
+                            if (doc.getString("EventPoster") != null) {
+                                Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
+                            }
                         }
                     }
                 }
@@ -105,13 +111,26 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switchActivities();
+                if (Objects.equals(parentActivity, "AttendeeHome")) {
+                    Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeHomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    switchActivities();
+                }
             }
         });
+
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                switchActivities();
+                if (Objects.equals(parentActivity, "AttendeeHome")) {
+                    Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeHomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    switchActivities();
+                }
             }
         };
         AttendeeSignUpActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
@@ -122,6 +141,14 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
                 finish();
+            }
+        });
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+
             }
         });
         signUpButton.setOnClickListener(new View.OnClickListener() {

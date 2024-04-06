@@ -11,12 +11,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -34,8 +36,9 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     // Event ID
     private String eventId;
     private FirebaseFirestore db;
-    private CollectionReference events;
+    private CollectionReference eventRef;
     private CollectionReference eventAttendeeRef;
+    private CollectionReference attendeeRef;
     private TextView location;
     private TextView description;
     private TextView time;
@@ -45,6 +48,8 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     private ImageView homeButton;
     private ImageView eventPosterImageView;
     private SharedPreferences sharedPreferences;
+
+    private ImageView notificationButton;
 
     /**
      * This Activity displays event details and allows users to sign up for notifications or withdraw
@@ -62,17 +67,28 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
         homeButton = findViewById(R.id.imageView);
         eventPosterImageView = findViewById(R.id.eventPoster);
         notifySwitch = findViewById(R.id.notifSwitch);
+        notificationButton = findViewById(R.id.notifBellImageView);
 
         // Get the intent that started this activity
         Intent intent = getIntent();
         eventId = intent.getStringExtra("eventId");
 
         db = FirebaseFirestore.getInstance();
-        events = db.collection("events");
+        eventRef = db.collection("events");
+        attendeeRef = db.collection("attendees");
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
         eventAttendeeRef = db.collection("events").document(eventId).collection("attendees");
 
-        events.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+
+            }
+        });
+
+        eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if (error != null) {
@@ -85,7 +101,9 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                             location.setText(doc.getString("Location"));
                             description.setText(doc.getString("Description"));
                             time.setText(doc.getDate("DateTime").toString());
-                            Picasso.get().load(doc.getString("EventPoster")).into(eventPosterImageView);
+                            if (doc.getString("EventPoster") != null) {
+                                Picasso.get().load(doc.getString("EventPoster")).into(eventPosterImageView);
+                            }
                         }
                     }
                 }
@@ -108,10 +126,20 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                 finish();
             }
         });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        AttendeeViewEventDetailsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
         withdrawButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 eventAttendeeRef.document(sharedPreferences.getString("attendeeId", "")).delete();
+                attendeeRef.document(sharedPreferences.getString("attendeeId", "")).update("signedInEvents", FieldValue.arrayRemove(eventId));
                 Toast.makeText(getApplicationContext(), "Withdrew sign up", Toast.LENGTH_SHORT);
                 Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
                 startActivity(intent);

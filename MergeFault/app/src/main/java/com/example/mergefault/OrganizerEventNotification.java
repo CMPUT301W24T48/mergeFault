@@ -4,12 +4,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import okhttp3.Call;
@@ -24,9 +31,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 
 public class OrganizerEventNotification extends AppCompatActivity {
     private FirebaseFirestore db;
+    private String eventName;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,24 +45,43 @@ public class OrganizerEventNotification extends AppCompatActivity {
         String eventID = receiverIntent.getStringExtra("EventId");
         String organizerID = receiverIntent.getStringExtra("OrganizerID");
 
+        db = FirebaseFirestore.getInstance();
+        DocumentReference eventRef = db.collection("events").document(eventID);
+
+        eventRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.d("EventName", "Error getting document: " + task.getException());
+                    return;
+                }
+                DocumentSnapshot doc = task.getResult();
+                if (doc.exists()) {
+                    eventName = doc.getString("EventName");
+
+                } else {
+                    Log.d("EventName", "Document does not exist");
+                }
+            }
+        });
+
+
+
         findViewById(R.id.sendButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 EditText msgInput = findViewById(R.id.eventEditText);
-                EditText titleInput = findViewById(R.id.titleEditText);
                 String message = msgInput.getText().toString().trim();
-                String title = titleInput.getText().toString().trim();
+
                 boolean valid = false;
-                if (!message.equals("")) {
-                    if (!title.equals("")) {
-                        sendNotification(message, title, eventID);
-                        msgInput.setText("");
-                        titleInput.setText("");
-                        valid = true;
-                    }
+                if (!message.isEmpty()) {
+                    sendNotification(message, eventName, eventID);
+                    msgInput.setText("");
+                    valid = true;
+
                 }
                 if (!valid){
-                        runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Please enter all required fields.", Toast.LENGTH_SHORT).show();
@@ -87,7 +116,7 @@ public class OrganizerEventNotification extends AppCompatActivity {
             notification.put("body", message);
             json.put("notification", notification);
         } catch (JSONException e) {
-                runOnUiThread(new Runnable() {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     Toast.makeText(getApplicationContext(), "Notification did not send.", Toast.LENGTH_SHORT).show();
@@ -137,11 +166,6 @@ public class OrganizerEventNotification extends AppCompatActivity {
                 Log.e("FCM_RESPONSE", "Request failed: " + e.getMessage());
             }
         });
-
-
-
-
-
 
 
 

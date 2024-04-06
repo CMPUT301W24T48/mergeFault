@@ -2,40 +2,36 @@ package com.example.mergefault;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Objects;
 
 /**
  * Activity for sharing QR codes with organizers.
  */
-public class OrganizerShareQR extends AppCompatActivity {
+public class OrganizerGenerateAndShareQR extends AppCompatActivity {
 
     private ImageView checkInQRImageView, promoteQRImageView;
     private Button cancelButton, shareCheckInButton, sharePromoteButton, shareBothButton;
@@ -43,15 +39,13 @@ public class OrganizerShareQR extends AppCompatActivity {
 
     private String eventId;
 
-    private String parentActivity;
+    private String pastActivity;
 
     private String organizerId;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private FirebaseStorage firebaseStorage;
     private StorageReference storageRef;
-    private StorageReference eventCheckInQRRef;
-    private StorageReference eventPromoteQRRef;
     private Bitmap checkInBitmap;
     private Bitmap promoteBitmap;
     private Uri checkInUri;
@@ -70,15 +64,14 @@ public class OrganizerShareQR extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.logoImgView);
 
+        db = FirebaseFirestore.getInstance();
+        eventRef = db.collection("events");
 
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
 
         // Set click listener for cancel button
-        Intent intent = getIntent();
-        eventId = intent.getStringExtra("EventId");
-        organizerId = intent.getStringExtra("OrganizerID");
-        parentActivity = intent.getStringExtra("ParentActivity");
+
 
         // Set click listener for share check-in button
         shareCheckInButton.setOnClickListener(new View.OnClickListener() {
@@ -87,7 +80,7 @@ public class OrganizerShareQR extends AppCompatActivity {
                 if (checkInUri != null) {
                     shareQRCode(checkInUri);
                 } else {
-                    Toast.makeText(OrganizerShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(OrganizerGenerateAndShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -99,7 +92,7 @@ public class OrganizerShareQR extends AppCompatActivity {
                 if (promoteUri != null) {
                     shareQRCode(promoteUri);
                 } else {
-                    Toast.makeText(OrganizerShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(OrganizerGenerateAndShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -112,74 +105,88 @@ public class OrganizerShareQR extends AppCompatActivity {
                 if (combinedUri != null) {
                     shareQRCode(combinedUri);
                 } else {
-                    Toast.makeText(OrganizerShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(OrganizerGenerateAndShareQR.this, "Failed to generate QR code image", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
+        Intent intent = getIntent();
+        eventId = intent.getStringExtra("EventId");
+
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Objects.equals(parentActivity, "OrganizerEventOptions")) {
-                    Intent intent = new Intent(OrganizerShareQR.this, OrganizerEventOptions.class);
-                    intent.putExtra("EventId", eventId);
-                    intent.putExtra("OrganizerID", organizerId);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Intent intent = new Intent(OrganizerShareQR.this, OrganizerHomeActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
+                Intent defaultIntent = new Intent(OrganizerGenerateAndShareQR.this, OrganizerHomeActivity.class);
+                startActivity(defaultIntent);
+                finish();
+            }
+        });
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerGenerateAndShareQR.this, OrganizerHomeActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (Objects.equals(parentActivity, "OrganizerEventOptions")) {
-                    Intent intent = new Intent(OrganizerShareQR.this, OrganizerEventOptions.class);
-                    intent.putExtra("EventId", eventId);
-                    intent.putExtra("OrganizerID", organizerId);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Intent intent = new Intent(OrganizerShareQR.this, OrganizerHomeActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
+
             }
         };
-        OrganizerShareQR.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-        homeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(OrganizerShareQR.this, OrganizerHomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
+        OrganizerGenerateAndShareQR.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 
         // Generate QR codes for event check-in and promotion
-        eventCheckInQRRef = storageRef.child("QRCodes").child("CheckIn/" + eventId + ".png");
-        eventCheckInQRRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                if (task.isSuccessful()) {
-                    Uri uri = task.getResult();
-                    new OrganizerShareQR.DownloadImageFromInternet((ImageView) findViewById(R.id.checkInQRImageView)).execute(uri.toString());
-                }
+        checkInBitmap = generateQRCode("CheckIn." + eventId, checkInQRImageView, "CheckIn");
+        promoteBitmap = generateQRCode("Promotion."  + eventId, promoteQRImageView, "Promotion");
+        upload(eventId,checkInUri,"CheckIn");
+        upload(eventId,promoteUri,"Promotion");
+
+    }
+
+    /**
+     * Generate a QR code bitmap for the given content and set it to the specified ImageView.
+     *
+     * @param content    The content to encode into the QR code.
+     * @param imageView  The ImageView to display the QR code.
+     */
+    private Bitmap generateQRCode(String content, ImageView imageView, String type) {
+        Bitmap bitmap = null;
+        MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+        try {
+            String contentString = String.valueOf(content);
+            BitMatrix bitMatrix = multiFormatWriter.encode(content, BarcodeFormat.QR_CODE, 400, 400);
+            bitmap = toBitmap(bitMatrix);
+            imageView.setImageBitmap(bitmap);
+            imageView.setVisibility(View.VISIBLE);
+            if (Objects.equals(type, "CheckIn")) {
+                checkInUri = bitmapToUri(bitmap);
+            } else if (Objects.equals(type, "Promotion")) {
+                promoteUri = bitmapToUri(bitmap);
             }
-        });
-        eventPromoteQRRef = storageRef.child("QRCodes").child("Promotion/" + eventId + ".png");
-        eventPromoteQRRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                if (task.isSuccessful()) {
-                    Uri uri = task.getResult();
-                    new OrganizerShareQR.DownloadImageFromInternet((ImageView) findViewById(R.id.promoteQRImageView)).execute(uri.toString());
-                }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * Convert a BitMatrix to a Bitmap.
+     *
+     * @param matrix The BitMatrix to convert.
+     * @return The resulting Bitmap.
+     */
+    private Bitmap toBitmap(BitMatrix matrix) {
+        int height = matrix.getHeight();
+        int width = matrix.getWidth();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                bitmap.setPixel(x, y, matrix.get(x, y) ? getResources().getColor(R.color.black) : getResources().getColor(R.color.white));
             }
-        });
+        }
+        return bitmap;
     }
 
     /**
@@ -228,7 +235,7 @@ public class OrganizerShareQR extends AppCompatActivity {
 
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(OrganizerShareQR.this, "Error making QR code: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(OrganizerGenerateAndShareQR.this, "Error making QR code: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
         return contentUri;
     }
@@ -248,36 +255,9 @@ public class OrganizerShareQR extends AppCompatActivity {
         // Start the chooser for sharing
         startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
     }
-    class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadImageFromInternet(ImageView imageView) {
-            this.imageView = imageView;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-            if(imageView.equals(checkInQRImageView)) {
-                checkInBitmap = result;
-                checkInUri = bitmapToUri(checkInBitmap);
-            } else if (imageView.equals(promoteQRImageView)) {
-                promoteBitmap = result;
-                promoteUri = bitmapToUri(promoteBitmap);
-            }
-        }
+    public void upload(String eventId, Uri QRUri, String type){
+        StorageReference QRCode = storageRef.child( "QRCodes").child(type+ "/" + eventId + ".png");
+        QRCode.putFile(QRUri);
     }
 
 
