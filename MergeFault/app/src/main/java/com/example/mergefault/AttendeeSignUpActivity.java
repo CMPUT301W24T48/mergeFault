@@ -54,6 +54,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private ImageView eventPoster;
     private SharedPreferences sharedPreferences;
+    private ImageView notificationButton;
     /**
      * this Activity displays event details and a button that signs up attendees to the event
      */
@@ -69,6 +70,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
         homeButton = findViewById(R.id.imageView);
         profileImageView = findViewById(R.id.ProfilePicture);
         eventPoster = findViewById(R.id.eventPoster);
+        notificationButton = findViewById(R.id.notifBellImageView);
         // Get the intent that started this activity
         Intent intent = getIntent();
         eventId = intent.getStringExtra("eventId");
@@ -110,6 +112,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 switchActivities();
             }
         });
+
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -124,6 +127,14 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeHomeActivity.class);
                 startActivity(intent);
                 finish();
+            }
+        });
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+
             }
         });
         signUpButton.setOnClickListener(new View.OnClickListener() {
