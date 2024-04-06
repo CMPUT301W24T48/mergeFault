@@ -85,9 +85,6 @@
             android:name=".QRCodeScannerActivity"
             android:exported="false" />
         <activity
-            android:name=".OrganizerGeneratedQR"
-            android:exported="false" />
-        <activity
             android:name=".OrganizerShareQR"
             android:exported="false" />
         <activity

@@ -34,7 +34,7 @@ public class QRArrayAdapter extends ArrayAdapter<Event>{
 
         Event event = getItem(position);
 
-        ImageView QRs = view.findViewById(R.id.qrImageView);
+        ImageView QRs = view.findViewById(R.id.qrCheckInView);
         TextView eventNameTextView = view.findViewById(R.id.eventNameTextView);
 
         Picasso.get().load(event.getEventPoster()).into(QRs);
