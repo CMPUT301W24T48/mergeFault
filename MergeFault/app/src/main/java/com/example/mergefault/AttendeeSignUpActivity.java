@@ -57,6 +57,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private ImageView notificationButton;
     /**
+     * @see AttendeeBrowsePostedEventsActivity
      * this Activity displays event details and a button that signs up attendees to the event
      */
     @Override
