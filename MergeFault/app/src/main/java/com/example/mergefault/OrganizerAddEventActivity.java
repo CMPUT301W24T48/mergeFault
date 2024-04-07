@@ -39,6 +39,7 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -281,6 +282,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
      * This is the event id given by a randomly generated firestore id
      */
     public void switchActivities(String eventId){
+        SubscribeOrganizer();
         Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class);
         intent.putExtra("EventId", eventId);
         startActivity(intent);
@@ -447,5 +449,29 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                 });
             }
         });
+    }
+
+    public void SubscribeOrganizer(){
+        Log.d("OrganizerSubscribe","Successfully subscribed to topic: ");
+        String topic = eventId + "_organizer";
+        FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            // Subscription successful
+                            Log.d("OrganizerSubscribe","Successfully subscribed to topic: " + topic);
+                        } else {
+                            // Subscription failed
+                            Log.d("OrganizerSubscribe","Failed to subscribe to topic: " + topic);
+                            Exception e = task.getException();
+                            if (e != null) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
+
     }
 }
