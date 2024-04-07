@@ -53,6 +53,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
 
     // Event ID
     private String eventId;
+    private String parentActivity;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private CollectionReference eventAttendeeRef;
@@ -69,6 +70,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
     private ImageView notificationButton;
     private String eventName;
     /**
+     * @see AttendeeBrowsePostedEventsActivity
      * this Activity displays event details and a button that signs up attendees to the event
      */
     @Override
@@ -87,6 +89,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
         // Get the intent that started this activity
         Intent intent = getIntent();
         eventId = intent.getStringExtra("eventId");
+        parentActivity = intent.getStringExtra("parentActivity");
         Log.d("eventId", "eventId: " + eventId);
 
         db = FirebaseFirestore.getInstance();
@@ -123,14 +126,26 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switchActivities();
+                if (Objects.equals(parentActivity, "AttendeeHome")) {
+                    Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeHomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    switchActivities();
+                }
             }
         });
 
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                switchActivities();
+                if (Objects.equals(parentActivity, "AttendeeHome")) {
+                    Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeHomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    switchActivities();
+                }
             }
         };
         AttendeeSignUpActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);

@@ -21,6 +21,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
+/**
+ * An Activity which allows admins to view and delete profiles
+ */
 public class AdminManageProfiles extends AppCompatActivity{
 
     private FirebaseFirestore db;
@@ -92,45 +95,6 @@ public class AdminManageProfiles extends AppCompatActivity{
             }
         });
 
-
-
-        /*
-        attendeeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("Position", "position: " + position +" size: " + attendees.size());
-                if (attendees.size() != 0){
-                    DocumentReference attendeeDocRef = db.collection("attendees").document(attendees.get(position).getAttendeeId());
-                    attendeeDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                        @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            if (documentSnapshot.get("signedInEvents") != null){
-                                List<String> signedInEvents = (List<String>) documentSnapshot.get("signedInEvents");
-                                for (int i = 0; i < signedInEvents.size(); i++) {
-                                    db.collection("events").document(signedInEvents.get(i)).collection("attendees").document(attendees.get(position).getAttendeeId()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void unused) {
-                                            Log.d("","deleted profile from all events");
-                                        }
-                                    });
-                                }
-                            }
-                            attendeeDocRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    Toast.makeText(getApplicationContext(), "profile deleted successfully", Toast.LENGTH_SHORT);
-                                    Log.d("","profile deleted successfully");
-                                    Log.d("Position", "position: " + position +" size: " + attendees.size());
-                                }
-                            });
-                        }
-                    });
-                }
-            }
-        });
-
-         */
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

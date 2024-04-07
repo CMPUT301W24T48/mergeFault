@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -52,7 +53,9 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
+ * @see  AttendeeViewEventDetailsActivity
  * Activity for attendee check-in at an event.
+ *
  */
 public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     // Request code for location permission
@@ -172,6 +175,15 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                 finish();
             }
         });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        AttendeeCheckInScreenActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     /**

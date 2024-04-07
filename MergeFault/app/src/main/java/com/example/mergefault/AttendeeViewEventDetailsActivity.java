@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
@@ -52,7 +53,9 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     private ImageView notificationButton;
 
     /**
-     * This Activity displays event details and allows users to sign up for notifications or withdraw
+     * @see AttendeeSignedUpEventsActivity
+     * This activity displays the event details of the signed up activity
+     * and allows users to sign up for notifications or withdraw
      */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -126,6 +129,15 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                 finish();
             }
         });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        AttendeeViewEventDetailsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
         withdrawButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

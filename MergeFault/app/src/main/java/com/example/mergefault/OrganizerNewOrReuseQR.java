@@ -1,6 +1,7 @@
 package com.example.mergefault;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,6 +27,7 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
     private Button cancelButton;
     private ImageView homeButton;
     private String eventId;
+    private Uri selectedImage;
     private FirebaseFirestore db;
     private DocumentReference eventRef;
     private FirebaseStorage firebaseStorage;
@@ -44,8 +46,10 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
         firebaseStorage = FirebaseStorage.getInstance();
 
         // Retrieve the eventId from the intent
+        Intent intent = getIntent();
+        selectedImage = intent.getData();
+        eventId = intent.getStringExtra("EventId");
         Intent receiverIntent = getIntent();
-        eventId = receiverIntent.getStringExtra("EventId");
         Log.d("eventIdAfter", "eventid:" + eventId);
         eventRef = db.collection("events").document(eventId);
         StorageReference eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + eventId + ".jpg");
@@ -54,20 +58,22 @@ public class OrganizerNewOrReuseQR extends AppCompatActivity {
         generateNewQR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Start OrganizerShareQR activity to generate a new QR code
-                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerShareQR.class);
+                // Start OrganizerGenerateAndShareQR activity to generate a new QR code
+                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerGenerateAndShareQR.class);
                 intent.putExtra("EventId", eventId);
                 startActivity(intent);
+                finish();
             }
         });
 
         reuseQR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Start OrganizerShareQR activity to generate a new QR code
-                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerReuseQR.class);
+                // Start OrganizerGenerateAndShareQR activity to generate a new QR code
+                Intent intent = new Intent(OrganizerNewOrReuseQR.this, OrganizerReuseQR.class).setData(selectedImage).setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 intent.putExtra("EventId", eventId);
                 startActivity(intent);
+                finish();
             }
         });
         cancelButton.setOnClickListener(new View.OnClickListener() {

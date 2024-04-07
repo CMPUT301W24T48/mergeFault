@@ -9,6 +9,13 @@ import android.widget.ImageView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+/**
+ * Admin home page that brings them between
+ * @see AdminManageEvents event management
+ * @see AdminManageImages image management
+ * @see AdminManageProfiles and profile management
+ */
 public class AdminHomeActivity extends AppCompatActivity{
     private Button manageEvents;
     private Button manageProfiles;

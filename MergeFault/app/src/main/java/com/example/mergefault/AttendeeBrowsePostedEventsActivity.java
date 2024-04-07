@@ -33,7 +33,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * @see AttendeeCheckInScreenActivity
+ * @see AttendeeViewEventDetailsActivity
  * This activity displays the current list of all events posted on the app
  * Attendees can view all event details and sign up to any event
  */
@@ -51,19 +51,12 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private CollectionReference eventAttendeeRef;
     private FirebaseStorage firebaseStorage;
     private StorageReference eventPosterRef;
-    private String eventName;
-    private String organizerId;
-    private String location;
-    private String placeId;
-    private Date dateTime;
-    private Uri imageURL;
-    private Integer attendeeLimit;
-    private Calendar date;
-    private String description;
-    private Boolean geoLocOn;
-    private String eventId;
-    private Button cancelButton;
 
+    private Date dateTime;
+    private Calendar date;
+    private Event event;
+
+    private Button cancelButton;
     private ImageView notificationButton;
 
 
@@ -150,29 +143,31 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                     for (QueryDocumentSnapshot doc : value) {
                         Date currentDate = Calendar.getInstance().getTime();
                         if (currentDate.before(doc.getDate("DateTime"))) {
-                            eventName = doc.getString("EventName");//doc.getID();
-                            eventId = doc.getString("EventID");
-                            organizerId = doc.getString("OrganizerID");
-                            location = doc.getString("Location");
-                            placeId = doc.getString("PlaceID");
+                            event = new Event(null,null,null,null,null,null,null,null,null,null);
+                            event.setEventName(doc.getString("EventName"));
+                            event.setOrganizerId(doc.getString("OrganizerID"));
+                            event.setLocation(doc.getString("Location"));
+                            event.setPlaceId(doc.getString("PlaceID"));
                             dateTime = doc.getDate("DateTime");
                             if (doc.getString("AttendeeLimit") != null) {
-                                attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                                event.setAttendeeLimit(Integer.parseInt(doc.getString("AttendeeLimit")));
                             } else {
-                                attendeeLimit = null;
+                                event.setAttendeeLimit(null);
                             }
                             if (doc.getString("EventPoster") != null) {
-                                imageURL = Uri.parse(doc.getString("EventPoster"));
+                                event.setEventPoster(Uri.parse(doc.getString("EventPoster")));
                             } else {
-                                imageURL = null;
+                                event.setEventPoster(null);
                             }
-                            description = doc.getString("Description");
-                            geoLocOn = doc.getBoolean("GeoLocOn");
-                            Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+                            event.setDescription(doc.getString("Description"));
+                            event.setGeoLocOn(doc.getBoolean("GeoLocOn"));
+                            event.setEventID(doc.getId());
+
+                            Log.d("Firestore", String.format("Event(%s, $s) fetched", event.getEventName(), event.getOrganizerId()));
+
                             date = Calendar.getInstance();
                             date.setTime(dateTime);
-
-                            eventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventId, placeId));
+                            eventDataList.add(new Event(event.getEventName(), event.getOrganizerId(), event.getLocation(), date, event.getAttendeeLimit(), event.getEventPoster(), event.getDescription(), event.getGeoLocOn(), event.getEventID(), event.getPlaceId()));
                         } else {
                             eventAttendeeRef = eventRef.document(doc.getId()).collection("attendees");
                             eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -180,13 +175,15 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
                                         for (QueryDocumentSnapshot document : task.getResult()) {
-                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    eventRef.document(doc.getId()).delete();
-                                                }
-                                            });
+                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete();
                                         }
+                                        eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                                        eventPosterRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                eventRef.document(doc.getId()).delete();
+                                            }
+                                        });
                                     }
                                 }
                             });

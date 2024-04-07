@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +39,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private String placeId;
     private String eventId;
+    private String organizerId;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private LatLng checkedInLatLng;
@@ -53,7 +55,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         Intent intent = getIntent();
         placeId = intent.getStringExtra("placeID");
-        eventId = intent.getStringExtra("eventId");
+        eventId = intent.getStringExtra("EventId");
+        organizerId = intent.getStringExtra("OrganizerID");
         String eventPosterUri = intent.getStringExtra("eventPosterUri");
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -100,6 +103,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }
         });
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(MapActivity.this, OrganizerEventOptions.class);
+                intent.putExtra("EventId", eventId);
+                intent.putExtra("OrganizerID", organizerId);
+                startActivity(intent);
+                finish();
+            }
+        };
+        MapActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     /**
