@@ -23,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.squareup.picasso.Picasso;
 
 import java.util.Objects;
@@ -140,6 +141,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
         withdrawButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                FirebaseMessaging.getInstance().unsubscribeFromTopic(eventId);
                 eventAttendeeRef.document(sharedPreferences.getString("attendeeId", "")).delete();
                 attendeeRef.document(sharedPreferences.getString("attendeeId", "")).update("signedInEvents", FieldValue.arrayRemove(eventId));
                 Toast.makeText(getApplicationContext(), "Withdrew sign up", Toast.LENGTH_SHORT);
@@ -148,6 +150,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                 finish();
             }
         });
+
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

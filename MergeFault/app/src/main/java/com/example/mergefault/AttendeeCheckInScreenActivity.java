@@ -36,9 +36,21 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * @see  AttendeeViewEventDetailsActivity
@@ -71,6 +83,8 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     private Integer checkedInCount;
     private Boolean attendeeCheckedIn = false;
     private String locationInfo = null;
+
+    private String eventName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -113,6 +127,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                     if (doc.exists()) {
                         Date currentTime = Calendar.getInstance().getTime();
                         if (currentTime.before(doc.getDate("DateTime"))) {
+                            eventName = doc.getString("EventName");
                             locationText.setText(doc.getString("Location"));
                             descriptionText.setText(doc.getString("Description"));
                             timeText.setText(doc.getDate("DateTime").toString());
@@ -253,9 +268,11 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                             @Override
                             public void onSuccess(Void unused) {
                                    Toast.makeText(getApplicationContext(), "Successfully Checked In", Toast.LENGTH_SHORT).show();
+                                SendNotificationToOrganizer();
                                 Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
                                 startActivity(intent);
                                 finish();
+
                             }
                         });
 
@@ -268,6 +285,55 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void SendNotificationToOrganizer(){
+        OkHttpClient client = new OkHttpClient();
+        JSONObject json = new JSONObject();
+        String topic = eventId + "_organizer";
+        try {
+            json.put("to", "/topics/" + topic);
+            JSONObject notification = new JSONObject();
+            notification.put("title", eventName);
+            notification.put("body", "You have a new check-in for your event!");
+            json.put("notification", notification);
+        } catch (JSONException e) {
+            return;
+
+        }
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json.toString());
+
+        Request request = new Request.Builder()
+                .url("https://fcm.googleapis.com/fcm/send")
+                .post(requestBody)
+                .addHeader("Authorization", "key=AAAAJKAW9vA:APA91bG2WW61c9h2OVwu4A4eg6wLiHfPGLNTA517lEj-s66ywb6VxLcAGv0jHRKWMy3XLf0oE9vdZUBG7hnqjNZuukAs6FNCkdU8Pj6afTLGPPAKh3wH6aC54ev5OkG0rpqMUVI2Dhr2")
+                .addHeader("Content-Type", "application/json")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    Log.d("FCM_RESPONSE", "Response: " + responseBody);
+
+
+                } else {
+                    String errorResponse = response.body().string();
+                    String status = response.code() + " " + response.message();
+                    Log.e("FCM_RESPONSE", "Unsuccessful response: " + status);
+                    Log.e("FCM_RESPONSE", "Error Body: " + errorResponse);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.e("FCM_RESPONSE", "Request failed: " + e.getMessage());
+            }
+        });
+
+
     }
 }
 
