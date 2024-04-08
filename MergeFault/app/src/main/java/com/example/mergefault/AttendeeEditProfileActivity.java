@@ -68,6 +68,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private ImageView notificationButton;
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE=99;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -160,7 +161,21 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, "No permission please manage in settings", Toast.LENGTH_SHORT).show();
             }
         });
+
+        notifSwitch = findViewById(R.id.notifSwitch);
+        notifSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                requestNotificationPermission();
+
+            } else {
+                notifSwitch.setChecked(false);
+                Toast.makeText(this, "No permission please manage in settings", Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
+
+
 
     /**
      * Deletes the profile picture.
@@ -184,6 +199,18 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         }
     }
 
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        NOTIFICATION_PERMISSION_REQUEST_CODE);
+            }
+        }
+    }
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -194,8 +221,19 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
                 geoLocSwitch.setChecked(false);
             }
+        } else if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show();
+                geoLocSwitch.setChecked(false);
+
+            }
         }
     }
+
+
 
     private final ActivityResultLauncher<String> startPickingImage = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
