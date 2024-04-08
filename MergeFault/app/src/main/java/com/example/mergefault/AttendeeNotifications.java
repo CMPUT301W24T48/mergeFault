@@ -21,7 +21,10 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * Activity for displaying notifications to the attendee.
+ * This activity retrieves notifications from Firebase Firestore and displays them in a list view.
+ */
 public class AttendeeNotifications extends AppCompatActivity {
 
     private ListView notificationsListView;
@@ -29,6 +32,11 @@ public class AttendeeNotifications extends AppCompatActivity {
     private Button cancelButton;
     private ArrayAdapter<String> adapter;
 
+    /**
+     * Initializes the activity, sets up UI components, and retrieves notifications from Firestore.
+     *
+     * @param savedInstanceState A Bundle containing the activity's previously saved state, if available.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +72,7 @@ public class AttendeeNotifications extends AppCompatActivity {
                                         }
                                         adapter.addAll(notificationsList);
                                     } else {
-                                        // Handle errors
+                                        return;
                                     }
                                 }
                             });
@@ -75,7 +83,7 @@ public class AttendeeNotifications extends AppCompatActivity {
                     }
                 });
 
-
+        // Handle cancel button click to close the activity
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

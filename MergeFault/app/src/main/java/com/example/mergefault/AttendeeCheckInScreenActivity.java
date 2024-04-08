@@ -286,7 +286,10 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             }
         });
     }
-
+    /**
+     * Sends a notification to the organizer of an event using Firebase Cloud Messaging.
+     * The notification includes the event name and a message indicating a new check-in for the event.
+     */
     public void SendNotificationToOrganizer(){
         OkHttpClient client = new OkHttpClient();
         JSONObject json = new JSONObject();

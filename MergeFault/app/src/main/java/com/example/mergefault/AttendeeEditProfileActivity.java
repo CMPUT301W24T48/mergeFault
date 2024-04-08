@@ -198,7 +198,9 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             }
         }
     }
-
+    /**
+     * Request notification permission if the attendee enables notifications.
+     */
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
@@ -210,7 +212,13 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Handle permission request results.
+     *
+     * @param requestCode  The request code passed to requestPermissions().
+     * @param permissions  The requested permissions.
+     * @param grantResults The grant results for the corresponding permissions.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
