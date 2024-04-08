@@ -1,5 +1,6 @@
 package com.example.mergefault;
 
+import androidx.annotation.Nullable;
 import androidx.test.espresso.assertion.ViewAssertions;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -27,94 +28,93 @@ import static org.junit.Assert.assertEquals;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * This class contains Espresso tests for the AttendeeHomeActivity.
- */
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class AttendeeTest {
-    /**
-     * Firebase Firestore instance for database operations.
-     */
     FirebaseFirestore db;
-    /**
-     * SharedPreferences for storing user profile data.
-     */
     private SharedPreferences sharedPreferences;
+    private String attendeeID;
 
-    /**
-     * Rule to launch AttendeeHomeActivity for each test case.
-     */
     @Rule
     public ActivityScenarioRule<AttendeeHomeActivity> activityScenarioRule = new ActivityScenarioRule<>(AttendeeHomeActivity.class);
 
-    /**
-     * Setup method to initialize necessary resources before each test case.
-     */
+    /*
     @Before
     public void setUp() {
         Context context = ApplicationProvider.getApplicationContext();
         sharedPreferences = context.getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
     }
 
-    /**
-     * Teardown method to clean up after each test case.
-     */
     @After
     public void tearDown() {
         // Clean up shared preferences after each test
         sharedPreferences.edit().clear().apply();
     }
 
-    /**
-     * Test method to verify the behavior of clicking on the profile image.
      */
     @Test
     public void testProfileImageClick() {
         onView(withId(R.id.profileImageView)).perform(click());
         onView(withId(R.id.editProfilePictureButton)).check(matches(ViewMatchers.isDisplayed()));
     }
-
-    /**
-     * Test method to verify the behavior of clicking on "My Events" button.
-     */
     @Test
-    public void testMyEventsClick() {
+    public void ProfileFunctionalityTest() {
+        String name = "User";
+        String email = "user@example.com";
+        String imageUri = "https://api.dicebear.com/5.x/pixel-art/png?seed=User";
+        String phoneNumber = "1234567890";
+
+        onView(withId(R.id.profileImageView)).perform(click());
+
+        // Perform UI actions to fill profile data
+        onView(withId(R.id.editEmailText)).perform(click()).perform(ViewActions.typeText(email));
+        closeSoftKeyboard();
+        onView(withId(R.id.editAttendeeName)).perform(click()).perform(ViewActions.typeText(name));
+        closeSoftKeyboard();
+        onView(withId(R.id.editPhoneNumber)).perform(click()).perform(ViewActions.typeText(phoneNumber));
+        closeSoftKeyboard();
+        onView(withId(R.id.cancelButton)).perform(click());
+
+        db = FirebaseFirestore.getInstance();
+        CollectionReference attendeesRef = db.collection("attendees");
+        attendeesRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for (QueryDocumentSnapshot doc: value) {
+                    if(doc.getString("AttendeeName").equals(name)){
+                        assertEquals(name, doc.getString("AttendeeName"));
+                        assertEquals(email, doc.getString("AttendeeEmail"));
+                        assertEquals(imageUri, doc.getString("AttendeeProfile"));
+                        assertEquals(phoneNumber, doc.getString("AttendeePhoneNumber"));
+                        attendeeID = doc.getId();
+                    }
+                }
+            }
+        });
+        //myEventsTest
         onView(withId(R.id.viewMyEventsButton)).perform(click());
         onView(withId(R.id.myEventListView)).perform(click());
         onView(withId(R.id.myEventListView)).check(matches(ViewMatchers.isDisplayed()));
-    }
-
-
-    /**
-     * Test method to verify the behavior of clicking on "Browse Posted Events" button.
-     */
-    @Test
-    public void testBrowsePostedEventsClick() {
+        onView(withId(R.id.imageView)).perform(click());
+        //browseEventsTest
         onView(withId(R.id.browseEventsButton)).perform(click());
-        onView(withId(R.id.myEventListView)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+        onView(withId(R.id.myEventListView)).perform(click());
         onView(withId(R.id.myEventListView)).check(matches(ViewMatchers.isDisplayed()));
-
+        //clear Firebase
+        attendeesRef.document(attendeeID).delete();
     }
 
-    /**
-     * Test method to verify the behavior of switching activities from profile to events view.
-     */
-    @Test
-    public void profileActivitySwitchCheck() {
-        onView(withId(R.id.profileImageView)).perform(click());
-        onView(withId(R.id.cancelButton)).perform(click());
-        onView(withId(R.id.viewMyEventsButton)).check(matches(ViewMatchers.isDisplayed()));
-    }
 
-    /**
-     * Test method to add a test user to Firestore.
-     */
     @Test
     public void addTestUser(){
         db = FirebaseFirestore.getInstance();
@@ -132,10 +132,6 @@ public class AttendeeTest {
             Log.d("Error", e.toString());
         });
     }
-
-    /**
-     * Test method to delete a test user from Firestore.
-     */
     @Test
     public void deleteTestUser(){
         db = FirebaseFirestore.getInstance();
@@ -148,9 +144,6 @@ public class AttendeeTest {
         });
     }
 
-    /**
-     * Test method to verify saving of profile data in SharedPreferences.
-     */
     public void testSaveProfileData() {
         String name = "User";
         String email = "user@example.com";
