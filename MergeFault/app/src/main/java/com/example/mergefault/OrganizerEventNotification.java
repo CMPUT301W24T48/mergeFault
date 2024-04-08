@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -34,9 +35,14 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Activity class responsible for sending notifications to participants of an event.
+ * It retrieves necessary event details and sends a notification to the specified event topic on FCM.
+ */
 public class OrganizerEventNotification extends AppCompatActivity {
     private FirebaseFirestore db;
     private String eventName;
+    private TextView setText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +50,9 @@ public class OrganizerEventNotification extends AppCompatActivity {
         Intent receiverIntent = getIntent();
         String eventID = receiverIntent.getStringExtra("EventId");
         String organizerID = receiverIntent.getStringExtra("OrganizerID");
+
+        setText = findViewById(R.id.setText);
+        setText.setVisibility(View.INVISIBLE);
 
         db = FirebaseFirestore.getInstance();
         DocumentReference eventRef = db.collection("events").document(eventID);
@@ -84,7 +93,8 @@ public class OrganizerEventNotification extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Please enter all required fields.", Toast.LENGTH_SHORT).show();
+                            setText.setVisibility(View.VISIBLE);
+                            setText.setText("Please enter all required fields.");
                         }
                     });
                 }
@@ -105,7 +115,13 @@ public class OrganizerEventNotification extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * Sends a notification to the participants of the event using Firebase Cloud Messaging (FCM).
+     *
+     * @param message The message to be sent in the notification.
+     * @param title The title of the notification.
+     * @param eventID The ID of the event, used to specify the topic for FCM.
+     */
     public void sendNotification(String message, String title, String eventID){
         OkHttpClient client = new OkHttpClient();
         JSONObject json = new JSONObject();
@@ -119,7 +135,8 @@ public class OrganizerEventNotification extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getApplicationContext(), "Notification did not send.", Toast.LENGTH_SHORT).show();
+                    setText.setVisibility(View.VISIBLE);
+                    setText.setText("Notification did not send.");
                 }
             });
 
@@ -139,11 +156,13 @@ public class OrganizerEventNotification extends AppCompatActivity {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
+                    Log.d("Notification", "Sent");
                     Log.d("FCM_RESPONSE", "Response: " + responseBody);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Notification sent", Toast.LENGTH_SHORT).show();
+                            setText.setVisibility(View.VISIBLE);
+                            setText.setText("Notification sent");
                         }
                     });
 
@@ -153,7 +172,8 @@ public class OrganizerEventNotification extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Notification did not send.", Toast.LENGTH_SHORT).show();
+                            setText.setVisibility(View.VISIBLE);
+                            setText.setText("Notification did not send.");
                         }
                     });
                     Log.e("FCM_RESPONSE", "Unsuccessful response: " + status);
