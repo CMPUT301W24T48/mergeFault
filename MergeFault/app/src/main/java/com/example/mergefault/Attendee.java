@@ -48,6 +48,7 @@ public class Attendee {
      * @param notificationPref  The notification preference of the attendee.
      * @param geolocationPref   The geolocation preference of the attendee.
      * @param profImageURL      The URL of the profile image.
+     * @param attendeeId        The string of the attendee id.
      */
     public Attendee(String name, String phoneNum, String emailId, Boolean notificationPref, Boolean geolocationPref, String profImageURL, String attendeeId) {
         this.name = name;

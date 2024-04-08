@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @see OrganizerEventOptions
  * This Activity displays all of the organizer's current events
  * which are clickable and lead to a new page for more options to be done to the selected event
  */

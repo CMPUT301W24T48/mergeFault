@@ -24,10 +24,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * An ArrayAdapter implementation for managing attendees in various contexts.
+ */
 public class AttendeeArrayAdapter extends ArrayAdapter<Attendee>{
+    /**
+     * The list of attendees.
+     */
     private ArrayList<Attendee> attendees;
+    /**
+     * The context in which the adapter is used.
+     */
     private Context context;
+    /**
+     * The user role (e.g., "admin" or "organizer").
+     */
     private String user;
+    /**
+     * Constructs a new AttendeeArrayAdapter.
+     *
+     * @param context   The context in which the adapter is used.
+     * @param attendees The list of attendees.
+     * @param user      The user role (e.g., "admin" or "organizer").
+     */
     public AttendeeArrayAdapter(Context context, ArrayList<Attendee> attendees, String user){
         super (context, 0, attendees);
         this.context = context;
@@ -35,6 +54,14 @@ public class AttendeeArrayAdapter extends ArrayAdapter<Attendee>{
         this.user = user;
     }
 
+    /**
+     * Get a View that displays the data at the specified position in the data set.
+     *
+     * @param position    The position of the item within the adapter's data set.
+     * @param convertView The old view to reuse, if possible.
+     * @param parent      The parent that this view will eventually be attached to.
+     * @return A View corresponding to the data at the specified position.
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
