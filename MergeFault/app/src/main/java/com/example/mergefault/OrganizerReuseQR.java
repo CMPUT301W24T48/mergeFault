@@ -35,6 +35,9 @@ import com.google.firebase.storage.UploadTask;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * This activity allows organizers to reuse an QR code from a expired event
+ */
 public class OrganizerReuseQR extends AppCompatActivity {
     private String eventId;
     private Uri selectedImage;
@@ -55,27 +58,37 @@ public class OrganizerReuseQR extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_reuse_qr);
 
+        // Get the necessary objects from the UI
         prevQRListView = findViewById(R.id.prevQRListView);
         homeButton = findViewById(R.id.imageView);
         cancelButton = findViewById(R.id.cancelButton);
 
+        // Receive eventId and selectedImage uri from the previous activity
         Intent intent = getIntent();
         eventId = intent.getStringExtra("EventId");
         selectedImage = intent.getData();
 
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
 
+        // Get instance and reference to the firebase storage
         firebaseStorage = FirebaseStorage.getInstance();
         eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + eventId + ".jpg");
         eventCheckInQRRef = firebaseStorage.getReference().child("QRCodes").child("CheckIn");
 
+        // Set up array lists used to compare
         checkInQRList = new ArrayList<String>();
         eventIdList = new ArrayList<String>();
-        expiredEventIdList = new ArrayList<String>();
 
+        // Set up QR array adapter and link it to the listview
+        expiredEventIdList = new ArrayList<String>();
         qrArrayAdapter = new QRArrayAdapter(this, expiredEventIdList);
         prevQRListView.setAdapter(qrArrayAdapter);
+
+        // Set up snapshot listener to listen to changes in the event collection on firestore
+        // and compares the events to the QR codes in the firestore and see which ones do not
+        // have a event linked to them then compiles them in a list
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -86,7 +99,6 @@ public class OrganizerReuseQR extends AppCompatActivity {
                 if (value != null){
                     checkInQRList.clear();
                     eventIdList.clear();
-
                     for (QueryDocumentSnapshot doc : value){
                         eventIdList.add(doc.getId());
                     }
@@ -107,6 +119,8 @@ public class OrganizerReuseQR extends AppCompatActivity {
                 }
             }
         });
+
+        // Set click listener for the QR list and swaps the event id with the qr codes intended event id, as well as changing all of the things the event is associated to
         prevQRListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -176,6 +190,8 @@ public class OrganizerReuseQR extends AppCompatActivity {
                 });
             }
         });
+
+        // Set click listener for the Logo
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -186,6 +202,8 @@ public class OrganizerReuseQR extends AppCompatActivity {
                 finish();
             }
         });
+
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -195,6 +213,8 @@ public class OrganizerReuseQR extends AppCompatActivity {
                 finish();
             }
         });
+
+        // Set what happens when back button is pressed
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {

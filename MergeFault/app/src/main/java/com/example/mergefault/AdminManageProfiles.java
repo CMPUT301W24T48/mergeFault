@@ -22,13 +22,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 
 /**
- * An Activity which allows admins to view and delete profiles
+ * This activity shows a list of events in real time on the firebase currently and the admin can delete or view each of them
  */
 public class AdminManageProfiles extends AppCompatActivity{
-
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
-    private CollectionReference eventAttendeeRef;
     private CollectionReference eventRef;
     private String name;
     private String phoneNum;
@@ -46,20 +44,23 @@ public class AdminManageProfiles extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_manage_profiles);
+
+        // Get the necessary objects from the UI
         attendeeList = findViewById(R.id.profileLinearLayout);
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.imageView);
 
-
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
         attendeeRef = db.collection("attendees");
         eventRef = db.collection("events");
 
+        // Set up image attendee adapter and link it to the listview
         attendees = new ArrayList<Attendee>();
-        String user = "admin";
-        attendeeArrayAdapter = new AttendeeArrayAdapter(this,attendees,user);
+        attendeeArrayAdapter = new AttendeeArrayAdapter(this,attendees,"admin");
         attendeeList.setAdapter(attendeeArrayAdapter);
 
+        // Set up snapshot listener to listen to changes in the attendee collection on firestore and adds the attendees into a list
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -95,6 +96,7 @@ public class AdminManageProfiles extends AppCompatActivity{
             }
         });
 
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -103,6 +105,8 @@ public class AdminManageProfiles extends AppCompatActivity{
                 finish();
             }
         });
+
+        // Set what happens when back button is pressed
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -113,6 +117,7 @@ public class AdminManageProfiles extends AppCompatActivity{
         };
         AdminManageProfiles.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 
+        // Set click listener for the Logo
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

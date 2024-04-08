@@ -47,15 +47,12 @@ public class MainActivity extends AppCompatActivity {
             Places.initialize(getApplicationContext(), apiKey);
         }
 
-        Places.initialize(getApplicationContext(), apiKey);
-
         // Set OnClickListener for attendeeButton
         attendeeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Start AttendeeHomeActivity when attendeeButton is clicked
                 startActivity(new Intent(MainActivity.this, AttendeeHomeActivity.class));
-                finish();
             }
         });
 
@@ -65,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // Start OrganizerHomeActivity when organizerButton is clicked
                 startActivity(new Intent(MainActivity.this, OrganizerHomeActivity.class));
-                finish();
             }
         });
 
@@ -76,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
                 // Start AdminHomeActivity when adminButton is clicked
                 Intent intent = new Intent(MainActivity.this, AdminHomeActivity.class);
                 startActivity(intent);
-                finish();
             }
         });
     }

@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 /**
- * This is a fragment class for adding description
+ * This is a fragment class for editing description
  */
 public class EditDescriptionFragment extends DialogFragment {
     /**
@@ -22,11 +22,11 @@ public class EditDescriptionFragment extends DialogFragment {
      */
     interface EditDescriptionDialogListener {
         /**
-         * This is the abstract method addDescription
+         * This is the abstract method edit description
          * @param Description
          * This is a String Description
          */
-        void addDescription(String Description);
+        void editDescription(String Description);
     }
     private EditDescriptionDialogListener listener;
 
@@ -63,7 +63,7 @@ public class EditDescriptionFragment extends DialogFragment {
                     public void onClick(DialogInterface dialog, int which) {
                         if (!editDescription.getText().toString().equals("")) {
                             String description = editDescription.getText().toString();
-                            listener.addDescription(description);
+                            listener.editDescription(description);
                         } else {
                             Toast.makeText(getContext(), "Invalid Description", Toast.LENGTH_SHORT).show();
                         }

@@ -1,7 +1,6 @@
 package com.example.mergefault;
 
 import android.net.Uri;
-import android.util.Log;
 
 import java.util.Calendar;
 
@@ -55,6 +54,12 @@ public class Event {
         this.geoLocOn = geoLocOn;
         this.eventID = eventID;
         this.placeId = placeId;
+    }
+
+    /**
+     * Empty constructor for the Event class
+     */
+    public Event(){
     }
     /**
      * This is a setter for the eventName
