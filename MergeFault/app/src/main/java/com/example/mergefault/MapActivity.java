@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -44,6 +45,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private CollectionReference eventRef;
     private LatLng checkedInLatLng;
     private GoogleMap googleMap;
+    private SupportMapFragment mapFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -139,14 +141,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             // Extract latitude and longitude from the place
             LatLng location = place.getLatLng();
             if (location != null) {
-                // Load the custom marker icon as a Bitmap
+
                 Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.event_location);
 
-                // Define the desired width and height of the marker icon (e.g., 50x50 pixels)
                 int width = 150;
                 int height = 150;
 
-                // Resize the bitmap to the desired dimensions
+
                 Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
 
                 // Create a MarkerOptions object and set the resized bitmap as the marker icon
@@ -155,7 +156,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         .title(place.getName())
                         .icon(BitmapDescriptorFactory.fromBitmap(resizedBitmap));
 
-                // Place a marker at the location
+
                 googleMap.addMarker(markerOptions);
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f));
             }
@@ -172,16 +173,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * @param checkedInLatLng The LatLng object representing the location of the checked-in user.
      * @param googleMap       The GoogleMap object representing the map.
      */
-    private void addCheckedInMarkerToMap(LatLng checkedInLatLng, GoogleMap googleMap) {
+    protected void addCheckedInMarkerToMap(LatLng checkedInLatLng, GoogleMap googleMap) {
         if (googleMap != null && checkedInLatLng != null) {
             // Create MarkerOptions for the checked-in location
             Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.user_location);
 
-            // Define the desired width and height of the marker icon
             int width = 100;
             int height = 100;
 
-            // Resize the bitmap to the desired dimensions
             Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
 
             // Create MarkerOptions for the checked-in location with custom marker
@@ -190,8 +189,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .title("Checked In Location")
                     .icon(BitmapDescriptorFactory.fromBitmap(resizedBitmap));
 
-            // Add marker to the map
             googleMap.addMarker(checkedInMarkerOptions);
         }
+    }
+
+    public void setMapFragment(SupportMapFragment mapFragment) {
+        this.mapFragment = mapFragment;
     }
 }
