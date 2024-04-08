@@ -19,11 +19,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static androidx.test.espresso.Espresso.closeSoftKeyboard;
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.anything;
 import static org.junit.Assert.assertEquals;
 
 import android.util.Log;
@@ -113,6 +115,54 @@ public class AttendeeTest {
         //clear Firebase
         attendeesRef.document(attendeeID).delete();
     }
+
+    @Test
+    public void signUpAndWithdrawTest(){
+        String name = "User";
+        String email = "user@example.com";
+        String imageUri = "https://api.dicebear.com/5.x/pixel-art/png?seed=User";
+        String phoneNumber = "1234567890";
+
+        onView(withId(R.id.profileImageView)).perform(click());
+
+        // Perform UI actions to fill profile data
+        onView(withId(R.id.editEmailText)).perform(click()).perform(ViewActions.typeText(email));
+        closeSoftKeyboard();
+        onView(withId(R.id.editAttendeeName)).perform(click()).perform(ViewActions.typeText(name));
+        closeSoftKeyboard();
+        onView(withId(R.id.editPhoneNumber)).perform(click()).perform(ViewActions.typeText(phoneNumber));
+        closeSoftKeyboard();
+
+        onView(withId(R.id.cancelButton)).perform(click());
+        db = FirebaseFirestore.getInstance();
+
+        onView(withId(R.id.browseEventsButton)).perform(click());
+        onData(anything()).inAdapterView(withId(R.id.myEventListView)).atPosition(0).perform(click());
+        onView(withId(R.id.withdrawButton)).perform(click());
+        CollectionReference attendeesRef = db.collection("attendees");
+        attendeesRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for (QueryDocumentSnapshot doc: value) {
+                    if(doc.getString("AttendeeName").equals(name)){
+                        assertEquals(name, doc.getString("AttendeeName"));
+                        assertEquals(email, doc.getString("AttendeeEmail"));
+                        assertEquals(imageUri, doc.getString("AttendeeProfile"));
+                        assertEquals(phoneNumber, doc.getString("AttendeePhoneNumber"));
+                        attendeeID = doc.getId();
+                    }
+                }
+            }
+        });
+        onView(withId(R.id.imageView)).perform(click());
+
+        onView(withId(R.id.viewMyEventsButton)).perform(click());
+        onData(anything()).inAdapterView(withId(R.id.myEventListView)).atPosition(0).perform(click());
+        onView(withId(R.id.withdrawButton)).perform(click());
+
+        attendeesRef.document(attendeeID).delete();
+    }
+
 
 
     @Test
