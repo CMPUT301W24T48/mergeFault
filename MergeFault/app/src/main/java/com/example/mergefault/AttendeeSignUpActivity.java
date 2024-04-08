@@ -31,12 +31,22 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
-
 import java.util.Calendar;
 import java.util.Date;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 
 /**
@@ -60,6 +70,11 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
     private ImageView eventPoster;
     private SharedPreferences sharedPreferences;
     private ImageView notificationButton;
+    private String eventName;
+    /**
+     * @see AttendeeBrowsePostedEventsActivity
+     * this Activity displays event details and a button that signs up attendees to the event
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +120,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                     if (doc.exists()) {
                         Date currentTime = Calendar.getInstance().getTime();
                         if (currentTime.before(doc.getDate("DateTime"))) {
+                            eventName = doc.getString("EventName");
                             location.setText(doc.getString("Location"));
                             description.setText(doc.getString("Description"));
                             time.setText(doc.getDate("DateTime").toString());
@@ -179,6 +195,9 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
             public void onClick(View v) {
                 SubscribeAttendee();
                 AddAttendee();
+                SendNotificationToOrganizer();
+
+
 
             }
         });
@@ -226,6 +245,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
             }
         });
     }
+
     public void SubscribeAttendee(){
         FirebaseMessaging.getInstance().subscribeToTopic(eventId)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -244,6 +264,53 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+  
+    public void SendNotificationToOrganizer(){
+        OkHttpClient client = new OkHttpClient();
+        JSONObject json = new JSONObject();
+        String topic = eventId + "_organizer";
+        try {
+            json.put("to", "/topics/" + topic);
+            JSONObject notification = new JSONObject();
+            notification.put("title", eventName);
+            notification.put("body", "You have a new sign-up for your event!");
+            json.put("notification", notification);
+        } catch (JSONException e) {
+            return;
+
+        }
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json.toString());
+
+        Request request = new Request.Builder()
+                .url("https://fcm.googleapis.com/fcm/send")
+                .post(requestBody)
+                .addHeader("Authorization", "key=AAAAJKAW9vA:APA91bG2WW61c9h2OVwu4A4eg6wLiHfPGLNTA517lEj-s66ywb6VxLcAGv0jHRKWMy3XLf0oE9vdZUBG7hnqjNZuukAs6FNCkdU8Pj6afTLGPPAKh3wH6aC54ev5OkG0rpqMUVI2Dhr2")
+                .addHeader("Content-Type", "application/json")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    Log.d("FCM_RESPONSE", "Response: " + responseBody);
+
+
+                } else {
+                    String errorResponse = response.body().string();
+                    String status = response.code() + " " + response.message();
+                    Log.e("FCM_RESPONSE", "Unsuccessful response: " + status);
+                    Log.e("FCM_RESPONSE", "Error Body: " + errorResponse);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.e("FCM_RESPONSE", "Request failed: " + e.getMessage());
+            }
+        });
 
 
     }
