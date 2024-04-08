@@ -43,8 +43,6 @@ import java.util.Objects;
  * Activity for attendee sign-up for an event.
  */
 public class AttendeeSignUpActivity extends AppCompatActivity {
-
-    // Event ID
     private String eventId;
     private String parentActivity;
     private FirebaseFirestore db;
@@ -62,14 +60,12 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
     private ImageView eventPoster;
     private SharedPreferences sharedPreferences;
     private ImageView notificationButton;
-    /**
-     * @see AttendeeBrowsePostedEventsActivity
-     * this Activity displays event details and a button that signs up attendees to the event
-     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_signup_for_event);
+
+        // Get the necessary objects from the UI
         location = findViewById(R.id.LocationText);
         description = findViewById(R.id.DescriptionText);
         time = findViewById(R.id.TimeText);
@@ -79,21 +75,28 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
         profileImageView = findViewById(R.id.ProfilePicture);
         eventPoster = findViewById(R.id.eventPoster);
         notificationButton = findViewById(R.id.notifBellImageView);
-        // Get the intent that started this activity
+
+        // Receive eventId and parentActivity from the previous activity
         Intent intent = getIntent();
         eventId = intent.getStringExtra("eventId");
         parentActivity = intent.getStringExtra("parentActivity");
-        Log.d("eventId", "eventId: " + eventId);
 
+        // Get shared preferences from device
+        sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
+
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
-        firebaseStorage = FirebaseStorage.getInstance();
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
-        sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
         eventAttendeeRef = eventRef.document(eventId).collection("attendees");
 
+        // Get instance to the firebase storage
+        firebaseStorage = FirebaseStorage.getInstance();
+
+        // Loads profile image
         loadProfileImage();
 
+        // Set up snapshot listener to listen to changes in the selected event on firestore
         eventRef.document(eventId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -120,6 +123,8 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,6 +138,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
             }
         });
 
+        // Set what happens when the back button is pressed
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -147,6 +153,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
         };
         AttendeeSignUpActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 
+        // Set click listener for the Logo
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -155,6 +162,8 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        // Set click listener for the notification icon
         notificationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -163,6 +172,8 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
 
             }
         });
+
+        // Set click listener for the "Sign Up" button
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -171,6 +182,8 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
 
             }
         });
+
+        // Set click listener for the profile icon
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -178,24 +191,38 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 startActivityForResult(intent, 0);
             }
         });
-
     }
 
     /**
      * Adds attendee and their information to the event upon signup button click with a unique ID
      */
     public void AddAttendee() {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("CheckedIn", false);
-        data.put("CheckedInCount", 0);
-        //data.put("AttendeeNotificationPref", attendee.getNotificationPref());
-        //data.put("AttendeeGeolocationPref", attendee.getGeolocationPref());
-        eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).set(data).addOnSuccessListener(new OnSuccessListener<Void>() {
+        eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void onSuccess(Void unused) {
-                attendeeRef.document(sharedPreferences.getString("attendeeId", null)).update("signedInEvents", FieldValue.arrayUnion(eventId));
-                Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
-                switchActivities();
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
+                    if (!doc.exists()) {
+                        HashMap<String, Object> data = new HashMap<>();
+                        data.put("CheckedIn", false);
+                        data.put("CheckedInCount", 0);
+                        attendeeRef.document(sharedPreferences.getString("attendeeId", null)).update("signedInEvents", FieldValue.arrayUnion(eventId)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).update(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
+                                        switchActivities();
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Already Signed Up!", Toast.LENGTH_SHORT).show();
+                        switchActivities();
+                    }
+                }
             }
         });
     }
@@ -220,6 +247,10 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
 
 
     }
+
+    /**
+     * loads the profile image from the saved user profile
+     */
     private void loadProfileImage() {
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -234,11 +265,22 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * This switches the activity from this to AttendeeBrowsePostedEventsActivity
+     */
     public void switchActivities() {
         Intent intent = new Intent(AttendeeSignUpActivity.this, AttendeeBrowsePostedEventsActivity.class);
         startActivity(intent);
         finish();
     }
+
+    /**
+     * This method takes a document snapshot, a instance of firestore and an instance of storage to delete all associated data with the event like attendee sub-collections and event poster
+     * @param doc This is the document snapshot of the event from firestore
+     * @param db This is an the instance of the firebase firestore
+     * @param firebaseStorage This is an instance of the firebase storage
+     */
     private void deleteEventAndAssociation (DocumentSnapshot doc, FirebaseFirestore db, FirebaseStorage firebaseStorage) {
         CollectionReference eventRef = db.collection("events");
         CollectionReference attendeeRef = db.collection("attendees");
@@ -273,6 +315,18 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * This method handles what happens after a activity result is made
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode The integer result code returned by the child activity
+     *                   through its setResult().
+     * @param data An Intent, which can return result data to the caller
+     *               (various data can be attached to Intent "extras").
+     *
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

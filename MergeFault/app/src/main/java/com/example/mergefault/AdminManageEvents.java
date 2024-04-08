@@ -35,25 +35,16 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * An Activity which allows admins to view and delete events
+ * This activity shows a list of events in real time on the firebase currently and the admin can delete or view each of them
  */
 public class AdminManageEvents extends AppCompatActivity{
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private CollectionReference attendeeRef;
-    private CollectionReference eventAttendeeRef;
     private FirebaseStorage firebaseStorage;
-    private StorageReference eventPosterRef;
-    private StorageReference eventCheckInQRRef;
-    private StorageReference eventPromotionQRRef;
-
-    private Date dateTime;
-    private Calendar date;
     private Event event;
-
     private ArrayList<Event> eventDataList;
     private EventArrayAdapter eventArrayAdapter;
-
     private ListView eventsList;
     private Button cancelButton;
     private ImageView homeButton;
@@ -61,19 +52,26 @@ public class AdminManageEvents extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_manage_events);
+
+        // Get the necessary objects from the UI
         eventsList = findViewById(R.id.myEventListView);
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.imageView);
 
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
-        firebaseStorage = FirebaseStorage.getInstance();
-
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
+
+        // Get instance to the firebase storage
+        firebaseStorage = FirebaseStorage.getInstance();
+
+        // Set up event array adapter and link it to the listview
         eventDataList = new ArrayList<Event>();
         eventArrayAdapter = new EventArrayAdapter(this, eventDataList);
         eventsList.setAdapter(eventArrayAdapter);
 
+        // Set up snapshot listener to listen to changes in the event collection on firestore and adds the events into a list
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -112,6 +110,8 @@ public class AdminManageEvents extends AppCompatActivity{
                 });
             }
         });
+
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -120,6 +120,8 @@ public class AdminManageEvents extends AppCompatActivity{
                 finish();
             }
         });
+
+        // Set what happens when back button is pressed
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -130,6 +132,7 @@ public class AdminManageEvents extends AppCompatActivity{
         };
         AdminManageEvents.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 
+        // Set click listener for the Logo
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -140,6 +143,11 @@ public class AdminManageEvents extends AppCompatActivity{
         });
     }
 
+    /**
+     * This method takes a document snapshot and creates and returns a new event from data gathered in firebase
+     * @param doc This is the document snapshot of the event from firestore
+     * @return Returns an event that is created from firebase data
+     */
     private Event getEventFromDoc (DocumentSnapshot doc) {
         Event event = new Event();
         event.setEventName(doc.getString("EventName"));
@@ -167,6 +175,13 @@ public class AdminManageEvents extends AppCompatActivity{
 
         return event;
     }
+
+    /**
+     * This method takes a document snapshot, a instance of firestore and an instance of storage to delete all associated data with the event like attendee sub-collections and event poster
+     * @param doc This is the document snapshot of the event from firestore
+     * @param db This is an the instance of the firebase firestore
+     * @param firebaseStorage This is an instance of the firebase storage
+     */
     private void deleteEventAndAssociation (DocumentSnapshot doc, FirebaseFirestore db, FirebaseStorage firebaseStorage) {
         CollectionReference eventRef = db.collection("events");
         CollectionReference attendeeRef = db.collection("attendees");
@@ -201,6 +216,11 @@ public class AdminManageEvents extends AppCompatActivity{
             }
         });
     }
+    /**
+     * This method takes an eventId and a storage instance and finds and deletes the check in and promotion qrs associated with them
+     * @param eventId This is the string eventId of the qrs that are going to be deleted
+     * @param firebaseStorage This is a instance of the storage
+     */
     private void deleteQRs (String eventId, FirebaseStorage firebaseStorage) {
         StorageReference eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes").child("CheckIn/" + eventId + ".png");
         StorageReference eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes").child("Promotion/" + eventId + ".png");

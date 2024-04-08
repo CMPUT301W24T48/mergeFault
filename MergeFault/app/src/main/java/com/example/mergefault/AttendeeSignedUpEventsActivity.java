@@ -47,99 +47,48 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private ListView signedUpEventsList;
     private EventArrayAdapter eventArrayAdapter;
-
     private ArrayList<Event> signedUpEventDataList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
-    private CollectionReference eventAttendeeRef;
     private DocumentReference eventAttendeeDocRef;
     private CollectionReference attendeeRef;
     private FirebaseStorage firebaseStorage;
-    private StorageReference eventPosterRef;
-
-    private Date dateTime;
-    private Calendar date;
-    private Event event;
-
     private ImageView homeIcon;
     private Button cancelButton;
     private ImageView notificationButton;
-
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_signed_up_events);
 
+        // Get the necessary objects from the UI
         profileImageView = findViewById(R.id.pfpImageView);
         signedUpEventsList = findViewById(R.id.myEventListView);
         homeIcon = findViewById(R.id.imageView);
         profileImageView = findViewById(R.id.pfpImageView);
         cancelButton = findViewById(R.id.cancelButton);
         notificationButton = findViewById(R.id.notifBellImageView);
+
+        // Get shared preferences from device
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
-
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
+
+        // Get instance firebase storage
         firebaseStorage = FirebaseStorage.getInstance();
 
+        // Loads profile image
         loadProfileImage();
 
+        // Set up events array adapter and link it to the listview
         signedUpEventDataList = new ArrayList<Event>();
         eventArrayAdapter = new EventArrayAdapter(this, signedUpEventDataList);
         signedUpEventsList.setAdapter(eventArrayAdapter);
 
-
-        eventArrayAdapter.notifyDataSetChanged();
-
-        notificationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeNotifications.class);
-                startActivity(intent);
-
-            }
-        });
-
-        homeIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeHomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeHomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeHomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        };
-        AttendeeSignedUpEventsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-
-        signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedEventId = signedUpEventDataList.get(position).getEventID();
-                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeViewEventDetailsActivity.class);
-                intent.putExtra("eventId", selectedEventId);
-                startActivity(intent);
-                finish();
-            }
-        });
-
+        // Set up snapshot listener to listen to changes in the event collection on firestore
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -174,7 +123,61 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                 }
             }
         });
-        // makes it so that when the image icon is clicked we go to the edit/view profile screen
+
+        // Set click listener for notification icon
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+
+            }
+        });
+
+        // Set click listener for Logo
+        homeIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        // Set click listener for "Cancel" button
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        // Set what happens if the back button is pressed
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        AttendeeSignedUpEventsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
+        // Set click listener signed up event list
+        signedUpEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String selectedEventId = signedUpEventDataList.get(position).getEventID();
+                Intent intent = new Intent(AttendeeSignedUpEventsActivity.this, AttendeeViewEventDetailsActivity.class);
+                intent.putExtra("eventId", selectedEventId);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        // Set click listener profile icon
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -184,9 +187,9 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         });
     }
 
-    // loads the profile image from the saved user profile.
-    // imageuri references the link or source of where the image originates from such as it could originate from the device or the api call. However it is treated as empty if there is the generic pfp image there.
-    // picasso is an external api that helps cache in images and load them to the imageview works on urls as well as internal images
+    /**
+     * loads the profile image from the saved user profile
+     */
     private void loadProfileImage() {
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -203,6 +206,11 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * This method takes a document snapshot and creates and returns a new event from data gathered in firebase
+     * @param doc This is the document snapshot of the event from firestore
+     * @return Returns an event that is created from firebase data
+     */
     private Event getEventFromDoc (DocumentSnapshot doc) {
         Event event = new Event();
         event.setEventName(doc.getString("EventName"));
@@ -230,6 +238,13 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
 
         return event;
     }
+
+    /**
+     * This method takes a document snapshot, a instance of firestore and an instance of storage to delete all associated data with the event like attendee sub-collections and event poster
+     * @param doc This is the document snapshot of the event from firestore
+     * @param db This is an the instance of the firebase firestore
+     * @param firebaseStorage This is an instance of the firebase storage
+     */
     private void deleteEventAndAssociation (DocumentSnapshot doc, FirebaseFirestore db, FirebaseStorage firebaseStorage) {
         CollectionReference eventRef = db.collection("events");
         CollectionReference attendeeRef = db.collection("attendees");
@@ -265,6 +280,17 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * This method handles what happens after a activity result is made
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode The integer result code returned by the child activity
+     *                   through its setResult().
+     * @param data An Intent, which can return result data to the caller
+     *               (various data can be attached to Intent "extras").
+     *
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

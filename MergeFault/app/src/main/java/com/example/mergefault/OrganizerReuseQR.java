@@ -86,7 +86,9 @@ public class OrganizerReuseQR extends AppCompatActivity {
         qrArrayAdapter = new QRArrayAdapter(this, expiredEventIdList);
         prevQRListView.setAdapter(qrArrayAdapter);
 
-        // Set up snapshot listener to listen to changes in the event collection on firestore and compares the events to the QR codes in the firestore and see which ones do not have a event linked to them then compiles them in a list
+        // Set up snapshot listener to listen to changes in the event collection on firestore
+        // and compares the events to the QR codes in the firestore and see which ones do not
+        // have a event linked to them then compiles them in a list
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {

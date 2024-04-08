@@ -32,8 +32,6 @@ import java.util.Objects;
  * Activity for attendee sign-up for an event.
  */
 public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
-
-    // Event ID
     private String eventId;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
@@ -48,19 +46,13 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
     private ImageView homeButton;
     private ImageView eventPosterImageView;
     private SharedPreferences sharedPreferences;
-
     private ImageView notificationButton;
-
-    /**
-     * @see AttendeeSignedUpEventsActivity
-     * This activity displays the event details of the signed up activity
-     * and allows users to sign up for notifications or withdraw
-     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_event_details);
 
+        // Get the necessary objects from the UI
         location = findViewById(R.id.EventDetailsLocationText);
         description = findViewById(R.id.EventDetailsDescriptionText);
         time = findViewById(R.id.EventDetailsTimeText);
@@ -75,21 +67,16 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         eventId = intent.getStringExtra("eventId");
 
+        // Get shared preferences from device
+        sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
+
+        // Receive eventId and parentActivity from the previous activity
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
-        sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
         eventAttendeeRef = db.collection("events").document(eventId).collection("attendees");
 
-        notificationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeNotifications.class);
-                startActivity(intent);
-
-            }
-        });
-
+        // Set up snapshot listener to listen to changes in the event collection on firestore
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -111,15 +98,28 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Set click listener for the notification icon
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+            }
+        });
+
+        // Set click listener for the notification switch
         notifySwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //implement notif stuff
+                //implement notification stuff
                 Intent intent = new Intent(AttendeeViewEventDetailsActivity.this, AttendeeSignedUpEventsActivity.class);
                 startActivity(intent);
                 finish();
             }
         });
+
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,6 +128,8 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        // Set what happens when the back button is pressed
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -137,6 +139,8 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
             }
         };
         AttendeeViewEventDetailsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
+        // Set click listener for the "Withdraw" button
         withdrawButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -148,6 +152,8 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        // Set click listener for the Logo
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,9 +162,7 @@ public class AttendeeViewEventDetailsActivity extends AppCompatActivity {
                 finish();
             }
         });
-
     }
-
 }
 
 

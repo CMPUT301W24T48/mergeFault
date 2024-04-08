@@ -51,24 +51,6 @@ public class QRArrayAdapter extends ArrayAdapter<String>{
         ImageView promotionQRs = view.findViewById(R.id.qrPromotionView);
         TextView eventNameTextView = view.findViewById(R.id.eventIdView);
 
-
-        /*
-        eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes").child("CheckIn/" + eventId + ".png");
-        eventCheckInQRRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                Picasso.get().load(uri).into(checkInQRs);
-            }
-        });
-        eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes").child("Promotion/" + eventId + ".png");
-        eventPromotionQRRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                Picasso.get().load(uri).into(promotionQRs);
-            }
-        });
-
-         */
         eventNameTextView.setText(eventId);
 
         return view;

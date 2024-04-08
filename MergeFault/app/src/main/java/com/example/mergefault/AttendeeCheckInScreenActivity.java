@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -49,13 +48,8 @@ import java.util.List;
 public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     // Request code for location permission
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
-
-    // Event ID
     private String eventId;
-
-    // TextView to display location information
     private TextView locationText;
-
     // FusedLocationProviderClient for accessing device location
     private FusedLocationProviderClient fusedLocationClient;
     private TextView timeText;
@@ -68,44 +62,40 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     private CollectionReference eventRef;
     private CollectionReference eventAttendeeRef;
     private FirebaseStorage firebaseStorage;
-    private StorageReference eventPosterRef;
-    private Integer checkedInCount;
     private Boolean attendeeCheckedIn = false;
     private String locationInfo = null;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_check_in_screen);
 
+        // Get the necessary objects from the UI
         checkInButton = findViewById(R.id.checkInButton);
         cancelButton = findViewById(R.id.cancelButton);
-
-        db = FirebaseFirestore.getInstance();
-        eventRef = db.collection("events");
-        firebaseStorage = FirebaseStorage.getInstance();
-
-        sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
-
-        // Initialize location text view
         locationText = findViewById(R.id.CheckInLocationText);
         descriptionText = findViewById(R.id.CheckInDescriptionText);
         timeText = findViewById(R.id.CheckInTimeText);
         eventPoster = findViewById(R.id.eventPoster);
 
+        // Receive eventId from the previous activity
+        Intent intent = getIntent();
+        eventId = intent.getStringExtra("eventId");
+
+        // Get shared preferences from device
+        sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
+
+        // Get instance and reference to the firebase firestore
+        db = FirebaseFirestore.getInstance();
+        eventRef = db.collection("events");
+        eventAttendeeRef = eventRef.document(eventId).collection("attendees");
+
+        // Get instance to the firebase storage
+        firebaseStorage = FirebaseStorage.getInstance();
 
         // Initialize FusedLocationProviderClient
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Handle incoming intent data
-        Intent intent = getIntent();
-        eventId = intent.getStringExtra("eventId");
-
-        Log.d("checkineventid", "eventId: " + eventId);
-
-
-        eventAttendeeRef = eventRef.document(eventId).collection("attendees");
-
+        // Getting the selected event's details from firestore
         eventRef.document(eventId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -132,12 +122,16 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Set click listener for the "Check In" button
         checkInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getLocation();
             }
         });
+
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -146,6 +140,8 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        // Set what happens when back button is pressed
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -159,7 +155,6 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
 
     /**
      * Method to handle the button click event for check-in.
-     *
      * @param view The View that was clicked.
      */
     public void onCheckInButtonClick(View view) {
@@ -175,7 +170,16 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         }
     }
 
-    // Handle permission request result
+    /**
+     * This method is used to handle permission request result
+     * @param requestCode The request code passed in {@link #requestPermissions(
+     * android.app.Activity, String[], int)}
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
+     *
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -189,7 +193,9 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         }
     }
 
-    // Method to retrieve the location
+    /**
+     * This method retrieves the device's location and records it using recordLocation method
+     */
     private void getLocation() {
         // Check for either ACCESS_FINE_LOCATION or ACCESS_COARSE_LOCATION permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
@@ -214,7 +220,10 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         }
     }
 
-    // Method to record the location
+    /**
+     * This method take the current location of the device and turns it into a string of longitude and latitude then calls then CheckInAttendee method
+     * @param location the current location of device
+     */
     private void recordLocation(Location location) {
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
@@ -224,6 +233,9 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * This method checks in the attendee onto firebase and logs its check-in count and location
+     */
     private void CheckInAttendee() {
         eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -238,7 +250,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                         eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).update(data).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void unused) {
-                                   Toast.makeText(getApplicationContext(), "Successfully Checked In", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Successfully Checked In", Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
                                 startActivity(intent);
                                 finish();
@@ -256,6 +268,12 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
         });
 
     }
+    /**
+     * This method takes a document snapshot, a instance of firestore and an instance of storage to delete all associated data with the event like attendee sub-collections and event poster
+     * @param doc This is the document snapshot of the event from firestore
+     * @param db This is an the instance of the firebase firestore
+     * @param firebaseStorage This is an instance of the firebase storage
+     */
     private void deleteEventAndAssociation (DocumentSnapshot doc, FirebaseFirestore db, FirebaseStorage firebaseStorage) {
         CollectionReference eventRef = db.collection("events");
         CollectionReference attendeeRef = db.collection("attendees");
@@ -267,7 +285,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete();
                     }
-                    StorageReference eventPosterRef = firebaseStorage.getReference().child("eventPosters/" + doc.getId() + ".jpg");
+                    StorageReference eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
                     eventPosterRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -281,7 +299,7 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             @Override
             public void onSuccess(QuerySnapshot querySnapshot) {
                 if (!querySnapshot.isEmpty()) {
-                    List<DocumentSnapshot> attendeesThatSignedUp = querySnapshot.getDocuments();
+                    List<DocumentSnapshot> attendeesThatSignedUp =  querySnapshot.getDocuments();
                     for (int i = 0; i < attendeesThatSignedUp.size(); i++) {
                         DocumentSnapshot attendee = attendeesThatSignedUp.get(i);
                         attendeeRef.document(attendee.getId()).update("signedInEvents", FieldValue.arrayRemove(doc.getId()));
