@@ -38,7 +38,6 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @see AttendeeViewEventDetailsActivity
  * This activity displays all currently signed up events for attendees
  * Attendees can view the list of signed up events and click on them to view event details or withdraw
  */

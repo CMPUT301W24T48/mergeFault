@@ -210,7 +210,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * This method asks the attendee for notification permission
+     * Request notification permission if the attendee enables notifications.
      */
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

@@ -37,7 +37,6 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @see AttendeeViewEventDetailsActivity
  * This activity displays the current list of all events posted on the app
  * Attendees can view all event details and sign up to any event
  */

@@ -54,9 +54,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * @see  AttendeeViewEventDetailsActivity
  * Activity for attendee check-in at an event.
- *
  */
 public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     // Request code for location permission
@@ -325,7 +323,10 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
             }
         });
     }
-
+    /**
+     * Sends a notification to the organizer of an event using Firebase Cloud Messaging.
+     * The notification includes the event name and a message indicating a new check-in for the event.
+     */
     public void SendNotificationToOrganizer(){
         OkHttpClient client = new OkHttpClient();
         JSONObject json = new JSONObject();

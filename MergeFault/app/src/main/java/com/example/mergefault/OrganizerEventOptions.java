@@ -65,6 +65,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
         removeButton = findViewById(R.id.removeEventButton);
         shareButton = findViewById(R.id.shareQR);
         homeButton = findViewById(R.id.logoImageView);
+        ImageView notificationButton = findViewById(R.id.notifBellImageView);
 
         // Receive organizerId and eventId from the previous activity
         Intent receiverIntent = getIntent();
@@ -91,6 +92,16 @@ public class OrganizerEventOptions extends AppCompatActivity {
                         Picasso.get().load(event.getEventPoster()).into(eventPosterImageView);
                     }
                 }
+            }
+        });
+
+        // Set click listener for the notification icon
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerEventOptions.this, AttendeeNotifications.class);
+                startActivity(intent);
+
             }
         });
 
