@@ -45,7 +45,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private CollectionReference eventRef;
     private LatLng checkedInLatLng;
     private GoogleMap googleMap;
-    private SupportMapFragment mapFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -192,8 +191,3 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             googleMap.addMarker(checkedInMarkerOptions);
         }
     }
-
-    public void setMapFragment(SupportMapFragment mapFragment) {
-        this.mapFragment = mapFragment;
-    }
-}
