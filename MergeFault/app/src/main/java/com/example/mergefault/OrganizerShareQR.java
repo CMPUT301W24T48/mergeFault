@@ -21,8 +21,6 @@ import androidx.core.content.FileProvider;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -36,18 +34,12 @@ import java.util.Objects;
  * Activity for sharing QR codes with organizers.
  */
 public class OrganizerShareQR extends AppCompatActivity {
-
     private ImageView checkInQRImageView, promoteQRImageView;
     private Button cancelButton, shareCheckInButton, sharePromoteButton, shareBothButton;
     private ImageView homeButton;
-
     private String eventId;
-
     private String parentActivity;
-
     private String organizerId;
-    private FirebaseFirestore db;
-    private CollectionReference eventRef;
     private FirebaseStorage firebaseStorage;
     private StorageReference storageRef;
     private StorageReference eventCheckInQRRef;
@@ -62,6 +54,7 @@ public class OrganizerShareQR extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_share_qr);
 
+        // Get the necessary objects from the UI
         checkInQRImageView = findViewById(R.id.checkInQRImageView);
         promoteQRImageView = findViewById(R.id.promoteQRImageView);
         shareCheckInButton = findViewById(R.id.shareCheckInButton);
@@ -70,17 +63,53 @@ public class OrganizerShareQR extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.logoImgView);
 
-
-        firebaseStorage = FirebaseStorage.getInstance();
-        storageRef = firebaseStorage.getReference();
-
-        // Set click listener for cancel button
+        // Receive eventId and organizerId from the previous activity
         Intent intent = getIntent();
         eventId = intent.getStringExtra("EventId");
         organizerId = intent.getStringExtra("OrganizerID");
         parentActivity = intent.getStringExtra("ParentActivity");
 
-        // Set click listener for share check-in button
+        // Get instance and reference to the firebase storage
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageRef = firebaseStorage.getReference();
+
+        // Storage reference for this event's check-in qr
+        eventCheckInQRRef = storageRef.child("QRCodes").child("CheckIn/" + eventId + ".png");
+        // Download image by calling the method DownloadImageFromInternet and setting it into check-in qr image view
+        eventCheckInQRRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    Uri uri = task.getResult();
+                    new OrganizerShareQR.DownloadImageFromInternet((ImageView) findViewById(R.id.checkInQRImageView)).execute(uri.toString());
+                }
+            }
+        });
+
+        // Storage reference for this event's promotion qr
+        eventPromoteQRRef = storageRef.child("QRCodes").child("Promotion/" + eventId + ".png");
+        // Download image by calling the method DownloadImageFromInternet and setting it into promotion qr image view
+        eventPromoteQRRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    Uri uri = task.getResult();
+                    new OrganizerShareQR.DownloadImageFromInternet((ImageView) findViewById(R.id.promoteQRImageView)).execute(uri.toString());
+                }
+            }
+        });
+
+        // Set click listener for the Logo
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrganizerShareQR.this, OrganizerHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        // Set click listener for the "Share Check-In QR" button
         shareCheckInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,7 +121,7 @@ public class OrganizerShareQR extends AppCompatActivity {
             }
         });
 
-        // Set click listener for share promotion button
+        // Set click listener for the "Share Promotional QR" button
         sharePromoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,7 +133,7 @@ public class OrganizerShareQR extends AppCompatActivity {
             }
         });
 
-        // Set click listener for share both button
+        // Set click listener for the "Share Both" button
         shareBothButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -117,6 +146,7 @@ public class OrganizerShareQR extends AppCompatActivity {
             }
         });
 
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,6 +163,8 @@ public class OrganizerShareQR extends AppCompatActivity {
                 }
             }
         });
+
+        // Set what happens when back button is pressed
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -150,41 +182,10 @@ public class OrganizerShareQR extends AppCompatActivity {
             }
         };
         OrganizerShareQR.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-        homeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(OrganizerShareQR.this, OrganizerHomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-
-        // Generate QR codes for event check-in and promotion
-        eventCheckInQRRef = storageRef.child("QRCodes").child("CheckIn/" + eventId + ".png");
-        eventCheckInQRRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                if (task.isSuccessful()) {
-                    Uri uri = task.getResult();
-                    new OrganizerShareQR.DownloadImageFromInternet((ImageView) findViewById(R.id.checkInQRImageView)).execute(uri.toString());
-                }
-            }
-        });
-        eventPromoteQRRef = storageRef.child("QRCodes").child("Promotion/" + eventId + ".png");
-        eventPromoteQRRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                if (task.isSuccessful()) {
-                    Uri uri = task.getResult();
-                    new OrganizerShareQR.DownloadImageFromInternet((ImageView) findViewById(R.id.promoteQRImageView)).execute(uri.toString());
-                }
-            }
-        });
     }
 
     /**
      * Combine multiple bitmaps into a single bitmap.
-     *
      * @param imageViews ImageViews containing bitmaps to be combined.
      * @return The combined bitmap.
      */
@@ -211,6 +212,11 @@ public class OrganizerShareQR extends AppCompatActivity {
         return bitmapToUri(combinedBitmap);
     }
 
+    /**
+     * This method takes a bitmap and compresses it into a png uri
+     * @param bitmap This is the bitmap that's going to be turned into a uri
+     * @return Returns a uri created by the method
+     */
     private Uri bitmapToUri(Bitmap bitmap) {
         Uri contentUri = null;
         try {
@@ -234,9 +240,8 @@ public class OrganizerShareQR extends AppCompatActivity {
     }
 
     /**
-     * Share the QR code bitmap via an intent.
-     *
-     * @param bitmap The bitmap image of the QR code to share.
+     * Share the QR code bitmap via an intent
+     * @param contentUri This is the uri that will be shared
      */
     private void shareQRCode(Uri contentUri) {
         // Create a sharing intent
@@ -248,6 +253,10 @@ public class OrganizerShareQR extends AppCompatActivity {
         // Start the chooser for sharing
         startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
     }
+
+    /**
+     * This is a method that downloads a image on the internet and sets the bitmap and uri of check-in and promotion qrs
+     */
     class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
         ImageView imageView;
 
@@ -279,6 +288,4 @@ public class OrganizerShareQR extends AppCompatActivity {
             }
         }
     }
-
-
 }

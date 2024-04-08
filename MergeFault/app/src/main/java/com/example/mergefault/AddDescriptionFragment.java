@@ -22,7 +22,7 @@ public class AddDescriptionFragment extends DialogFragment {
      */
     interface AddDescriptionDialogListener {
         /**
-         * This is the abstract method addDescription
+         * This is the abstract method add description
          * @param Description
          * This is a String Description
          */

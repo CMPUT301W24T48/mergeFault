@@ -16,7 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 /**
- * This is a fragment class for adding limit
+ * This is a fragment class for editing limit
  */
 public class EditLimitFragment extends DialogFragment {
     /**
@@ -24,11 +24,11 @@ public class EditLimitFragment extends DialogFragment {
      */
     interface EditLimitDialogListener {
         /**
-         * This is the abstract method addLimit
+         * This is the abstract method edit limit
          * @param Limit
          * This is a Integer Limit
          */
-        void addLimit(Integer Limit);
+        void editLimit(Integer Limit);
     }
     private EditLimitDialogListener listener;
 
@@ -70,7 +70,7 @@ public class EditLimitFragment extends DialogFragment {
                     public void onClick(DialogInterface dialog, int which) {
                         if (!editLimit.getText().toString().equals("")) {
                             Integer Limit = Integer.parseInt(editLimit.getText().toString());
-                            listener.addLimit(Limit);
+                            listener.editLimit(Limit);
                         } else {
                             Toast.makeText(getContext(), "Invalid Limit", Toast.LENGTH_SHORT).show();
                         }

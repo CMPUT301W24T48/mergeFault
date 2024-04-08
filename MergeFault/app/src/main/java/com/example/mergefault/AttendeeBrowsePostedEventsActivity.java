@@ -17,9 +17,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -31,6 +34,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @see AttendeeViewEventDetailsActivity
@@ -43,94 +47,46 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
     private ListView eventsList;
     private EventArrayAdapter eventArrayAdapter;
     private ImageView homeIcon;
-
     private ArrayList<Event> eventDataList;
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private CollectionReference attendeeRef;
-    private CollectionReference eventAttendeeRef;
     private FirebaseStorage firebaseStorage;
-    private StorageReference eventPosterRef;
-
-    private Date dateTime;
-    private Calendar date;
     private Event event;
-
     private Button cancelButton;
     private ImageView notificationButton;
-
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_browse_posted_events);
 
+        // Get the necessary objects from the UI
         profileImageView = findViewById(R.id.pfpImageView);
         eventsList = findViewById(R.id.myEventListView);
         homeIcon = findViewById(R.id.imageView);
         cancelButton = findViewById(R.id.cancelButton);
         notificationButton = findViewById(R.id.notifBellImageView);
+
+        // Get shared preferences from device
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
+
+        // Get instance to the firebase storage
         firebaseStorage = FirebaseStorage.getInstance();
 
-        loadProfileImage();
-
+        // Set up events array adapter and link it to the listview
         eventDataList = new ArrayList<Event>();
         eventArrayAdapter = new EventArrayAdapter(this, eventDataList);
         eventsList.setAdapter(eventArrayAdapter);
 
+        // Loads profile image
+        loadProfileImage();
 
-        eventArrayAdapter.notifyDataSetChanged();
-
-        homeIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeHomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-        notificationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeNotifications.class);
-                startActivity(intent);
-
-            }
-        });
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeHomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeHomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        };
-        AttendeeBrowsePostedEventsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-
-        eventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedEventId = eventDataList.get(position).getEventID();
-                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpActivity.class);
-                Log.d("eventId", "eventId: " + selectedEventId);
-                intent.putExtra("eventId", selectedEventId);
-                startActivity(intent);
-                finish();
-            }
-        });
+        // Set up snapshot listener to listen to changes in the event collection on firestore
         eventRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -143,59 +99,72 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
                     for (QueryDocumentSnapshot doc : value) {
                         Date currentDate = Calendar.getInstance().getTime();
                         if (currentDate.before(doc.getDate("DateTime"))) {
-                            event = new Event(null,null,null,null,null,null,null,null,null,null);
-                            event.setEventName(doc.getString("EventName"));
-                            event.setOrganizerId(doc.getString("OrganizerID"));
-                            event.setLocation(doc.getString("Location"));
-                            event.setPlaceId(doc.getString("PlaceID"));
-                            dateTime = doc.getDate("DateTime");
-                            if (doc.getString("AttendeeLimit") != null) {
-                                event.setAttendeeLimit(Integer.parseInt(doc.getString("AttendeeLimit")));
-                            } else {
-                                event.setAttendeeLimit(null);
-                            }
-                            if (doc.getString("EventPoster") != null) {
-                                event.setEventPoster(Uri.parse(doc.getString("EventPoster")));
-                            } else {
-                                event.setEventPoster(null);
-                            }
-                            event.setDescription(doc.getString("Description"));
-                            event.setGeoLocOn(doc.getBoolean("GeoLocOn"));
-                            event.setEventID(doc.getId());
-
-                            Log.d("Firestore", String.format("Event(%s, $s) fetched", event.getEventName(), event.getOrganizerId()));
-
-                            date = Calendar.getInstance();
-                            date.setTime(dateTime);
-                            eventDataList.add(new Event(event.getEventName(), event.getOrganizerId(), event.getLocation(), date, event.getAttendeeLimit(), event.getEventPoster(), event.getDescription(), event.getGeoLocOn(), event.getEventID(), event.getPlaceId()));
+                            event = getEventFromDoc(doc);
+                            eventDataList.add(event);
                         } else {
-                            eventAttendeeRef = eventRef.document(doc.getId()).collection("attendees");
-                            eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                    if (task.isSuccessful()) {
-                                        for (QueryDocumentSnapshot document : task.getResult()) {
-                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete();
-                                        }
-                                        eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
-                                        eventPosterRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                eventRef.document(doc.getId()).delete();
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                            eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
-                            eventPosterRef.delete();
+                            deleteEventAndAssociation(doc, db , firebaseStorage);
                         }
                     }
                     eventArrayAdapter.notifyDataSetChanged();
                 }
             }
         });
-        // makes it so that when the image icon is clicked we go to the edit/view profile screen
+
+        // Set click listener for Logo
+        homeIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        // Set click listener for the notification icon
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeNotifications.class);
+                startActivity(intent);
+
+            }
+        });
+
+        // Set click listener for the "Cancel" button
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        // Set what happens when back button is pressed
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeHomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        AttendeeBrowsePostedEventsActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
+        // Set click listener for the event list
+        eventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String selectedEventId = eventDataList.get(position).getEventID();
+                Intent intent = new Intent(AttendeeBrowsePostedEventsActivity.this, AttendeeSignUpActivity.class);
+                Log.d("eventId", "eventId: " + selectedEventId);
+                intent.putExtra("eventId", selectedEventId);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        // Set click listener for the profile icon
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -205,9 +174,9 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
         });
     }
 
-    // loads the profile image from the saved user profile.
-    // imageuri references the link or source of where the image originates from such as it could originate from the device or the api call. However it is treated as empty if there is the generic pfp image there.
-    // picasso is an external api that helps cache in images and load them to the imageview works on urls as well as internal images
+    /**
+     * loads the profile image from the saved user profile
+     */
     private void loadProfileImage() {
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -222,6 +191,92 @@ public class AttendeeBrowsePostedEventsActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * This method takes a document snapshot and creates and returns a new event from data gathered in firebase
+     * @param doc This is the document snapshot of the event from firestore
+     * @return Returns an event that is created from firebase data
+     */
+    private Event getEventFromDoc (DocumentSnapshot doc) {
+        Event event = new Event();
+        event.setEventName(doc.getString("EventName"));
+        event.setOrganizerId(doc.getString("OrganizerID"));
+        event.setLocation(doc.getString("Location"));
+        event.setPlaceId(doc.getString("PlaceID"));
+        Date dateTime = doc.getDate("DateTime");
+        if (doc.getString("AttendeeLimit") != null) {
+            event.setAttendeeLimit(Integer.parseInt(doc.getString("AttendeeLimit")));
+        } else {
+            event.setAttendeeLimit(null);
+        }
+        if (doc.getString("EventPoster") != null) {
+            event.setEventPoster(Uri.parse(doc.getString("EventPoster")));
+        } else {
+            event.setEventPoster(null);
+        }
+        event.setDescription(doc.getString("Description"));
+        event.setGeoLocOn(doc.getBoolean("GeoLocOn"));
+        event.setEventID(doc.getId());
+
+        Calendar date = Calendar.getInstance();
+        date.setTime(dateTime);
+        event.setDateTime(date);
+
+        return event;
+    }
+
+    /**
+     * This method takes a document snapshot, a instance of firestore and an instance of storage to delete all associated data with the event like attendee sub-collections and event poster
+     * @param doc This is the document snapshot of the event from firestore
+     * @param db This is an the instance of the firebase firestore
+     * @param firebaseStorage This is an instance of the firebase storage
+     */
+    private void deleteEventAndAssociation (DocumentSnapshot doc, FirebaseFirestore db, FirebaseStorage firebaseStorage) {
+        CollectionReference eventRef = db.collection("events");
+        CollectionReference attendeeRef = db.collection("attendees");
+        CollectionReference eventAttendeeRef = eventRef.document(doc.getId()).collection("attendees");
+        eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete();
+                    }
+                    StorageReference eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                    eventPosterRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            eventRef.document(doc.getId()).delete();
+                        }
+                    });
+                }
+            }
+        });
+        attendeeRef.whereArrayContains("signedInEvents", doc.getId()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot querySnapshot) {
+                if (!querySnapshot.isEmpty()) {
+                    List<DocumentSnapshot> attendeesThatSignedUp =  querySnapshot.getDocuments();
+                    for (int i = 0; i < attendeesThatSignedUp.size(); i++) {
+                        DocumentSnapshot attendee = attendeesThatSignedUp.get(i);
+                        attendeeRef.document(attendee.getId()).update("signedInEvents", FieldValue.arrayRemove(doc.getId()));
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * This method handles what happens after a activity result is made
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode The integer result code returned by the child activity
+     *                   through its setResult().
+     * @param data An Intent, which can return result data to the caller
+     *               (various data can be attached to Intent "extras").
+     *
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

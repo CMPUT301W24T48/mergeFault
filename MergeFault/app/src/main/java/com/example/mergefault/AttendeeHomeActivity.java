@@ -9,8 +9,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,42 +31,38 @@ import java.util.Objects;
  * Attendees can view their profile image, view their events, and browse all events from this screen.
  */
 public class AttendeeHomeActivity extends AppCompatActivity {
-
     private ImageView profileImageView;
     private ImageView homeIcon;
-
     private Button viewMyEvents;
     private Button browseAllEvents;
     private Button openCamera;
     private SharedPreferences sharedPreferences;
-
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
     private Boolean hasProfile = false;
-    ActivityResultLauncher<Intent> profileEditLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            (result) -> {
-
-            }
-    );
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_home);
 
+        // Get the necessary objects from the UI
         viewMyEvents = findViewById(R.id.viewMyEventsButton);
         browseAllEvents = findViewById(R.id.browseEventsButton);
         homeIcon = findViewById(R.id.imageView);
         openCamera = findViewById(R.id.openCamera);
         profileImageView = findViewById(R.id.profileImageView);
 
+        // Get shared preferences from device
+        sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
+
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
         attendeeRef = db.collection("attendees");
 
-        // Start recording user information
-        sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
+        // Loads profile image
+        loadProfileImage();
 
+        // Clears the shared preferences if theres no profile on the firebase
         if (sharedPreferences.getString("attendeeId", null) != null) {
             Log.d("Shared preferences", "containts id");
             attendeeRef.document(sharedPreferences.getString("attendeeId", null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -88,11 +82,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             });
         }
 
-        // Load the profile image at the top of the screen
-
-        loadProfileImage();
-
-        // Set click listener for the profile image to navigate to the edit/view profile screen
+        // Set click listener for the profile icon
         profileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,6 +118,8 @@ public class AttendeeHomeActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Set click listener for the Logo
         homeIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -136,6 +128,8 @@ public class AttendeeHomeActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        // Set click listener for the "Scan QR" button
         openCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,8 +145,7 @@ public class AttendeeHomeActivity extends AppCompatActivity {
     }
 
     /**
-     * Checks Database if the attendee profile is saved
-     * if it exists it loads the profile image
+     * loads the profile image from the saved user profile
      */
     private void loadProfileImage() {
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -168,9 +161,17 @@ public class AttendeeHomeActivity extends AppCompatActivity {
             }
         });
     }
+
     /**
-     * Handles the result when returning from another activity.
-     * If changes were made to the profile image, reload it.
+     * This method handles what happens after a activity result is made
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode The integer result code returned by the child activity
+     *                   through its setResult().
+     * @param data An Intent, which can return result data to the caller
+     *               (various data can be attached to Intent "extras").
+     *
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
