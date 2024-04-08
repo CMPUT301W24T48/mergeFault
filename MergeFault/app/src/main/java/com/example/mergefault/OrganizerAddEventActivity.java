@@ -451,10 +451,6 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             }
         });
     }
-    /**
-     * Subscribes the organizer to the topic associated with the event ID followed by "_organizer".
-     * This method subscribes the organizer to receive notifications related to the event.
-     */
     public void SubscribeOrganizer(){
         Log.d("OrganizerSubscribe","Successfully subscribed to topic: ");
         String topic = eventId + "_organizer";
