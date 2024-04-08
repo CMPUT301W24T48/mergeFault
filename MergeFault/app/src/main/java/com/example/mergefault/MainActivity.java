@@ -1,5 +1,4 @@
 package com.example.mergefault;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,11 +7,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.libraries.places.api.Places;
+import java.util.Objects;
 
 /**
  * Start of the flow of the app
@@ -73,8 +71,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Start AdminHomeActivity when adminButton is clicked
-                Intent intent = new Intent(MainActivity.this, AdminHomeActivity.class);
-                startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, QRCodeScannerActivity.class);
+                intent.putExtra("parentActivity", "Main");
+                startActivityForResult(intent,1);
             }
         });
     }
@@ -84,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             String adminKey = data.getStringExtra("AdminKey");
             //key right now is "Admin"
-            /*
             if (Objects.equals(adminKey, "Admin")) {
                 Toast.makeText(getApplicationContext(), "Key accepted", Toast.LENGTH_SHORT);
                 Intent intent = new Intent(MainActivity.this, AdminHomeActivity.class);
@@ -96,8 +94,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             }
-
-             */
         } else {
             Toast.makeText(getApplicationContext(),"Scan failed", Toast.LENGTH_SHORT);
             Intent intent = new Intent(MainActivity.this, MainActivity.class);
@@ -105,14 +101,4 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
     }
-
-    /*
-
-    // Method to validate the deep link
-    private boolean isDeepLinkValid(Uri data) {
-        // Check if the deep link host and scheme match your criteria
-        return "www.lotuseventsadminpermission.com".equals(data.getHost()) && "myapp".equals(data.getScheme());
-    }
-
-     */
 }

@@ -151,10 +151,15 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                for (QueryDocumentSnapshot doc : value) {
-                    if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
-                        if (doc.getString("AttendeeProfile") != null) {
-                            Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+                if (value != null){
+                    for (QueryDocumentSnapshot doc : value) {
+                        if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
+                            if (doc.getString("AttendeeProfile") != null) {
+                                Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+                            } else {
+                                Log.d("no imageurl", "clear");
+                                sharedPreferences.edit().putString("imageUri", null).apply();
+                            }
                         }
                     }
                 }
