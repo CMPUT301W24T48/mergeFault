@@ -23,7 +23,7 @@ public class AddLimitFragment extends DialogFragment {
      */
     interface AddLimitDialogListener {
         /**
-         * This is the abstract method addLimit
+         * This is the abstract method add limit
          * @param Limit
          * This is a Integer Limit
          */

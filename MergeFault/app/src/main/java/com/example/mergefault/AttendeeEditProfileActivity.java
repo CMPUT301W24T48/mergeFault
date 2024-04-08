@@ -43,7 +43,6 @@ import java.util.HashMap;
  * They can edit their name, email, phone number, and profile picture.
  */
 public class AttendeeEditProfileActivity extends AppCompatActivity {
-
     private ImageView imageViewProfile;
     private TextView textEditImage;
     private EditText editTextName;
@@ -64,18 +63,16 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     private Boolean geoLocChecked;
     private Boolean notifChecked;
     private String attendeeId;
-
     private ImageView notificationButton;
-
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
-    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE=99;
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 99;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.attendee_edit_profile);
-        db = FirebaseFirestore.getInstance();
-        attendeesRef = db.collection("attendees");
 
+        // Get the necessary objects from the UI
         imageViewProfile = findViewById(R.id.imageView);
         textEditImage = findViewById(R.id.editProfilePictureButton);
         editTextName = findViewById(R.id.editAttendeeName);
@@ -87,12 +84,20 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         geoLocSwitch = findViewById(R.id.geolocationTrackSwitch);
         notifSwitch = findViewById(R.id.notifSwitch);
         notificationButton = findViewById(R.id.notifBellImageView);
+        geoLocSwitch = findViewById(R.id.geolocationTrackSwitch);
+        notifSwitch = findViewById(R.id.notifSwitch);
 
+        // Get shared preferences from device
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
 
-        // Load profile data when activity is created
+        // Get instance and reference to the firebase firestore
+        db = FirebaseFirestore.getInstance();
+        attendeesRef = db.collection("attendees");
+
+        // Loads profile image
         loadProfileData();
 
+        // Set click listener for the notification icon
         notificationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,6 +107,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             }
         });
 
+        // Set click listener for the Logo
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,6 +115,8 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        // Set what happens when the back button is pressed
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -117,13 +125,13 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(getApplicationContext(), "Did not enter all required info, Profile not saved", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_CANCELED);
-                    switchActivities();
+                    finish();
                 }
             }
         };
         AttendeeEditProfileActivity.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 
-        // Set click listener for cancel button
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -132,19 +140,21 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(getApplicationContext(), "Did not enter all required info, Profile not saved", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_CANCELED);
-                    switchActivities();
+                    finish();
                 }
 
             }
         });
-        // Set click listener for editing profile picture
+
+        // Set click listener for the "Edit Profile Picture" button
         textEditImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startPickingImage.launch("image/*");
             }
         });
-        // Set click listener for delete image button
+
+        // Set click listener for the delete icon
         deleteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -152,7 +162,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             }
         });
 
-        geoLocSwitch = findViewById(R.id.geolocationTrackSwitch);
+        // Set click listener for the "Geolocation Tracking" switch
         geoLocSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 requestLocationPermission();
@@ -162,7 +172,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             }
         });
 
-        notifSwitch = findViewById(R.id.notifSwitch);
+        // Set click listener for the "Notification Preference" button
         notifSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 requestNotificationPermission();
@@ -172,13 +182,10 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, "No permission please manage in settings", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
-
-
     /**
-     * Deletes the profile picture.
+     * This method deletes the attendees profile picture
      */
     private void deleteProfilePicture() {
         //imageViewProfile.setImageResource(R.id.d);
@@ -188,6 +195,9 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * This method asks the attendee for location permission
+     */
     private void requestLocationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -198,6 +208,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
             }
         }
     }
+
     /**
      * Request notification permission if the attendee enables notifications.
      */
@@ -213,11 +224,14 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * Handle permission request results.
+     * This method is used to handle permission request result
      *
-     * @param requestCode  The request code passed to requestPermissions().
-     * @param permissions  The requested permissions.
-     * @param grantResults The grant results for the corresponding permissions.
+     * @param requestCode  The request code passed in {@link #requestPermissions(
+     *android.app.Activity, String[], int)}
+     * @param permissions  The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *                     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *                     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -241,8 +255,9 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         }
     }
 
-
-
+    /**
+     * This method opens the Autocomplete activity and calls addAddress with the selected placeName and placeId
+     */
     private final ActivityResultLauncher<String> startPickingImage = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             new ActivityResultCallback<Uri>() {
@@ -257,10 +272,9 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     );
 
     /**
-     * Loads profile data from SharedPreferences.
+     * this method loads profile data from SharedPreferences.
      */
     private void loadProfileData() {
-
         name = sharedPreferences.getString("name", null);
         email = sharedPreferences.getString("email", null);
         String imageUriString = sharedPreferences.getString("imageUri", null);
@@ -289,7 +303,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * Saves the profile.
+     * this method saves the profile the attendee made onto firebase.
      */
     private void saveProfile() {
         String url = "https://api.dicebear.com/5.x/pixel-art/png?seed=";
@@ -329,8 +343,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                     }
                 }
             });
-        }
-        else {
+        } else {
             HashMap<String, Object> data = new HashMap<>();
             data.put("AttendeeProfile", imageUri);
             data.put("AttendeeName", name);
@@ -342,7 +355,7 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(DocumentReference documentReference) {
                     attendeeId = documentReference.getId();
-                    saveProfileData(getApplicationContext(), name, email, imageUri, phonenumber, geoLocChecked, notifChecked,attendeeId);
+                    saveProfileData(getApplicationContext(), name, email, imageUri, phonenumber, geoLocChecked, notifChecked, attendeeId);
                 }
             });
         }
@@ -350,16 +363,14 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * Saves profile data to SharedPreferences.
-     *
-     * @param context
-     * @param name
-     * @param email
-     * @param imageUri
-     * @param phonenum
-     * @param geoLocChecked
-     * @param notifSwitchChecked
-     * @param attendeeId
+     * @param context            This is the context of the activity
+     * @param name               This is the name of the attendee
+     * @param email              This is the email of the attendee
+     * @param imageUri           This is the imageUri of the attendee
+     * @param phonenum           This is the phonenum of the attendee
+     * @param geoLocChecked      This is the geoLocChecked of the attendee
+     * @param notifSwitchChecked This is the notifSwitchChecked of the attendee
+     * @param attendeeId         This is the attendeeId of the attendee
      */
     private void saveProfileData(Context context, String name, String email, Uri imageUri, String phonenum, Boolean geoLocChecked, Boolean notifSwitchChecked, String attendeeId) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -374,10 +385,6 @@ public class AttendeeEditProfileActivity extends AppCompatActivity {
         editor.apply();
         Toast.makeText(context, "Profile saved successfully", Toast.LENGTH_SHORT).show();
         setResult(RESULT_OK);
-        switchActivities();
-    }
-
-    private void switchActivities(){
         finish();
     }
 }
