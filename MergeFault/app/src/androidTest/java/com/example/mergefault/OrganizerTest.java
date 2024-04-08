@@ -1,30 +1,38 @@
 package com.example.mergefault;
 
-import static androidx.test.espresso.Espresso.closeSoftKeyboard;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.Intents.intending;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import android.location.Location;
+import android.app.Activity;
+import android.app.Instrumentation;
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.action.ViewActions;
+import androidx.test.espresso.intent.Intents;
+import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.AggregateQuery;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
+import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,23 +45,48 @@ import java.util.Map;
 public class OrganizerTest {
     FirebaseFirestore db;
     CollectionReference snapshot;
-    /*
-    @Rule
-    public ActivityScenarioRule<OrganizerHomeActivity> activityScenarioRule = new ActivityScenarioRule<>(OrganizerHomeActivity.class);
-    */
+
     @Rule
     public ActivityScenarioRule<MainActivity> activityScenarioRule = new ActivityScenarioRule<>(MainActivity.class);
+    public IntentsTestRule<MainActivity> intentsTestRule = new IntentsTestRule<>(MainActivity.class);
+
     @Test
     public void testCreateEventActivity(){
         db = FirebaseFirestore.getInstance();
+        // Clicks "ORGANIZER" button
         onView(withId(R.id.organizerButton)).perform(click());
+        onView(withId(R.id.organizerHome)).check(matches(isDisplayed()));
+
+        // Clicks "Create new event" button
         onView(withId(R.id.createNewEventButton)).perform(click());
+        onView(withId(R.id.organizerAddEventDetails)).check(matches(isDisplayed()));
+
+        Resources resources = InstrumentationRegistry.getTargetContext().getResources();
+        Uri imageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(R.mipmap.ic_launcher) + '/' +
+                resources.getResourceTypeName(R.mipmap.ic_launcher) + '/' +
+                resources.getResourceEntryName(R.mipmap.ic_launcher));
+
+        Intent galleryResultData = new Intent();
+        galleryResultData.setData(imageUri);
+        Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(
+                Activity.RESULT_OK, galleryResultData);
+
+        Matcher<Intent> expectedIntent = hasAction(MediaStore.ACTION_PICK_IMAGES);
+        Intents.init();
+        intending(expectedIntent).respondWith(result);
+
+        onView(withId(R.id.eventPosterImageView)).perform(click());
+        intended(expectedIntent);
+        Intents.release();
+
         onView(withId(R.id.locationSetButton)).perform(click());
-        onView(withId(R.id.editTextBox)).perform(typeText("some Location"));
-        onView(withText("Add")).perform(click());
+        onView(withHint("Search a place")).perform(typeText("CCIS"));
+        onView(withText("CCIS")).perform(click());
+        //onView(withText("CCIS University of, Edmonton, AB, Canada")).perform(click());
+
         onView(withId(R.id.datSetButton)).perform(click());
-        onView(withText("OK")).perform(click());
-        onView(withId(R.id.timeSetButton)).perform(click());
+        //onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2000, 6, 0));
+        // onView(withId(R.id.timeSetButton)).perform(click());
         onView(withText("OK")).perform(click());
         onView(withId(R.id.attendeeLimitSetButton)).perform(click());
         onView(withId(R.id.editNumberText)).perform(typeText("20"));
@@ -63,8 +96,6 @@ public class OrganizerTest {
         onView(withText("Add")).perform(click());
         onView(withId(R.id.switch1)).perform(click());
         onView(withId(R.id.eventNameEditText)).perform(typeText("TestEvent"), ViewActions.closeSoftKeyboard());
-        //onView(withId(R.id.createEventButton)).perform(click());
-        //onView(withId(R.id.generateNewButton)).perform(click());
     }
 
 

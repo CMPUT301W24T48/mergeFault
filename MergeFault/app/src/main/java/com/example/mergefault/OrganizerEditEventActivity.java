@@ -18,8 +18,8 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -188,7 +188,9 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
         eventPosterImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startPickingImage.launch("image/*");
+                pickMedia.launch(new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                        .build());
             }
         });
 
@@ -327,6 +329,19 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
     /**
      * This method opens the image picker and stores the imageUri into selected Image as well as sets the eventPosterImageView to the selected image
      */
+    ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+                // Callback is invoked after the user selects a media item or closes the
+                // photo picker.
+                if (uri != null) {
+                    Log.d("PhotoPicker", "Selected URI: " + uri);
+                    selectedImage = uri;
+                    eventPosterImageView.setImageURI(selectedImage);
+                } else {
+                    Log.d("PhotoPicker", "No media selected");
+                }
+            });
+    /*
     private final ActivityResultLauncher<String> startPickingImage = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             new ActivityResultCallback<Uri>() {
@@ -339,6 +354,8 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                 }
             }
     );
+
+     */
     /**
      * This opens when the TimePickerFragment sets a time, then it saves the time in dateTime and sets the time textview to the new set time
      * @param view the view associated with this listener

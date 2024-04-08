@@ -14,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.libraries.places.api.Places;
 
+import java.util.Objects;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button attendeeButton;
@@ -70,8 +72,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Start AdminHomeActivity when adminButton is clicked
-                Intent intent = new Intent(MainActivity.this, AdminHomeActivity.class);
-                startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, QRCodeScannerActivity.class);
+                intent.putExtra("parentActivity", "Main");
+                startActivityForResult(intent,1);
             }
         });
     }
@@ -81,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             String adminKey = data.getStringExtra("AdminKey");
             //key right now is "Admin"
-            /*
             if (Objects.equals(adminKey, "Admin")) {
                 Toast.makeText(getApplicationContext(), "Key accepted", Toast.LENGTH_SHORT);
                 Intent intent = new Intent(MainActivity.this, AdminHomeActivity.class);
@@ -93,8 +95,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             }
-
-             */
         } else {
             Toast.makeText(getApplicationContext(),"Scan failed", Toast.LENGTH_SHORT);
             Intent intent = new Intent(MainActivity.this, MainActivity.class);
@@ -102,14 +102,4 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
     }
-
-    /*
-
-    // Method to validate the deep link
-    private boolean isDeepLinkValid(Uri data) {
-        // Check if the deep link host and scheme match your criteria
-        return "www.lotuseventsadminpermission.com".equals(data.getHost()) && "myapp".equals(data.getScheme());
-    }
-
-     */
 }

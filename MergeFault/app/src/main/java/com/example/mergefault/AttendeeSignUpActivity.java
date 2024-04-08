@@ -19,6 +19,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.AggregateQuery;
+import com.google.firebase.firestore.AggregateQuerySnapshot;
+import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -31,11 +34,13 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
-import java.util.Calendar;
-import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -71,6 +76,7 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private ImageView notificationButton;
     private String eventName;
+    private Integer limit;
     /**
      * @see AttendeeBrowsePostedEventsActivity
      * this Activity displays event details and a button that signs up attendees to the event
@@ -123,6 +129,11 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                             eventName = doc.getString("EventName");
                             location.setText(doc.getString("Location"));
                             description.setText(doc.getString("Description"));
+                            if (doc.getString("AttendeeLimit") != null) {
+                                limit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                            } else {
+                                limit = null;
+                            }
                             time.setText(doc.getDate("DateTime").toString());
                             if (doc.getString("EventPoster") != null) {
                                 Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
@@ -222,19 +233,51 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     DocumentSnapshot doc = task.getResult();
                     if (!doc.exists()) {
-                        HashMap<String, Object> data = new HashMap<>();
-                        data.put("CheckedIn", false);
-                        data.put("CheckedInCount", 0);
-                        attendeeRef.document(sharedPreferences.getString("attendeeId", null)).update("signedInEvents", FieldValue.arrayUnion(eventId)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        AggregateQuery countQuery = eventAttendeeRef.count();
+                        countQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
                             @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).update(data).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
-                                        switchActivities();
+                            public void onComplete(@NonNull Task<AggregateQuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    AggregateQuerySnapshot snapshot = task.getResult();
+                                    if (limit!=null) {
+                                        if (snapshot.getCount() <= limit) {
+                                            HashMap<String, Object> data = new HashMap<>();
+                                            data.put("CheckedIn", false);
+                                            data.put("CheckedInCount", 0);
+                                            attendeeRef.document(sharedPreferences.getString("attendeeId", null)).update("signedInEvents", FieldValue.arrayUnion(eventId)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).update(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
+                                                            switchActivities();
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        } else {
+                                            Toast.makeText(getApplicationContext(), "Reached Attendee Limit!", Toast.LENGTH_SHORT).show();
+                                            switchActivities();
+                                        }
+                                    } else {
+                                        HashMap<String, Object> data = new HashMap<>();
+                                        data.put("CheckedIn", false);
+                                        data.put("CheckedInCount", 0);
+                                        attendeeRef.document(sharedPreferences.getString("attendeeId", null)).update("signedInEvents", FieldValue.arrayUnion(eventId)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).update(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
+                                                        switchActivities();
+                                                    }
+                                                });
+                                            }
+                                        });
                                     }
-                                });
+                                }
                             }
                         });
                     } else {
@@ -326,6 +369,8 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                     if (doc.getId().equals(sharedPreferences.getString("attendeeId", null))) {
                         if (doc.getString("AttendeeProfile") != null) {
                             Picasso.get().load(doc.getString("AttendeeProfile")).into(profileImageView);
+                        } else {
+                            sharedPreferences.edit().putString("imageUri", null).apply();
                         }
                     }
                 }
