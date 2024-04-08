@@ -32,51 +32,79 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class contains Espresso tests for the AttendeeHomeActivity.
+ */
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class AttendeeTest {
+    /**
+     * Firebase Firestore instance for database operations.
+     */
     FirebaseFirestore db;
+    /**
+     * SharedPreferences for storing user profile data.
+     */
     private SharedPreferences sharedPreferences;
 
+    /**
+     * Rule to launch AttendeeHomeActivity for each test case.
+     */
     @Rule
     public ActivityScenarioRule<AttendeeHomeActivity> activityScenarioRule = new ActivityScenarioRule<>(AttendeeHomeActivity.class);
 
+    /**
+     * Setup method to initialize necessary resources before each test case.
+     */
     @Before
     public void setUp() {
         Context context = ApplicationProvider.getApplicationContext();
         sharedPreferences = context.getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
     }
 
+    /**
+     * Teardown method to clean up after each test case.
+     */
     @After
     public void tearDown() {
         // Clean up shared preferences after each test
         sharedPreferences.edit().clear().apply();
     }
 
+    /**
+     * Test method to verify the behavior of clicking on the profile image.
+     */
     @Test
     public void testProfileImageClick() {
         onView(withId(R.id.profileImageView)).perform(click());
         onView(withId(R.id.editProfilePictureButton)).check(matches(ViewMatchers.isDisplayed()));
     }
 
+    /**
+     * Test method to verify the behavior of clicking on "My Events" button.
+     */
     @Test
     public void testMyEventsClick() {
         onView(withId(R.id.viewMyEventsButton)).perform(click());
         onView(withId(R.id.myEventListView)).perform(click());
-        // Add assertions to verify the behavior after clicking "My Events"
         onView(withId(R.id.myEventListView)).check(matches(ViewMatchers.isDisplayed()));
     }
 
 
+    /**
+     * Test method to verify the behavior of clicking on "Browse Posted Events" button.
+     */
     @Test
     public void testBrowsePostedEventsClick() {
         onView(withId(R.id.browseEventsButton)).perform(click());
         onView(withId(R.id.myEventListView)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
         onView(withId(R.id.myEventListView)).check(matches(ViewMatchers.isDisplayed()));
-        // Add assertions to verify the behavior after clicking "Browse Posted Events"
-        // For example, you can check if specific items are displayed in the list view
+
     }
 
+    /**
+     * Test method to verify the behavior of switching activities from profile to events view.
+     */
     @Test
     public void profileActivitySwitchCheck() {
         onView(withId(R.id.profileImageView)).perform(click());
@@ -84,6 +112,9 @@ public class AttendeeTest {
         onView(withId(R.id.viewMyEventsButton)).check(matches(ViewMatchers.isDisplayed()));
     }
 
+    /**
+     * Test method to add a test user to Firestore.
+     */
     @Test
     public void addTestUser(){
         db = FirebaseFirestore.getInstance();
@@ -102,6 +133,9 @@ public class AttendeeTest {
         });
     }
 
+    /**
+     * Test method to delete a test user from Firestore.
+     */
     @Test
     public void deleteTestUser(){
         db = FirebaseFirestore.getInstance();
@@ -114,6 +148,9 @@ public class AttendeeTest {
         });
     }
 
+    /**
+     * Test method to verify saving of profile data in SharedPreferences.
+     */
     public void testSaveProfileData() {
         String name = "User";
         String email = "user@example.com";
