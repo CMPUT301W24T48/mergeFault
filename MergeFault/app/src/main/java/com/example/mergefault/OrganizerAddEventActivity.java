@@ -88,6 +88,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
     private FirebaseStorage firebaseStorage;
     private StorageReference storageRef;
     private PlacesClient placesClient;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -164,7 +165,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             public void onClick(View v) {
                 // Start the date picker activity
                 DialogFragment datepicker = new DatePickerFragment();
-                datepicker.show(getSupportFragmentManager(),"Date Picker");
+                datepicker.show(getSupportFragmentManager(), "Date Picker");
             }
         });
 
@@ -178,7 +179,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             public void onClick(View v) {
                 // Start the time picker activity
                 DialogFragment timepicker = new TimePickerFragment();
-                timepicker.show(getSupportFragmentManager(),"Time Picker");
+                timepicker.show(getSupportFragmentManager(), "Time Picker");
             }
         });
 
@@ -209,7 +210,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                 if (location != null && day != null && time != null && !eventName.equals("") && selectedImage != null && description != null) {
                     if (currentTime.before(dateTime.getTime())) {
                         eventName = eventNameEditText.getText().toString();
-                        addEvent(new Event(eventName, organizerId, location,dateTime,attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(),eventId, placeId));
+                        addEvent(new Event(eventName, organizerId, location, dateTime, attendeeLimit, selectedImage, description, geoLocSwitch.isChecked(), eventId, placeId));
                     } else {
                         Toast.makeText(getApplicationContext(), "Selected time has passed", Toast.LENGTH_SHORT).show();
                     }
@@ -240,19 +241,6 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
             }
         });
     }
-    /**
-     * This function switches activity to the next one which is OrganizerNewOrReuseQR and passes the eventId through intent
-     * @param eventId
-     * This is the event id given by a randomly generated firestore id
-     */
-    public void switchActivities(String eventId, Uri selectedImage){
-        SubscribeOrganizer();
-        getApplicationContext().grantUriPermission(getPackageName(), selectedImage, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class).setData(selectedImage).setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.putExtra("EventId", eventId);
-        startActivity(intent);
-        finish();
-    }
 
     /**
      * This method opens the Autocomplete activity and calls addAddress with the selected placeName and placeId
@@ -264,7 +252,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                     Intent intent = result.getData();
                     if (intent != null) {
                         Place place = Autocomplete.getPlaceFromIntent(intent);
-                        addAddress(place.getName(),place.getId());
+                        addAddress(place.getName(), place.getId());
                         Log.d("places", "Place: " + place.getName() + place.getId());
                     }
                 } else if (result.getResultCode() == Activity.RESULT_CANCELED) {
@@ -288,11 +276,13 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
                 }
             }
     );
+
     /**
      * This opens when the TimePickerFragment sets a time, then it saves the time in dateTime and sets the time textview to the new set time
-     * @param view the view associated with this listener
+     *
+     * @param view      the view associated with this listener
      * @param hourOfDay the hour that was set
-     * @param minute the minute that was set
+     * @param minute    the minute that was set
      */
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -306,10 +296,11 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
 
     /**
      * This opens when the DatePickerFragment sets a date, then it saves the date in dateTime and sets the date textview to the new set date
-     * @param view the picker associated with the dialog
-     * @param year the selected year
-     * @param month the selected month (0-11 for compatibility with
-     *              {@link Calendar#MONTH})
+     *
+     * @param view       the picker associated with the dialog
+     * @param year       the selected year
+     * @param month      the selected month (0-11 for compatibility with
+     *                   {@link Calendar#MONTH})
      * @param dayOfMonth the selected day of the month (1-31, depending on
      *                   month)
      */
@@ -325,10 +316,9 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
 
     /**
      * This method adds an String address to the corresponding textview and also saves it to location and placeId
-     * @param address
-     * This is the String given by the organizer through a textview
-     * @param selectedPlaceId
-     * This is the String of the placeId given by google places
+     *
+     * @param address         This is the String given by the organizer through a textview
+     * @param selectedPlaceId This is the String of the placeId given by google places
      */
     public void addAddress(String address, String selectedPlaceId) {
         addressText.setText("Address: " + address);
@@ -338,8 +328,8 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
 
     /**
      * This method adds an Integer limit to the corresponding textview and also saves it to attendeeLimit
-     * @param limit
-     * This is the Integer given by the organizer through a textview
+     *
+     * @param limit This is the Integer given by the organizer through a textview
      */
     @Override
     public void addLimit(Integer limit) {
@@ -349,8 +339,8 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
 
     /**
      * This method adds an String description to the corresponding textview and also saves it to description
-     * @param description
-     * This is the String given by the organizer through a textview
+     *
+     * @param description This is the String given by the organizer through a textview
      */
     @Override
     public void addDescription(String description) {
@@ -360,12 +350,12 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
 
     /**
      * This method adds an event on to the firebase
-     * @param event
-     * This is the event given by the on click listener for the create button
+     *
+     * @param event This is the event given by the on click listener for the create button
      */
-    public void addEvent(Event event){
+    public void addEvent(Event event) {
         HashMap<String, Object> data = new HashMap<>();
-        Log.d("eventPoster", "eventPoster: "+ event.getEventPoster());
+        Log.d("eventPoster", "eventPoster: " + event.getEventPoster());
 
         data.put("Location", event.getLocation());
         data.put("PlaceID", event.getPlaceId());
@@ -377,7 +367,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
         }
         data.put("EventName", event.getEventName());
         data.put("Description", event.getDescription());
-        data.put("GeoLocOn",event.getGeoLocOn());
+        data.put("GeoLocOn", event.getGeoLocOn());
         data.put("OrganizerID", event.getOrganizerId());
         data.put("EventPoster", tempEventPoster);
 
@@ -408,14 +398,13 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
 
     /**
      * This method gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.png) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
-     * @param event
-     * This is the event passed by the addEvent method
-     * @param documentReference
-     * This is the documentReference to event on the firebase
+     *
+     * @param event             This is the event passed by the addEvent method
+     * @param documentReference This is the documentReference to event on the firebase
      */
-    public void getDownloadUrl(Event event, DocumentReference documentReference){
-        StorageReference eventPosterRef = storageRef.child( "eventPosters/" + event.getEventID() + ".jpg");
-        Log.d("eventPoster", "eventPoster: "+ event.getEventPoster());
+    public void getDownloadUrl(Event event, DocumentReference documentReference) {
+        StorageReference eventPosterRef = storageRef.child("eventPosters/" + event.getEventID() + ".jpg");
+        Log.d("eventPoster", "eventPoster: " + event.getEventPoster());
         UploadTask uploadTask = eventPosterRef.putFile(event.getEventPoster());
 
         Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
@@ -448,36 +437,35 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
 
     /**
      * This method switches activity to the next one which is OrganizerNewOrReuseQR and passes the eventId through intent
-     * @param eventId
-     * This is the event id given by a randomly generated firestore id
+     *
+     * @param eventId This is the event id given by a randomly generated firestore id
      */
-    public void switchActivities(String eventId, Uri selectedImage){
+    public void switchActivities(String eventId, Uri selectedImage) {
         getApplicationContext().grantUriPermission(getPackageName(), selectedImage, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class).setData(selectedImage).setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra("EventId", eventId);
         startActivity(intent);
         finish();
     }
-    public void SubscribeOrganizer(){
-        Log.d("OrganizerSubscribe","Successfully subscribed to topic: ");
-        String topic = eventId + "_organizer";
-        FirebaseMessaging.getInstance().subscribeToTopic(topic)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            // Subscription successful
-                            Log.d("OrganizerSubscribe","Successfully subscribed to topic: " + topic);
-                        } else {
-                            // Subscription failed
-                            Log.d("OrganizerSubscribe","Failed to subscribe to topic: " + topic);
-                            Exception e = task.getException();
-                            if (e != null) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                });
 
+    public void SubscribeOrganizer() {
+        Log.d("OrganizerSubscribe", "Successfully subscribed to topic: ");
+        String topic = eventId + "_organizer";
+        FirebaseMessaging.getInstance().subscribeToTopic(topic).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Subscription successful
+                    Log.d("OrganizerSubscribe", "Successfully subscribed to topic: " + topic);
+                } else {
+                    // Subscription failed
+                    Log.d("OrganizerSubscribe", "Failed to subscribe to topic: " + topic);
+                    Exception e = task.getException();
+                    if (e != null) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 }
