@@ -27,6 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Transaction;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -221,30 +222,28 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot doc = task.getResult();
-                    if (!doc.exists()) {
-                        HashMap<String, Object> data = new HashMap<>();
-                        data.put("CheckedIn", false);
-                        data.put("CheckedInCount", 0);
-                        attendeeRef.document(sharedPreferences.getString("attendeeId", null)).update("signedInEvents", FieldValue.arrayUnion(eventId)).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).update(data).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
-                                        switchActivities();
-                                    }
-                                });
+                    db.runTransaction(new Transaction.Function<Void>() {
+                        @Override
+                        public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                            if (!doc.exists()) {
+                                HashMap<String, Object> data = new HashMap<>();
+                                data.put("CheckedIn", false);
+                                data.put("CheckedInCount", 0);
+                                attendeeRef.document(sharedPreferences.getString("attendeeId", null)).update("signedInEvents", FieldValue.arrayUnion(eventId));
+                                eventAttendeeRef.document(sharedPreferences.getString("attendeeId", null)).set(data);
+                                Toast.makeText(getApplicationContext(), "Successfully Signed Up!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Already Signed Up!", Toast.LENGTH_SHORT).show();
                             }
-                        });
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Already Signed Up!", Toast.LENGTH_SHORT).show();
-                        switchActivities();
-                    }
+                            return null;
+                        }
+                    });
+                    switchActivities();
                 }
             }
         });
     }
+
     /**
      * Subscribes the attendee to the event's topic for receiving notifications related to the event.
      * This method subscribes the attendee to a specific topic on Firebase Cloud Messaging (FCM)

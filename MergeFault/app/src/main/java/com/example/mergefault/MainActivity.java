@@ -14,6 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.libraries.places.api.Places;
 
+/**
+ * Start of the flow of the app
+ */
 public class MainActivity extends AppCompatActivity {
 
     private Button attendeeButton;

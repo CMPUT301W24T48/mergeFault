@@ -54,9 +54,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * @see  AttendeeViewEventDetailsActivity
  * Activity for attendee check-in at an event.
- *
  */
 public class AttendeeCheckInScreenActivity extends AppCompatActivity {
     // Request code for location permission

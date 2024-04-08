@@ -36,6 +36,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Activity to display a map with location markers.
+ */
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private String placeId;
