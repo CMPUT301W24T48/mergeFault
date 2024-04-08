@@ -1,6 +1,5 @@
 package com.example.mergefault;
 
-
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -24,7 +23,17 @@ import com.google.firebase.messaging.RemoteMessage;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Service class responsible for handling push notifications received from Firebase Cloud Messaging (FCM).
+ * This class extends FirebaseMessagingService to handle incoming messages and process them accordingly.
+ */
 public class PushNotificationService extends FirebaseMessagingService {
+    /**
+     * Called when a message is received from Firebase Cloud Messaging (FCM).
+     * Processes the received message and displays a notification to the user.
+     *
+     * @param message The message received from FCM.
+     */
     @SuppressLint("NewApi")
     @Override
     public void onMessageReceived(@NonNull RemoteMessage message) {
@@ -76,6 +85,13 @@ public class PushNotificationService extends FirebaseMessagingService {
 
 
     }
+    /**
+     * Adds a notification update to Firestore database.
+     *
+     * @param token  The FCM token associated with the device.
+     * @param title  The title of the notification.
+     * @param message The body text of the notification.
+     */
     public void addNotificationUpdate(String token, String title, String message) {
         FirebaseFirestore db;
         CollectionReference notificationsRef;

@@ -245,7 +245,11 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
             }
         });
     }
-
+    /**
+     * Subscribes the attendee to the event's topic for receiving notifications related to the event.
+     * This method subscribes the attendee to a specific topic on Firebase Cloud Messaging (FCM)
+     * to receive notifications about the event.
+     */
     public void SubscribeAttendee(){
         FirebaseMessaging.getInstance().subscribeToTopic(eventId)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -265,7 +269,12 @@ public class AttendeeSignUpActivity extends AppCompatActivity {
                     }
                 });
     }
-  
+
+    /**
+     * Sends a notification to the organizer of the event upon attendee sign-up.
+     * This method constructs a notification message and sends it to the organizer's device
+     * using Firebase Cloud Messaging (FCM).
+     */
     public void SendNotificationToOrganizer(){
         OkHttpClient client = new OkHttpClient();
         JSONObject json = new JSONObject();
