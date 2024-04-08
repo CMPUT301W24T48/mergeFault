@@ -5,6 +5,15 @@
       <entry key="MapActivityTest">
         <State />
       </entry>
+      <entry key="ProfileFunctionalityTest()">
+        <State />
+      </entry>
+      <entry key="app">
+        <State />
+      </entry>
+      <entry key="signUpAndWithdrawTest()">
+        <State />
+      </entry>
     </value>
   </component>
 </project>
