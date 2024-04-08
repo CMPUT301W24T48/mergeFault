@@ -47,24 +47,6 @@ public class MainActivity extends AppCompatActivity {
             Places.initialize(getApplicationContext(), apiKey);
         }
 
-        Places.initialize(getApplicationContext(), apiKey);
-
-        // Restore the visibility of adminButton if it was visible before
-        //boolean isAdminVisible = sharedPreferences.getBoolean("isAdminVisible", false);
-        //adminButton.setVisibility(isAdminVisible ? View.VISIBLE : View.GONE);
-
-        // Check if MainActivity is started from the deep link
-        /*
-        if (getIntent() != null && getIntent().getData() != null && isDeepLinkValid(getIntent().getData())) {
-            // Deep link is valid, make adminButton visible
-            adminButton.setVisibility(View.VISIBLE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("isAdminVisible", true);
-            editor.apply();
-        }
-
-         */
-
         // Set OnClickListener for attendeeButton
         attendeeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,14 +72,6 @@ public class MainActivity extends AppCompatActivity {
                 // Start AdminHomeActivity when adminButton is clicked
                 Intent intent = new Intent(MainActivity.this, AdminHomeActivity.class);
                 startActivity(intent);
-                finish();
-                /*
-                Intent intent = new Intent(MainActivity.this, QRCodeScannerActivity.class);
-                intent.putExtra("parentActivity", "Main");
-                startActivityForResult(intent,1);
-
-                 */
-                //startActivity(new Intent(MainActivity.this, AdminHomeActivity.class));
             }
         });
     }

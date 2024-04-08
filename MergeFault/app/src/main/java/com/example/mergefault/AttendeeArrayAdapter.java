@@ -45,7 +45,9 @@ public class AttendeeArrayAdapter extends ArrayAdapter<Attendee>{
             TextView attendeeName = view.findViewById(R.id.nameText);
             ImageView attendeePFP = view.findViewById(R.id.pfpImageView);
             attendeeName.setText(attendee.getName());
-            Picasso.get().load(attendee.getProfImageURL()).into(attendeePFP);
+            if (attendee.getProfImageURL() != null){
+                Picasso.get().load(attendee.getProfImageURL()).into(attendeePFP);
+            }
             Button removeProfileButton = view.findViewById(R.id.removeProfileButton);
             removeProfileButton.setOnClickListener(new View.OnClickListener() {
 

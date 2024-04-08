@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultCallback;
@@ -48,7 +49,7 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * This is the activity where the organizer creates an event
+ * This is the activity where the organizer edits an event
  */
 public class OrganizerEditEventActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener, EditLimitFragment.EditLimitDialogListener , EditDescriptionFragment.EditDescriptionDialogListener {
     private Button editAddressButton;
@@ -84,51 +85,12 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
     private StorageReference storageRef;
     private PlacesClient placesClient;
     private Event event;
-
-    /**
-     * This function adds an String address to the corresponding textview and also saves it to location and placeId
-     * @param address
-     * This is the String given by the organizer through a textview
-     * @param selectedPlaceId
-     * This is the String of the placeId given by google places
-     */
-    public void addAddress(String address, String selectedPlaceId) {
-        addressText.setText("Address: " + address);
-        location = address;
-        placeId = selectedPlaceId;
-    }
-    /**
-     * This function adds an Integer limit to the corresponding textview and also saves it to attendeeLimit
-     * @param limit
-     * This is the Integer given by the organizer through a textview
-     */
-    @Override
-    public void addLimit(Integer limit) {
-        limitText.setText("Limit: " + limit.toString());
-        attendeeLimit = limit;
-    }
-    /**
-     * This function adds an String description to the corresponding textview and also saves it to description
-     * @param description
-     * This is the String given by the organizer through a textview
-     */
-    @Override
-    public void addDescription(String description) {
-        descriptionText.setText("Description: " + description);
-        this.description = description;
-    }
-    /**
-     * This is the function that runs at the start of the activity
-     * @param savedInstanceState If the activity is being re-initialized after
-     *     previously being shut down then this Bundle contains the data it most
-     *     recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
-     *
-     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_add_event_details);
 
+        // Get the necessary objects from the UI
         editAddressButton = findViewById(R.id.locationSetButton);
         editAddressButton.setText("Edit Location");
         editTimeButton = findViewById(R.id.timeSetButton);
@@ -152,18 +114,23 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
         timeText = findViewById(R.id.timeText);
         dayText = findViewById(R.id.dayText);
 
+        // Receive eventId and organizerId from the previous activity
         Intent receiverIntent = getIntent();
         eventId = receiverIntent.getStringExtra("EventId");
         organizerId = receiverIntent.getStringExtra("OrganizerID");
 
-        Log.d("eventId", "eventid: " + eventId);
-
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events").document(eventId);
 
+        // Get instance and reference to the firebase storage
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
 
+        // Create places client to be used
+        placesClient = Places.createClient(this);
+
+        // Getting the selected event's details from firestore
         eventRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -191,7 +158,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
 
                         addressText.setText("Address: " + location);
                         dayText.setText("Day: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
-                        timeText.setText("Time: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
+                        timeText.setText("Time: " + DateFormat.getPatternInstance(DateFormat.HOUR24_MINUTE).format(dateTime.getTime()));
                         if (attendeeLimit != null) {
                             limitText.setText("Limit: " + attendeeLimit);
                         } else {
@@ -207,24 +174,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
             }
         });
 
-
-
-        placesClient = Places.createClient(this);
-
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                switchActivities();
-            }
-        };
-        OrganizerEditEventActivity.this.getOnBackPressedDispatcher().addCallback(this, callback);
-
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switchActivities();
-            }
-        });
+        // Set click listener for the Logo
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -233,50 +183,51 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                 finish();
             }
         });
-        editAddressButton.setOnClickListener(new View.OnClickListener() {
-            /**
-             * this is on on click listener for the address button, it opens a new AddAddressFragment
-             * @param v The view that was clicked.
-             */
+
+        // Set click listener for the event poster
+        eventPosterImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+                startPickingImage.launch("image/*");
+            }
+        });
 
-                // Start the autocomplete intent.
+        // Set click listener for the "Edit Location" button
+        editAddressButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start the autocomplete activity
+                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
                 Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(OrganizerEditEventActivity.this);
                 startAutocomplete.launch(intent);
+            }
+        });
 
-            }
-        });
-        editTimeButton.setOnClickListener(new View.OnClickListener() {
-            /**
-             * this is on on click listener for the time button, it opens a new TimePickerFragment
-             * @param v The view that was clicked.
-             */
-            @Override
-            public void onClick(View v) {
-                DialogFragment timepicker = new TimePickerFragment();
-                timepicker.show(getSupportFragmentManager(),"Time Picker");
-            }
-        });
+        // Set click listener for the "Edit Day" button
         editDateButton.setOnClickListener(new View.OnClickListener() {
-            /**
-             * this is on on click listener for the date button, it opens a new DatePickerFragment
-             * @param v The view that was clicked.
-             */
             @Override
             public void onClick(View v) {
+                // Start the date picker activity
                 DialogFragment datepicker = new DatePickerFragment();
                 datepicker.show(getSupportFragmentManager(),"Date Picker");
             }
         });
-        editLimitButton.setOnClickListener(new View.OnClickListener() {
-            /**
-             * this is on on click listener for the limit button, it opens a new AddLimitFragment
-             * @param v The view that was clicked.
-             */
+
+        // Set click listener for the "Edit Time" button
+        editTimeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Start the time picker activity
+                DialogFragment timepicker = new TimePickerFragment();
+                timepicker.show(getSupportFragmentManager(),"Time Picker");
+            }
+        });
+
+        // Set click listener for the "Edit Limit" button
+        editLimitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start the edit limit fragment
                 Bundle bundle = new Bundle();
                 EditLimitFragment fragInfo = new EditLimitFragment();
                 if (attendeeLimit != null) {
@@ -286,23 +237,12 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                 fragInfo.show(getSupportFragmentManager(), "Edit Limit");
             }
         });
-        eventPosterImageView.setOnClickListener(new View.OnClickListener() {
-            /**
-             * this is on on click listener for the event poster imageview, it calls startActivityForResult
-             * @param v The view that was clicked.
-             */
-            @Override
-            public void onClick(View v) {
-                startPickingImage.launch("image/*");
-            }
-        });
+
+        // Set click listener for the "Edit Desc" button
         descriptionButton.setOnClickListener(new View.OnClickListener() {
-            /**
-             * this is on on click listener for the description button, it opens a new AddDescriptionFragment
-             * @param v The view that was clicked.
-             */
             @Override
             public void onClick(View v) {
+                // Start the edit description fragment
                 Bundle bundle = new Bundle();
                 bundle.putString("description", description);
                 EditDescriptionFragment fragInfo = new EditDescriptionFragment();
@@ -310,38 +250,63 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                 fragInfo.show(getSupportFragmentManager(), "Edit Description");
             }
         });
+
+        // Set click listener for the "Edit Event" button
         editEventButton.setOnClickListener(new View.OnClickListener() {
-            /**
-             * this is on on click listener for the create event button, it collects all the given info and creates a calls addEvent with a new created event
-             * @param v The view that was clicked.
-             */
             @Override
             public void onClick(View v) {
+                // Creates set all the data collected into the event and passes it to editEvent method
+                if (downloadUrl == null) {
+                    if (selectedImage != null) {
+                        eventName = eventNameEditText.getText().toString();
+                        event.setEventName(eventName);
+                        event.setLocation(location);
+                        event.setDateTime(dateTime);
+                        event.setAttendeeLimit(attendeeLimit);
+                        event.setEventPoster(selectedImage);
+                        event.setDescription(description);
+                        event.setGeoLocOn(geoLocSwitch.isChecked());
+                        event.setPlaceId(placeId);
+                        editEvent();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Please enter all required info", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    eventName = eventNameEditText.getText().toString();
+                    event.setEventName(eventName);
+                    event.setLocation(location);
+                    event.setDateTime(dateTime);
+                    event.setAttendeeLimit(attendeeLimit);
+                    event.setEventPoster(selectedImage);
+                    event.setDescription(description);
+                    event.setGeoLocOn(geoLocSwitch.isChecked());
+                    event.setPlaceId(placeId);
+                    editEvent();
+                }
 
-                eventName = eventNameEditText.getText().toString();
-                event.setEventName(eventName);
-                event.setLocation(location);
-                event.setDateTime(dateTime);
-                event.setAttendeeLimit(attendeeLimit);
-                event.setEventPoster(selectedImage);
-                event.setDescription(description);
-                event.setGeoLocOn(geoLocSwitch.isChecked());
-                event.setPlaceId(placeId);
-                editEvent();
+            }
+        });
+
+        // Set what happens when back button is pressed
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                switchActivities();
+            }
+        };
+        OrganizerEditEventActivity.this.getOnBackPressedDispatcher().addCallback(this, callback);
+
+        // Set click listener for the "Cancel" button
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchActivities();
             }
         });
     }
 
-    public void switchActivities(){
-        Intent intent = new Intent(OrganizerEditEventActivity.this, OrganizerEventOptions.class);
-        intent.putExtra("EventId", event.getEventID());
-        intent.putExtra("OrganizerID", organizerId);
-        startActivity(intent);
-        finish();
-    }
-
     /**
-     * This function opens the Autocomplete activity and calls addAddress with the selected placeName and placeId
+     * This method opens the Autocomplete activity and calls addAddress with the selected placeName and placeId
      */
     private final ActivityResultLauncher<Intent> startAutocomplete = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -358,8 +323,9 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                     Log.d("places", "User canceled autocomplete");
                 }
             });
+
     /**
-     * This function opens the image picker and stores the imageUri into selected Image as well as sets the eventPosterImageView to the selected image
+     * This method opens the image picker and stores the imageUri into selected Image as well as sets the eventPosterImageView to the selected image
      */
     private final ActivityResultLauncher<String> startPickingImage = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -406,9 +372,69 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
     }
 
     /**
-     * This function gets called by addEvent after the event has been added to the firebase and the eventId is gathered, it is then used to get the download url for the eventPoster with the format of (eventId.png) and adds the download url to the firebase, after all that is complete it then switches activities by passing on the eventId to the qrCode screen
-     * This is the event passed by the addEvent method
-     * This is the documentReference to event on the firebase
+     * This method adds an String address to the corresponding textview and also saves it to location and placeId
+     * @param address
+     * This is the String given by the organizer through a textview
+     * @param selectedPlaceId
+     * This is the String of the placeId given by google places
+     */
+    public void addAddress(String address, String selectedPlaceId) {
+        addressText.setText("Address: " + address);
+        location = address;
+        placeId = selectedPlaceId;
+    }
+
+    /**
+     * This method adds an Integer limit to the corresponding textview and also saves it to attendeeLimit
+     * @param limit
+     * This is the Integer given by the organizer through a textview
+     */
+    @Override
+    public void editLimit(Integer limit) {
+        limitText.setText("Limit: " + limit.toString());
+        attendeeLimit = limit;
+    }
+
+    /**
+     * This method adds an String description to the corresponding textview and also saves it to description
+     * @param description
+     * This is the String given by the organizer through a textview
+     */
+    @Override
+    public void editDescription(String description) {
+        descriptionText.setText("Description: " + description);
+        this.description = description;
+    }
+
+    /**
+     * This method edits an event on to the firebase
+     * This is the event given by the on click listener for the "Edit Event" button
+     */
+    public void editEvent(){
+        Log.d("eventPoster", "eventPoster: "+ event.getEventPoster());
+
+        eventRef.update("Location", event.getLocation());
+        eventRef.update("PlaceID", event.getPlaceId());
+        eventRef.update("DateTime", event.getDateTime().getTime());
+        if (event.getAttendeeLimit() != null) {
+            eventRef.update("AttendeeLimit", event.getAttendeeLimit().toString());
+        } else {
+            eventRef.update("AttendeeLimit", null);
+        }
+        eventRef.update("EventName", event.getEventName());
+        eventRef.update("Description", event.getDescription());
+        eventRef.update("GeoLocOn",event.getGeoLocOn());
+        eventRef.update("OrganizerID", event.getOrganizerId());
+
+        if (selectedImage != null){
+            getDownloadUrl();
+        } else {
+            switchActivities();
+        }
+    }
+
+    /**
+     * This method gets called by editEvent after the event has been edited on the firebase, it is then used to get the download url for the eventPoster with the format of (eventId.png) and adds the download url to the firebase, after all that is complete it then calls switch activity method
      */
     public void getDownloadUrl(){
         StorageReference eventPosterRef = storageRef.child( "eventPosters/" + event.getEventID() + ".jpg");
@@ -446,31 +472,14 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
             }
         });
     }
-
     /**
-     * This function adds an event on to the firebase
-     * This is the event given by the on click listener for the create button
+     * This method switches activities from current to event options and passes eventId and organizerId on through intent
      */
-    public void editEvent(){
-        Log.d("eventPoster", "eventPoster: "+ event.getEventPoster());
-
-        eventRef.update("Location", event.getLocation());
-        eventRef.update("PlaceID", event.getPlaceId());
-        eventRef.update("DateTime", event.getDateTime().getTime());
-        if (event.getAttendeeLimit() != null) {
-            eventRef.update("AttendeeLimit", event.getAttendeeLimit().toString());
-        } else {
-            eventRef.update("AttendeeLimit", null);
-        }
-        eventRef.update("EventName", event.getEventName());
-        eventRef.update("Description", event.getDescription());
-        eventRef.update("GeoLocOn",event.getGeoLocOn());
-        eventRef.update("OrganizerID", event.getOrganizerId());
-
-        if (selectedImage != null){
-            getDownloadUrl();
-        } else {
-            switchActivities();
-        }
+    public void switchActivities(){
+        Intent intent = new Intent(OrganizerEditEventActivity.this, OrganizerEventOptions.class);
+        intent.putExtra("EventId", event.getEventID());
+        intent.putExtra("OrganizerID", organizerId);
+        startActivity(intent);
+        finish();
     }
 }

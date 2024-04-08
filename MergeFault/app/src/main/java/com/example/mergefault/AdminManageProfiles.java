@@ -21,11 +21,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
+/**
+ * This activity shows a list of events in real time on the firebase currently and the admin can delete or view each of them
+ */
 public class AdminManageProfiles extends AppCompatActivity{
-
     private FirebaseFirestore db;
     private CollectionReference attendeeRef;
-    private CollectionReference eventAttendeeRef;
     private CollectionReference eventRef;
     private String name;
     private String phoneNum;
@@ -43,20 +44,23 @@ public class AdminManageProfiles extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_manage_profiles);
+
+        // Get the necessary objects from the UI
         attendeeList = findViewById(R.id.profileLinearLayout);
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.imageView);
 
-
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
         attendeeRef = db.collection("attendees");
         eventRef = db.collection("events");
 
+        // Set up image attendee adapter and link it to the listview
         attendees = new ArrayList<Attendee>();
-        String user = "admin";
-        attendeeArrayAdapter = new AttendeeArrayAdapter(this,attendees,user);
+        attendeeArrayAdapter = new AttendeeArrayAdapter(this,attendees,"admin");
         attendeeList.setAdapter(attendeeArrayAdapter);
 
+        // Set up snapshot listener to listen to changes in the attendee collection on firestore and adds the attendees into a list
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -92,45 +96,7 @@ public class AdminManageProfiles extends AppCompatActivity{
             }
         });
 
-
-
-        /*
-        attendeeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("Position", "position: " + position +" size: " + attendees.size());
-                if (attendees.size() != 0){
-                    DocumentReference attendeeDocRef = db.collection("attendees").document(attendees.get(position).getAttendeeId());
-                    attendeeDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                        @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            if (documentSnapshot.get("signedInEvents") != null){
-                                List<String> signedInEvents = (List<String>) documentSnapshot.get("signedInEvents");
-                                for (int i = 0; i < signedInEvents.size(); i++) {
-                                    db.collection("events").document(signedInEvents.get(i)).collection("attendees").document(attendees.get(position).getAttendeeId()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void unused) {
-                                            Log.d("","deleted profile from all events");
-                                        }
-                                    });
-                                }
-                            }
-                            attendeeDocRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    Toast.makeText(getApplicationContext(), "profile deleted successfully", Toast.LENGTH_SHORT);
-                                    Log.d("","profile deleted successfully");
-                                    Log.d("Position", "position: " + position +" size: " + attendees.size());
-                                }
-                            });
-                        }
-                    });
-                }
-            }
-        });
-
-         */
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -139,6 +105,8 @@ public class AdminManageProfiles extends AppCompatActivity{
                 finish();
             }
         });
+
+        // Set what happens when back button is pressed
         OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -149,6 +117,7 @@ public class AdminManageProfiles extends AppCompatActivity{
         };
         AdminManageProfiles.this.getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 
+        // Set click listener for the Logo
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

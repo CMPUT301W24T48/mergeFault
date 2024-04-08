@@ -52,28 +52,34 @@ public class OrganizerAttendeeList extends AppCompatActivity{
     private Integer eventSignUpCount;
     private Button cancelButton;
     private ImageView homeButton;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_attendee_list);
+
+        // Get all the necessary objects from the UI
         attendeeList = findViewById(R.id.myEventListView);
         checkInText = findViewById(R.id.checkInCountText);
         signUpText = findViewById(R.id.signUpCountText);
         cancelButton = findViewById(R.id.cancelButton);
         homeButton = findViewById(R.id.imageView);
 
+        // Receive organizerId and eventId from previous activity
         Intent receiverIntent = getIntent();
         eventId = receiverIntent.getStringExtra("EventId");
         organizerId = receiverIntent.getStringExtra("OrganizerID");
 
+        // Get instance and reference to the firebase firestore
         db = FirebaseFirestore.getInstance();
         eventAttendeeRef = db.collection("events").document(eventId).collection("attendees");
         attendeeRef = db.collection(("attendees"));
+
+        // Set up attendee array adapter and link it to the listview
         attendees = new ArrayList<Attendee>();
         attendeeArrayAdapter = new AttendeeArrayAdapter(this,attendees,"organizer");
         attendeeList.setAdapter(attendeeArrayAdapter);
 
+        // Set up snapshot listener to listen to changes in the attendee sub-collection inside the selected event on firestore
         eventAttendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -125,14 +131,19 @@ public class OrganizerAttendeeList extends AppCompatActivity{
 
             }
         });
+
+        // Set click listener for the Logo
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Start OrganizerAttendeeList to go see the event's attendee list
                 Intent intent = new Intent(OrganizerAttendeeList.this, OrganizerHomeActivity.class);
                 startActivity(intent);
                 finish();
             }
         });
+
+        // Set what happens when back button is pressed
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -145,6 +156,7 @@ public class OrganizerAttendeeList extends AppCompatActivity{
         };
         OrganizerAttendeeList.this.getOnBackPressedDispatcher().addCallback(this, callback);
 
+        // Set click listener for the "Cancel" button
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

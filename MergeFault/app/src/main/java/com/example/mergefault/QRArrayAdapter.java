@@ -1,6 +1,7 @@
 package com.example.mergefault;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,18 +12,29 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.squareup.picasso.Picasso;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
-public class QRArrayAdapter extends ArrayAdapter<Event>{
-    private ArrayList<Event> events;
+public class QRArrayAdapter extends ArrayAdapter<String>{
+    private ArrayList<String> eventIds;
     private Context context;
-    public QRArrayAdapter(Context context, ArrayList<Event> events){
-        super (context, 0, events);
+    private FirebaseStorage firebaseStorage;
+    private StorageReference eventCheckInQRRef;
+    private StorageReference eventPromotionQRRef;
+    public QRArrayAdapter(Context context, ArrayList<String> eventIds){
+        super (context, 0, eventIds);
         this.context = context;
-        this.events = events;
+        this.eventIds = eventIds;
     }
+
+    @Nullable
+    @Override
+    public String getItem(int position) {
+        return eventIds.get(position);
+    }
+
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
@@ -32,13 +44,14 @@ public class QRArrayAdapter extends ArrayAdapter<Event>{
             view = LayoutInflater.from(getContext()).inflate(R.layout.organizer_reuse_content, parent, false);
         }
 
-        Event event = getItem(position);
+        String eventId = getItem(position);
+        Log.d("eventId", "eventId: " + eventId);
 
-        ImageView QRs = view.findViewById(R.id.qrImageView);
-        TextView eventNameTextView = view.findViewById(R.id.eventNameTextView);
+        ImageView checkInQRs = view.findViewById(R.id.qrCheckInView);
+        ImageView promotionQRs = view.findViewById(R.id.qrPromotionView);
+        TextView eventNameTextView = view.findViewById(R.id.eventIdView);
 
-        Picasso.get().load(event.getEventPoster()).into(QRs);
-        eventNameTextView.setText(event.getEventName());
+        eventNameTextView.setText(eventId);
 
         return view;
     }
