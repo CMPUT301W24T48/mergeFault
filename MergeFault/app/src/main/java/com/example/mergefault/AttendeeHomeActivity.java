@@ -150,6 +150,10 @@ public class AttendeeHomeActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Checks Database if the attendee profile is saved
+     * if it exists it loads the profile image
+     */
     private void loadProfileImage() {
         attendeeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -178,6 +182,14 @@ public class AttendeeHomeActivity extends AppCompatActivity {
                     String eventId = data.getStringExtra("eventId");
                     Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeCheckInScreenActivity.class);
                     intent.putExtra("eventId", eventId);
+                    Log.d("Scanned stuff", eventId);
+                    startActivity(intent);
+                    finish();
+                } else if (Objects.equals(action, "Promotion")) {
+                    String eventId = data.getStringExtra("eventId");
+                    Intent intent = new Intent(AttendeeHomeActivity.this, AttendeeSignUpActivity.class);
+                    intent.putExtra("eventId", eventId);
+                    intent.putExtra("parentActivity", "AttendeeHome");
                     Log.d("Scanned stuff", eventId);
                     startActivity(intent);
                     finish();

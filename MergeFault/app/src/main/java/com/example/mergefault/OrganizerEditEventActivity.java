@@ -165,6 +165,8 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
 
+        placesClient = Places.createClient(this);
+
         eventRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -192,7 +194,7 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
 
                         addressText.setText("Address: " + location);
                         dayText.setText("Day: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
-                        timeText.setText("Time: " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(dateTime.getTime()));
+                        timeText.setText("Time: " + DateFormat.getPatternInstance(DateFormat.HOUR24_MINUTE).format(dateTime.getTime()));
                         if (attendeeLimit != null) {
                             limitText.setText("Limit: " + attendeeLimit);
                         } else {
@@ -207,11 +209,6 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
                 }
             }
         });
-
-
-
-        placesClient = Places.createClient(this);
-
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {

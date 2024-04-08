@@ -27,6 +27,10 @@ import com.squareup.picasso.Picasso;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Organizer page for modifying events
+ * TODO: add javadocs for this class
+ */
 public class OrganizerEventOptions extends AppCompatActivity {
 
     private String eventId;
@@ -119,8 +123,8 @@ public class OrganizerEventOptions extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerEventOptions.this, OrganizerShareQR.class);
                 intent.putExtra("EventId", eventId);
-                intent.putExtra("PrevActivity", "OrganizerEventOptions");
                 intent.putExtra("OrganizerID", organizerId);
+                intent.putExtra("ParentActivity", "OrganizerEventOptions");
                 startActivity(intent);
             }
         });
@@ -154,7 +158,7 @@ public class OrganizerEventOptions extends AppCompatActivity {
 
                 Intent intent = new Intent(OrganizerEventOptions.this, MapActivity.class);
                 intent.putExtra("placeID", event.getPlaceId());
-                intent.putExtra("eventId", event.getEventID());
+                intent.putExtra("EventId", event.getEventID());
                 intent.putExtra("eventPosterUri", event.getEventPoster().toString());
                 startActivity(intent);
             }
@@ -167,8 +171,8 @@ public class OrganizerEventOptions extends AppCompatActivity {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + event.getEventID() + ".jpg");
-                                eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventId + "CheckIn.png");
-                                eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes/" + eventId + "Promotion.png");
+                                eventCheckInQRRef = firebaseStorage.getReference().child( "QRCodes").child("CheckIn/" + eventId + ".png");
+                                eventPromotionQRRef = firebaseStorage.getReference().child( "QRCodes").child("Promotion/" + eventId + ".png");
                                 eventPosterRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void unused) {

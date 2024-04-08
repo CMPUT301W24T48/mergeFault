@@ -37,7 +37,7 @@ import java.util.Date;
 /**
  * @see AttendeeViewEventDetailsActivity
  * This activity displays all currently signed up events for attendees
- * Attendees can view the list of signed up events
+ * Attendees can view the list of signed up events and click on them to view event details or withdraw
  */
 public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private ImageView profileImageView;
@@ -53,20 +53,13 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
     private CollectionReference attendeeRef;
     private FirebaseStorage firebaseStorage;
     private StorageReference eventPosterRef;
-    private String eventID;
-    private String eventName;
-    private String organizerId;
-    private String location;
-    private String placeId;
+
     private Date dateTime;
-    private Uri imageURL;
-    private Integer attendeeLimit;
     private Calendar date;
-    private String description;
-    private Boolean geoLocOn;
+    private Event event;
+
     private ImageView homeIcon;
     private Button cancelButton;
-
     private ImageView notificationButton;
 
 
@@ -163,30 +156,31 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                                     if (task.isSuccessful()) {
                                         DocumentSnapshot documentSnapshot = task.getResult();
                                         if (documentSnapshot.exists()) {
-                                            eventName = doc.getString("EventName");
-                                            organizerId = doc.getString("OrganizerID");
-                                            location = doc.getString("Location");
-                                            placeId = doc.getString("PlaceID");
+                                            event = new Event(null,null,null,null,null,null,null,null,null,null);
+                                            event.setEventName(doc.getString("EventName"));
+                                            event.setOrganizerId(doc.getString("OrganizerID"));
+                                            event.setLocation(doc.getString("Location"));
+                                            event.setPlaceId(doc.getString("PlaceID"));
                                             dateTime = doc.getDate("DateTime");
                                             if (doc.getString("AttendeeLimit") != null) {
-                                                attendeeLimit = Integer.parseInt(doc.getString("AttendeeLimit"));
+                                                event.setAttendeeLimit(Integer.parseInt(doc.getString("AttendeeLimit")));
                                             } else {
-                                                attendeeLimit = null;
+                                                event.setAttendeeLimit(null);
                                             }
                                             if (doc.getString("EventPoster") != null) {
-                                                imageURL = Uri.parse(doc.getString("EventPoster"));
+                                                event.setEventPoster(Uri.parse(doc.getString("EventPoster")));
                                             } else {
-                                                imageURL = null;
+                                                event.setEventPoster(null);
                                             }
-                                            description = doc.getString("Description");
-                                            geoLocOn = doc.getBoolean("GeoLocOn");
-                                            eventID = doc.getId();
+                                            event.setDescription(doc.getString("Description"));
+                                            event.setGeoLocOn(doc.getBoolean("GeoLocOn"));
+                                            event.setEventID(doc.getId());
 
-                                            Log.d("Firestore", String.format("Event(%s, $s) fetched", eventName, organizerId));
+                                            Log.d("Firestore", String.format("Event(%s, $s) fetched", event.getEventName(), event.getOrganizerId()));
 
                                             date = Calendar.getInstance();
                                             date.setTime(dateTime);
-                                            signedUpEventDataList.add(new Event(eventName, organizerId, location, date, attendeeLimit, imageURL, description, geoLocOn, eventID, placeId));
+                                            signedUpEventDataList.add(new Event(event.getEventName(), event.getOrganizerId(), event.getLocation(), date, event.getAttendeeLimit(), event.getEventPoster(), event.getDescription(), event.getGeoLocOn(), event.getEventID(), event.getPlaceId()));
                                         } else {
                                             Log.d("TAG", "No such document");
                                         }
@@ -201,13 +195,15 @@ public class AttendeeSignedUpEventsActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
                                         for (QueryDocumentSnapshot document : task.getResult()) {
-                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    eventRef.document(doc.getId()).delete();
-                                                }
-                                            });
+                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete();
                                         }
+                                        eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
+                                        eventPosterRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                eventRef.document(doc.getId()).delete();
+                                            }
+                                        });
                                     }
                                 }
                             });
