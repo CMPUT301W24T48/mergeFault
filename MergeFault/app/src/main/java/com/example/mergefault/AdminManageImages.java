@@ -23,6 +23,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +37,8 @@ public class AdminManageImages extends AppCompatActivity{
     private FirebaseFirestore db;
     private CollectionReference eventRef;
     private CollectionReference attendeeRef;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference eventPosterRef;
     private String imageURL;
     private ListView imagesListView;
     private ArrayList<String> eventIDs;
@@ -60,6 +64,8 @@ public class AdminManageImages extends AppCompatActivity{
 
 
         db = FirebaseFirestore.getInstance();
+        firebaseStorage = FirebaseStorage.getInstance();
+
         eventRef = db.collection("events");
         attendeeRef = db.collection("attendees");
 
@@ -108,14 +114,21 @@ public class AdminManageImages extends AppCompatActivity{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (eventIDs.size() != 0 && Images.size() != 0 && position > attendeeIDS.size() || attendeeIDS.size() == 0) {
                     DocumentReference tempRef = db.collection("events").document(eventIDs.get(position));
+                    eventPosterRef = firebaseStorage.getReference().child("eventPosters/" + eventIDs.get(position) + ".jpg");
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("EventPoster", null);
                     tempRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-                            ImagesArrayAdapter.notifyDataSetChanged();
+                            eventPosterRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    ImagesArrayAdapter.notifyDataSetChanged();
+                                }
+                            });
                         }
                     });
+
                     Images.remove(position);
                     ImagesArrayAdapter.notifyDataSetChanged();
                 }

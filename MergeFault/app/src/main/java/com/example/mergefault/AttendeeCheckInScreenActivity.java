@@ -39,6 +39,7 @@ import com.squareup.picasso.Picasso;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @see  AttendeeViewEventDetailsActivity
@@ -120,28 +121,13 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                                 Picasso.get().load(doc.getString("EventPoster")).into(eventPoster);
                             }
                         } else {
-                            eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                    if (task.isSuccessful()) {
-                                        for (QueryDocumentSnapshot document : task.getResult()) {
-                                            eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    eventRef.document(doc.getId()).delete();
-                                                }
-                                            });
-                                        }
-                                    }
-                                }
-                            });
-                            eventPosterRef = firebaseStorage.getReference().child( "eventPosters/" + doc.getId() + ".jpg");
-                            eventPosterRef.delete();
-                            Toast.makeText(getApplicationContext(), "This event expired", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
-                            startActivity(intent);
-                            finish();
+                            deleteEventAndAssociation(doc, db, firebaseStorage);
                         }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "No event detected", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
+                        startActivity(intent);
+                        finish();
                     }
                 }
             }
@@ -264,6 +250,41 @@ public class AttendeeCheckInScreenActivity extends AppCompatActivity {
                         Intent intent = new Intent(AttendeeCheckInScreenActivity.this, AttendeeHomeActivity.class);
                         startActivity(intent);
                         finish();
+                    }
+                }
+            }
+        });
+
+    }
+    private void deleteEventAndAssociation (DocumentSnapshot doc, FirebaseFirestore db, FirebaseStorage firebaseStorage) {
+        CollectionReference eventRef = db.collection("events");
+        CollectionReference attendeeRef = db.collection("attendees");
+        CollectionReference eventAttendeeRef = eventRef.document(doc.getId()).collection("attendees");
+        eventAttendeeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        eventRef.document(doc.getId()).collection("attendees").document(document.getId()).delete();
+                    }
+                    StorageReference eventPosterRef = firebaseStorage.getReference().child("eventPosters/" + doc.getId() + ".jpg");
+                    eventPosterRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            eventRef.document(doc.getId()).delete();
+                        }
+                    });
+                }
+            }
+        });
+        attendeeRef.whereArrayContains("signedInEvents", doc.getId()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot querySnapshot) {
+                if (!querySnapshot.isEmpty()) {
+                    List<DocumentSnapshot> attendeesThatSignedUp = querySnapshot.getDocuments();
+                    for (int i = 0; i < attendeesThatSignedUp.size(); i++) {
+                        DocumentSnapshot attendee = attendeesThatSignedUp.get(i);
+                        attendeeRef.document(attendee.getId()).update("signedInEvents", FieldValue.arrayRemove(doc.getId()));
                     }
                 }
             }

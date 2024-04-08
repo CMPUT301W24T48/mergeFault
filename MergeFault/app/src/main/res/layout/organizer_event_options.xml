@@ -115,19 +115,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/checkinMapButton" />
 
-    <TextView
-        android:id="@+id/checkInsText"
-        android:layout_width="400dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Currently there are %d check-ins. Total of %d check-ins so far!"
-        android:textColor="@color/black"
-        android:textSize="23sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toTopOf="@+id/removeEventButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <ImageView
         android:id="@+id/notifBellImageView"
         android:layout_width="69dp"
