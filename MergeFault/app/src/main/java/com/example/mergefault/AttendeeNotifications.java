@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,6 +47,8 @@ public class AttendeeNotifications extends AppCompatActivity {
         notificationsSetText = findViewById(R.id.reuseText);
         cancelButton = findViewById(R.id.cancelButton);
         notificationsSetText.setText("Notifications");
+
+        Toast.makeText(this, "Please ensure notification preferences are turned on to receive notifications", Toast.LENGTH_LONG).show();
 
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
