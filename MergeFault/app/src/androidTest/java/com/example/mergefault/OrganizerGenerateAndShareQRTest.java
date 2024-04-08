@@ -1,10 +1,16 @@
 package com.example.mergefault;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.widget.ImageView;
+
+import androidx.test.espresso.intent.rule.IntentsTestRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
@@ -13,17 +19,9 @@ import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
-import androidx.test.espresso.intent.rule.IntentsTestRule;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 @RunWith(AndroidJUnit4.class)
 public class OrganizerGenerateAndShareQRTest {
@@ -58,7 +56,10 @@ public class OrganizerGenerateAndShareQRTest {
 
 
         assertNotNull(decodedContents);
-        assertEquals("Expected event ID", "myapp://www.lotuseventscheckin.com?eventId=exampleEventId", decodedContents);
+        String decodedAction = decodedContents.substring(0,decodedContents.indexOf("."));
+        String decodedEventId = decodedContents.substring(decodedContents.indexOf(".") + 1);
+        assertEquals("Expected action", "CheckIn", decodedAction);
+        assertEquals("Expected event ID", "exampleEventId", decodedEventId);
     }
 
     @Test
@@ -90,7 +91,10 @@ public class OrganizerGenerateAndShareQRTest {
 
 
         assertNotNull(decodedContents);
-        assertEquals("Expected event ID", "myapp://www.lotuseventspromotions.com?eventId=exampleEventId", decodedContents);
+        String decodedAction = decodedContents.substring(0,decodedContents.indexOf("."));
+        String decodedEventId = decodedContents.substring(decodedContents.indexOf(".") + 1);
+        assertEquals("Expected action", "Promotion", decodedAction);
+        assertEquals("Expected event ID", "exampleEventId", decodedEventId);
     }
 
     private String decodeQRCode(Bitmap qrBitmap) {

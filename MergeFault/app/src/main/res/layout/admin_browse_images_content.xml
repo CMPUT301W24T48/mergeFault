@@ -5,24 +5,23 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:background="#EEECDE">
+
     <ImageView
         android:id="@+id/imagebrowseImageView"
-        android:layout_width="181dp"
-        android:layout_height="wrap_content"
-        android:padding="60dp"
+        android:layout_width="308dp"
+        android:layout_height="100dp"
+        android:scaleType="centerInside"
         android:textColor="#575656"
         android:textSize="20sp"
         android:textStyle="bold|italic" />
 
-    <TextView
-        android:id="@+id/removeImageTextView"
+    <Button
+        android:id="@+id/removeImageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Remove Image"
-        android:textSize="20sp"
-        android:textStyle="bold|italic"
+        android:backgroundTint="#00FFFFFF"
+        android:text="Remove"
         android:textColor="@color/red"
-        android:paddingTop="100dp"
-        android:paddingStart="75dp"/>
-    
+        android:textSize="11sp" />
+
 </LinearLayout>

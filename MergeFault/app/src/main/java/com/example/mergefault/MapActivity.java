@@ -44,6 +44,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private CollectionReference eventRef;
     private LatLng checkedInLatLng;
     private GoogleMap googleMap;
+    private PlacesClient placesClient;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,6 +53,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         db = FirebaseFirestore.getInstance();
         eventRef = db.collection("events");
+
+        placesClient = Places.createClient(this);
 
         Intent intent = getIntent();
         placeId = intent.getStringExtra("placeID");
@@ -124,7 +127,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
-        PlacesClient placesClient = Places.createClient(this);
 
         // Define fields to fetch
         List<Field> placeFields = Arrays.asList(Field.LAT_LNG);
