@@ -13,18 +13,38 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
+/**
+ * An ArrayAdapter implementation for displaying a list of events.
+ */
 public class EventArrayAdapter extends ArrayAdapter<Event> {
-
+    /**
+     * The list of events.
+     */
     private ArrayList<Event> events;
-
+    /**
+     * The context in which the adapter is used.
+     */
     private Context context;
-
+    /**
+     * Constructs a new EventArrayAdapter.
+     *
+     * @param context The context in which the adapter is used.
+     * @param events  The list of events to display.
+     */
     public EventArrayAdapter(Context context, ArrayList<Event> events) {
         super(context, 0, events);
         this.context = context;
         this.events = events;
     }
 
+    /**
+     * Get a View that displays the data at the specified position in the data set.
+     *
+     * @param position    The position of the item within the adapter's data set.
+     * @param convertView The old view to reuse, if possible.
+     * @param parent      The parent that this view will eventually be attached to.
+     * @return A View corresponding to the data at the specified position.
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {

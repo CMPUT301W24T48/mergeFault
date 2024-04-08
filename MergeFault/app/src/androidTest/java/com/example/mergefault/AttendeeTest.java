@@ -1,5 +1,6 @@
 package com.example.mergefault;
 
+import androidx.annotation.Nullable;
 import androidx.test.espresso.assertion.ViewAssertions;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -18,16 +19,23 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static androidx.test.espresso.Espresso.closeSoftKeyboard;
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.anything;
 import static org.junit.Assert.assertEquals;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,10 +45,12 @@ import java.util.Map;
 public class AttendeeTest {
     FirebaseFirestore db;
     private SharedPreferences sharedPreferences;
+    private String attendeeID;
 
     @Rule
     public ActivityScenarioRule<AttendeeHomeActivity> activityScenarioRule = new ActivityScenarioRule<>(AttendeeHomeActivity.class);
 
+    /*
     @Before
     public void setUp() {
         Context context = ApplicationProvider.getApplicationContext();
@@ -53,36 +63,107 @@ public class AttendeeTest {
         sharedPreferences.edit().clear().apply();
     }
 
+     */
     @Test
     public void testProfileImageClick() {
         onView(withId(R.id.profileImageView)).perform(click());
         onView(withId(R.id.editProfilePictureButton)).check(matches(ViewMatchers.isDisplayed()));
     }
-
     @Test
-    public void testMyEventsClick() {
+    public void ProfileFunctionalityTest() {
+        String name = "User";
+        String email = "user@example.com";
+        String imageUri = "https://api.dicebear.com/5.x/pixel-art/png?seed=User";
+        String phoneNumber = "1234567890";
+
+        onView(withId(R.id.profileImageView)).perform(click());
+
+        // Perform UI actions to fill profile data
+        onView(withId(R.id.editEmailText)).perform(click()).perform(ViewActions.typeText(email));
+        closeSoftKeyboard();
+        onView(withId(R.id.editAttendeeName)).perform(click()).perform(ViewActions.typeText(name));
+        closeSoftKeyboard();
+        onView(withId(R.id.editPhoneNumber)).perform(click()).perform(ViewActions.typeText(phoneNumber));
+        closeSoftKeyboard();
+        onView(withId(R.id.cancelButton)).perform(click());
+
+        db = FirebaseFirestore.getInstance();
+        CollectionReference attendeesRef = db.collection("attendees");
+        attendeesRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for (QueryDocumentSnapshot doc: value) {
+                    if(doc.getString("AttendeeName").equals(name)){
+                        assertEquals(name, doc.getString("AttendeeName"));
+                        assertEquals(email, doc.getString("AttendeeEmail"));
+                        assertEquals(imageUri, doc.getString("AttendeeProfile"));
+                        assertEquals(phoneNumber, doc.getString("AttendeePhoneNumber"));
+                        attendeeID = doc.getId();
+                    }
+                }
+            }
+        });
+        //myEventsTest
         onView(withId(R.id.viewMyEventsButton)).perform(click());
         onView(withId(R.id.myEventListView)).perform(click());
-        // Add assertions to verify the behavior after clicking "My Events"
         onView(withId(R.id.myEventListView)).check(matches(ViewMatchers.isDisplayed()));
-    }
-
-
-    @Test
-    public void testBrowsePostedEventsClick() {
+        onView(withId(R.id.imageView)).perform(click());
+        //browseEventsTest
         onView(withId(R.id.browseEventsButton)).perform(click());
-        onView(withId(R.id.myEventListView)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+        onView(withId(R.id.myEventListView)).perform(click());
         onView(withId(R.id.myEventListView)).check(matches(ViewMatchers.isDisplayed()));
-        // Add assertions to verify the behavior after clicking "Browse Posted Events"
-        // For example, you can check if specific items are displayed in the list view
+        //clear Firebase
+        attendeesRef.document(attendeeID).delete();
     }
 
     @Test
-    public void profileActivitySwitchCheck() {
+    public void signUpAndWithdrawTest(){
+        String name = "User";
+        String email = "user@example.com";
+        String imageUri = "https://api.dicebear.com/5.x/pixel-art/png?seed=User";
+        String phoneNumber = "1234567890";
+
         onView(withId(R.id.profileImageView)).perform(click());
+
+        // Perform UI actions to fill profile data
+        onView(withId(R.id.editEmailText)).perform(click()).perform(ViewActions.typeText(email));
+        closeSoftKeyboard();
+        onView(withId(R.id.editAttendeeName)).perform(click()).perform(ViewActions.typeText(name));
+        closeSoftKeyboard();
+        onView(withId(R.id.editPhoneNumber)).perform(click()).perform(ViewActions.typeText(phoneNumber));
+        closeSoftKeyboard();
+
         onView(withId(R.id.cancelButton)).perform(click());
-        onView(withId(R.id.viewMyEventsButton)).check(matches(ViewMatchers.isDisplayed()));
+        db = FirebaseFirestore.getInstance();
+
+        onView(withId(R.id.browseEventsButton)).perform(click());
+        onData(anything()).inAdapterView(withId(R.id.myEventListView)).atPosition(0).perform(click());
+        onView(withId(R.id.withdrawButton)).perform(click());
+        CollectionReference attendeesRef = db.collection("attendees");
+        attendeesRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for (QueryDocumentSnapshot doc: value) {
+                    if(doc.getString("AttendeeName").equals(name)){
+                        assertEquals(name, doc.getString("AttendeeName"));
+                        assertEquals(email, doc.getString("AttendeeEmail"));
+                        assertEquals(imageUri, doc.getString("AttendeeProfile"));
+                        assertEquals(phoneNumber, doc.getString("AttendeePhoneNumber"));
+                        attendeeID = doc.getId();
+                    }
+                }
+            }
+        });
+        onView(withId(R.id.imageView)).perform(click());
+
+        onView(withId(R.id.viewMyEventsButton)).perform(click());
+        onData(anything()).inAdapterView(withId(R.id.myEventListView)).atPosition(0).perform(click());
+        onView(withId(R.id.withdrawButton)).perform(click());
+
+        attendeesRef.document(attendeeID).delete();
     }
+
+
 
     @Test
     public void addTestUser(){
@@ -101,7 +182,6 @@ public class AttendeeTest {
             Log.d("Error", e.toString());
         });
     }
-
     @Test
     public void deleteTestUser(){
         db = FirebaseFirestore.getInstance();

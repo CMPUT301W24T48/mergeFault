@@ -10,7 +10,7 @@
     <ImageView
         android:id="@+id/logoImageView"
         android:layout_width="wrap_content"
-        android:layout_height="100sp"
+        android:layout_height="75sp"
         android:src="@drawable/logo"
         android:clickable="true"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,7 +21,7 @@
     <ImageView
         android:id="@+id/eventPosterImageView"
         android:layout_width="284dp"
-        android:layout_height="173dp"
+        android:layout_height="150dp"
         android:clickable="true"
         android:src="@drawable/img"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,6 +72,22 @@
         app:layout_constraintEnd_toStartOf="@+id/locationSetButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/eventPosterImageView" />
+
+    <TextView
+        android:id="@+id/notifText"
+        android:layout_width="270dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="4dp"
+        android:autoSizeTextType="uniform"
+        android:backgroundTint="@color/black"
+        android:text="Ensure notifications are turned on to recieve notifications about event."
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toTopOf="@+id/createEventButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/dayText"

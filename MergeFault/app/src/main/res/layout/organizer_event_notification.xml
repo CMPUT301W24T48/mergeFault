@@ -60,6 +60,20 @@
         app:layout_constraintVertical_bias="0.022" />
 
     <TextView
+        android:id="@+id/setText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/black"
+        android:text="Test"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toTopOf="@+id/sendButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/eventEditText" />
+
+    <TextView
         android:id="@+id/dayText"
         android:layout_width="300sp"
         android:layout_height="wrap_content"

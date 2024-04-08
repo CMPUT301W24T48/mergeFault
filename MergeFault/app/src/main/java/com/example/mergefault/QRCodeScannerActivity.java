@@ -17,6 +17,9 @@ import com.google.zxing.integration.android.IntentResult;
 
 import java.util.Objects;
 
+/**
+ * Activity for scanning QR codes using the device's camera.
+ */
 public class QRCodeScannerActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CAMERA = 1;
@@ -43,6 +46,9 @@ public class QRCodeScannerActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Initializes the QR code scanner using IntentIntegrator.
+     */
     private void initQRCodeScanner() {
         IntentIntegrator integrator = new IntentIntegrator(this);
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);

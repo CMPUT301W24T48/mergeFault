@@ -116,9 +116,10 @@ public class OrganizerTest {
     @Test
     public void addTestEvent(){
         db = FirebaseFirestore.getInstance();
+        java.sql.Timestamp timestamp = java.sql.Timestamp.valueOf("2007-09-23 10:10:10.0");
         Map<String, Object> event = new HashMap<>();
         event.put("EventName", "Test Name");
-        event.put("DateTime", "Some Time");
+        event.put("DateTime", timestamp);
         event.put("Description", "Test Description");
         event.put("EventID", "1234567890");
         event.put("EventPoster", "http://image.com/image");

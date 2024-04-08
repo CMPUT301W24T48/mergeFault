@@ -1,5 +1,4 @@
 package com.example.mergefault;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,14 +7,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.libraries.places.api.Places;
-
 import java.util.Objects;
 
+/**
+ * Start of the flow of the app
+ */
 public class MainActivity extends AppCompatActivity {
 
     private Button attendeeButton;
