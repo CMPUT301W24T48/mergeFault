@@ -458,6 +458,7 @@ public class OrganizerAddEventActivity extends AppCompatActivity implements Time
      * @param eventId This is the event id given by a randomly generated firestore id
      */
     public void switchActivities(String eventId, Uri selectedImage) {
+        SubscribeOrganizer();
         getApplicationContext().grantUriPermission(getPackageName(), selectedImage, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         Intent intent = new Intent(OrganizerAddEventActivity.this, OrganizerNewOrReuseQR.class).setData(selectedImage).setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra("EventId", eventId);
