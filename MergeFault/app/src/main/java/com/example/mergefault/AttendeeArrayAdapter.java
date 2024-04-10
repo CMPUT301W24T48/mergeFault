@@ -75,6 +75,7 @@ public class AttendeeArrayAdapter extends ArrayAdapter<Attendee>{
             if (attendee.getProfImageURL() != null){
                 Picasso.get().load(attendee.getProfImageURL()).into(attendeePFP);
             }
+
             Button removeProfileButton = view.findViewById(R.id.removeProfileButton);
             removeProfileButton.setOnClickListener(new View.OnClickListener() {
 
@@ -122,6 +123,12 @@ public class AttendeeArrayAdapter extends ArrayAdapter<Attendee>{
             TextView checkInCounter = view.findViewById(R.id.checkInCountText);
             TextView checkedInStatus = view.findViewById(R.id.checkedInText);
             checkInCounter.setText(attendee.getCheckInCount().toString());
+
+            if (attendee.getCheckedIn()) {
+                checkedInStatus.setText("Yes");
+            } else {
+                checkedInStatus.setText("No");
+            }
 
         } else if (Objects.equals(user, "organizer")){
             Attendee attendee = getItem(position);
