@@ -71,9 +71,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Start AdminHomeActivity when adminButton is clicked
+                Intent intent = new Intent(MainActivity.this, AdminHomeActivity.class);
+                startActivity(intent);
+                /*
                 Intent intent = new Intent(MainActivity.this, QRCodeScannerActivity.class);
                 intent.putExtra("parentActivity", "Main");
                 startActivityForResult(intent,1);
+
+                 */
             }
         });
     }
