@@ -441,7 +441,6 @@ public class OrganizerEditEventActivity extends AppCompatActivity implements Tim
         eventRef.update("EventName", event.getEventName());
         eventRef.update("Description", event.getDescription());
         eventRef.update("GeoLocOn",event.getGeoLocOn());
-        eventRef.update("OrganizerID", event.getOrganizerId());
 
         if (selectedImage != null){
             getDownloadUrl();
